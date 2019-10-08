@@ -23,6 +23,7 @@ set(client_UI_SRCS
     legalnotice.ui
     ignorelisteditor.ui
     ignorelisttablewidget.ui
+	wifilistmanager.ui
     networksettings.ui
     activitywidget.ui
     synclogdialog.ui
@@ -66,6 +67,7 @@ set(client_SRCS
     lockwatcher.cpp
     logbrowser.cpp
     navigationpanehelper.cpp
+	wifilistmanager.cpp
     networksettings.cpp
     ocsnavigationappsjob.cpp
     ocsjob.cpp

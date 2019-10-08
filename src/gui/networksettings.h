@@ -48,8 +48,11 @@ protected:
     void showEvent(QShowEvent *event) override;
 
 private:
+    void wifiListsToggled();
     void loadProxySettings();
     void loadBWLimitSettings();
+    void loadWifiListSettings();
+    QString getActiveSsidsDescription();
 
     Ui::NetworkSettings *_ui;
 };

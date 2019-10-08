@@ -61,6 +61,9 @@ static const char monoIconsC[] = "monoIcons";
 static const char promptDeleteC[] = "promptDeleteAllFiles";
 static const char crashReporterC[] = "crashReporter";
 static const char optionalServerNotificationsC[] = "optionalServerNotifications";
+static const char wifiListActiveC[] = "wifiListActive";
+static const char wifiListModeC[] = "wifiListMode";
+static const char ssidListC[] = "SSIDs";
 static const char showInExplorerNavigationPaneC[] = "showInExplorerNavigationPane";
 static const char skipUpdateCheckC[] = "skipUpdateCheck";
 static const char updateCheckIntervalC[] = "updateCheckInterval";
@@ -176,6 +179,29 @@ bool ConfigFile::optionalServerNotifications() const
     return settings.value(QLatin1String(optionalServerNotificationsC), true).toBool();
 }
 
+bool ConfigFile::wifiListActive() const
+{
+    QSettings settings(configFile(), QSettings::IniFormat);
+    return settings.value(QLatin1String(wifiListActiveC), false).toBool();
+}
+
+QString ConfigFile::wifiListMode() const
+{
+    QSettings settings(configFile(), QSettings::IniFormat);
+    return settings.value(QLatin1String(wifiListModeC), QString("")).toString();
+}
+
+QStringList ConfigFile::ssidList() const
+{
+    QSettings settings(configFile(), QSettings::IniFormat);
+    QString loadedList = settings.value(QLatin1String(ssidListC), QString("")).toString();
+    if (loadedList.isEmpty()) {
+        return QStringList();
+    } else {
+        return loadedList.split(QString(","));
+    }
+}
+
 bool ConfigFile::showInExplorerNavigationPane() const
 {
     const bool defaultValue =
@@ -234,6 +260,27 @@ void ConfigFile::setOptionalServerNotifications(bool show)
 {
     QSettings settings(configFile(), QSettings::IniFormat);
     settings.setValue(QLatin1String(optionalServerNotificationsC), show);
+    settings.sync();
+}
+
+void ConfigFile::setWifiListActive(const bool &isActive)
+{
+    QSettings settings(configFile(), QSettings::IniFormat);
+    settings.setValue(QLatin1String(wifiListActiveC), isActive);
+    settings.sync();
+}
+
+void ConfigFile::setWifiListMode(const QString &wifiListMode)
+{
+    QSettings settings(configFile(), QSettings::IniFormat);
+    settings.setValue(QLatin1String(wifiListModeC), wifiListMode);
+    settings.sync();
+}
+
+void ConfigFile::setSsidList(const QStringList *wifiList)
+{
+    QSettings settings(configFile(), QSettings::IniFormat);
+    settings.setValue(QLatin1String(ssidListC), wifiList->join(","));
     settings.sync();
 }
 
@@ -311,19 +358,19 @@ QString ConfigFile::configPath() const
             _confDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
         } else {
             // On Windows, use AppDataLocation, that's where the roaming data is and where we should store the config file
-             auto newLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+            auto newLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 
-             // Check if this is the first time loading the new location
-             if (!QFileInfo(newLocation).isDir()) {
-                 // Migrate data to the new locations
-                 auto oldLocation = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+            // Check if this is the first time loading the new location
+            if (!QFileInfo(newLocation).isDir()) {
+                // Migrate data to the new locations
+                auto oldLocation = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
 
-                 // Only migrate if the old location exists.
-                 if (QFileInfo(oldLocation).isDir()) {
-                     QDir().mkpath(newLocation);
-                     copy_dir_recursive(oldLocation, newLocation);
-                 }
-             }
+                // Only migrate if the old location exists.
+                if (QFileInfo(oldLocation).isDir()) {
+                    QDir().mkpath(newLocation);
+                    copy_dir_recursive(oldLocation, newLocation);
+                }
+            }
             _confDir = newLocation;
         }
     }

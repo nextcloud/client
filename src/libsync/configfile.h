@@ -122,6 +122,14 @@ public:
     bool confirmExternalStorage() const;
     void setConfirmExternalStorage(bool);
 
+	/** Wi-Fi list manager configuration for black- or whitelisting**/
+    void setWifiListActive(const bool &isActive);
+    void setWifiListMode(const QString &wifiListMode);
+    void setSsidList(const QStringList *wifiList);
+    bool wifiListActive() const;
+    QString wifiListMode() const;
+    QStringList ssidList() const;
+
     /** If we should move the files deleted on the server in the trash  */
     bool moveToTrash() const;
     void setMoveToTrash(bool);

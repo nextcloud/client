@@ -21,6 +21,7 @@
 #include "configfile.h"
 #include "folderman.h"
 #include "accountmanager.h"
+#include "wifilistmanager.h"
 
 #include <QNetworkProxy>
 #include <QString>
@@ -58,6 +59,7 @@ NetworkSettings::NetworkSettings(QWidget *parent)
 
     loadProxySettings();
     loadBWLimitSettings();
+    loadWifiListSettings();
 
     // proxy
     connect(_ui->typeComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &NetworkSettings::saveProxySettings);
@@ -80,6 +82,13 @@ NetworkSettings::NetworkSettings(QWidget *parent)
     // Warn about empty proxy host
     connect(_ui->hostLineEdit, &QLineEdit::textChanged, this, &NetworkSettings::checkEmptyProxyHost);
     checkEmptyProxyHost();
+
+    //Wi-Fi
+    connect(_ui->activateWifiListsCheckbox, &QCheckBox::stateChanged, this, &NetworkSettings::wifiListsToggled);
+    connect(_ui->manageWifiListsBtn, &QPushButton::clicked, [this]() { 
+		WifiListManager *wifiMgr = new WifiListManager;
+		wifiMgr->exec();
+		_ui->wifiListsStatusLabel->setText(getActiveSsidsDescription()); });
 }
 
 NetworkSettings::~NetworkSettings()
@@ -90,6 +99,25 @@ NetworkSettings::~NetworkSettings()
 QSize NetworkSettings::sizeHint() const
 {
     return QSize(ownCloudGui::settingsDialogSize().width(), QWidget::sizeHint().height());
+}
+
+void NetworkSettings::wifiListsToggled()
+{
+    bool wifiListsActive = _ui->activateWifiListsCheckbox->checkState();
+    _ui->manageWifiListsBtn->setEnabled(wifiListsActive);
+    _ui->wifiListsStatusLabel->setEnabled(wifiListsActive);
+    _ui->wifiListsStatusLabel->setText(wifiListsActive ? getActiveSsidsDescription() : QString("No Wi-Fi limitations active"));
+
+    ConfigFile cfg;
+    cfg.setWifiListActive(wifiListsActive);
+}
+
+QString NetworkSettings::getActiveSsidsDescription()
+{
+    OCC::ConfigFile cfgFile;
+    QString desc = QString::number(cfgFile.ssidList().count()) + " SSIDs configured ";
+    desc.append("(" + cfgFile.wifiListMode() + ")");
+    return desc;
 }
 
 void NetworkSettings::loadProxySettings()
@@ -151,6 +179,14 @@ void NetworkSettings::loadBWLimitSettings()
         _ui->autoUploadLimitRadioButton->setChecked(true);
     }
     _ui->uploadSpinBox->setValue(cfgFile.uploadLimit());
+}
+
+void NetworkSettings::loadWifiListSettings()
+{
+    ConfigFile cfgFile;
+    _ui->activateWifiListsCheckbox->setChecked(cfgFile.wifiListActive());
+    _ui->manageWifiListsBtn->setEnabled(cfgFile.wifiListActive());
+    _ui->wifiListsStatusLabel->setText(getActiveSsidsDescription());
 }
 
 void NetworkSettings::saveProxySettings()
