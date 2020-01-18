@@ -30,7 +30,7 @@ mkdir build
 cd build
 cmake -D CMAKE_INSTALL_PREFIX=/usr ../
 make -j4
-make DESTDIR=/app install 
+make DESTDIR=/app install
 
 #Build client
 cd /build
