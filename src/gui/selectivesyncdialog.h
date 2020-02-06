@@ -55,7 +55,7 @@ public:
     QSize sizeHint() const override;
 
 private slots:
-    void slotUpdateDirectories(QStringList);
+    void slotUpdateDirectories(SyncObjectList);
     void slotItemExpanded(QTreeWidgetItem *);
     void slotItemChanged(QTreeWidgetItem *, int);
     void slotLscolFinishedWithError(QNetworkReply *);

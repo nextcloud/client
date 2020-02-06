@@ -52,6 +52,7 @@ namespace OCC {
 class AbstractCredentials;
 class Account;
 typedef QSharedPointer<Account> AccountPtr;
+typedef std::vector<std::tuple<QString, bool>> SyncObjectList;
 class QuotaInfo;
 class AccessManager;
 class SimpleNetworkJob;

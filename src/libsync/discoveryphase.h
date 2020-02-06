@@ -167,8 +167,8 @@ class DiscoveryJob : public QObject
      */
     bool isInSelectiveSyncBlackList(const QByteArray &path) const;
     static int isInSelectiveSyncBlackListCallback(void *, const QByteArray &);
-    bool checkSelectiveSyncNewFolder(const QString &path, RemotePermissions rp);
-    static int checkSelectiveSyncNewFolderCallback(void *data, const QByteArray &path, RemotePermissions rm);
+    bool checkSelectiveSyncNewObject(const QString &path, RemotePermissions rp, const bool &isDirectory);
+    static int checkSelectiveSyncNewObjectCallback(void *data, const QByteArray &path, RemotePermissions rm, const bool &isDirectory);
 
     // Just for progress
     static void update_job_update_callback(bool local,
@@ -204,7 +204,7 @@ signals:
     void doOpendirSignal(QString url, DiscoveryDirectoryResult *);
     void doGetSizeSignal(const QString &path, qint64 *result);
 
-    // A new folder was discovered and was not synced because of the confirmation feature
-    void newBigFolder(const QString &folder, bool isExternal);
+    // A new object was discovered and was not synced because of the confirmation feature
+    void newBigObject(const QString &folder, bool isExternal, bool isFolder);
 };
 }

@@ -158,8 +158,8 @@ signals:
      */
     void aboutToRestoreBackup(bool *restore);
 
-    // A new folder was discovered and was not synced because of the confirmation feature
-    void newBigFolder(const QString &folder, bool isExternal);
+    // A new file or folder was discovered and was not synced because of the confirmation feature
+    void newBigObject(const QString &folder, bool isExternal, bool isFolder);
 
     /** Emitted when propagation has problems with a locked file.
      *

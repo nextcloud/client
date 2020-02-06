@@ -93,13 +93,13 @@ protected slots:
     void slotCreateRemoteFolderFinished(QNetworkReply::NetworkError error);
     void slotHandleMkdirNetworkError(QNetworkReply *);
     void slotHandleLsColNetworkError(QNetworkReply *);
-    void slotUpdateDirectories(const QStringList &);
+    void slotUpdateDirectories(const SyncObjectList &);
     void slotRefreshFolders();
     void slotItemExpanded(QTreeWidgetItem *);
     void slotCurrentItemChanged(QTreeWidgetItem *);
     void slotFolderEntryEdited(const QString &text);
     void slotLsColFolderEntry();
-    void slotTypedPathFound(const QStringList &subpaths);
+    void slotTypedPathFound(const SyncObjectList &subpaths);
     void slotTypedPathError(QNetworkReply *reply);
 
 private:

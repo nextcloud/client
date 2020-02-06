@@ -17,7 +17,7 @@ class PropagateDownloadEncrypted : public QObject {
 public:
   PropagateDownloadEncrypted(OwncloudPropagator *propagator, SyncFileItemPtr item);
   void start();
-  void checkFolderId(const QStringList &list);
+  void checkFolderId(const SyncObjectList &list);
   bool decryptFile(QFile& tmpFile);
   QString errorString() const;
 

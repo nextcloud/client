@@ -392,10 +392,9 @@ static int _csync_detect_update(CSYNC *ctx, std::unique_ptr<csync_file_stat_t> f
           }
 
           if (fs->instruction == CSYNC_INSTRUCTION_NEW
-              && fs->type == ItemTypeDirectory
               && ctx->current == REMOTE_REPLICA
-              && ctx->callbacks.checkSelectiveSyncNewFolderHook) {
-              if (ctx->callbacks.checkSelectiveSyncNewFolderHook(ctx->callbacks.update_callback_userdata, fs->path, fs->remotePerm)) {
+              && ctx->callbacks.checkSelectiveSyncNewObjectHook) {
+              if (ctx->callbacks.checkSelectiveSyncNewObjectHook(ctx->callbacks.update_callback_userdata, fs->path, fs->remotePerm, (fs->type == ItemTypeDirectory ? true : false))) {
                   return 1;
               }
           }

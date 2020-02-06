@@ -88,7 +88,7 @@ int DiscoveryJob::isInSelectiveSyncBlackListCallback(void *data, const QByteArra
     return static_cast<DiscoveryJob *>(data)->isInSelectiveSyncBlackList(path);
 }
 
-bool DiscoveryJob::checkSelectiveSyncNewFolder(const QString &path, RemotePermissions remotePerm)
+bool DiscoveryJob::checkSelectiveSyncNewObject(const QString &path, RemotePermissions remotePerm, const bool &isDirectory)
 {
     if (_syncOptions._confirmExternalStorage
         && remotePerm.hasPermission(RemotePermissions::IsMounted)) {
@@ -103,7 +103,7 @@ bool DiscoveryJob::checkSelectiveSyncNewFolder(const QString &path, RemotePermis
             return false;
         }
 
-        emit newBigFolder(path, true);
+        emit newBigObject(path, true, isDirectory);
         return true;
     }
 
@@ -128,8 +128,8 @@ bool DiscoveryJob::checkSelectiveSyncNewFolder(const QString &path, RemotePermis
     }
 
     if (result >= limit) {
-        // we tell the UI there is a new folder
-        emit newBigFolder(path, false);
+        // we tell the UI there is a new object
+        emit newBigObject(path, false, isDirectory);
         return true;
     } else {
         // it is not too big, put it in the white list (so we will not do more query for the children)
@@ -146,9 +146,9 @@ bool DiscoveryJob::checkSelectiveSyncNewFolder(const QString &path, RemotePermis
     }
 }
 
-int DiscoveryJob::checkSelectiveSyncNewFolderCallback(void *data, const QByteArray &path, RemotePermissions remotePerm)
+int DiscoveryJob::checkSelectiveSyncNewObjectCallback(void *data, const QByteArray &path, RemotePermissions remotePerm, const bool &isDirectory)
 {
-    return static_cast<DiscoveryJob *>(data)->checkSelectiveSyncNewFolder(QString::fromUtf8(path), remotePerm);
+    return static_cast<DiscoveryJob *>(data)->checkSelectiveSyncNewObject(QString::fromUtf8(path), remotePerm, isDirectory);
 }
 
 
@@ -716,7 +716,7 @@ void DiscoveryJob::start()
     _csync_ctx->callbacks.update_callback_userdata = this;
     _csync_ctx->callbacks.update_callback = update_job_update_callback;
     _csync_ctx->callbacks.checkSelectiveSyncBlackListHook = isInSelectiveSyncBlackListCallback;
-    _csync_ctx->callbacks.checkSelectiveSyncNewFolderHook = checkSelectiveSyncNewFolderCallback;
+    _csync_ctx->callbacks.checkSelectiveSyncNewObjectHook = checkSelectiveSyncNewObjectCallback;
 
     _csync_ctx->callbacks.remote_opendir_hook = remote_vio_opendir_hook;
     _csync_ctx->callbacks.remote_readdir_hook = remote_vio_readdir_hook;
@@ -726,7 +726,7 @@ void DiscoveryJob::start()
     _lastUpdateProgressCallbackCall.invalidate();
     int ret = csync_update(_csync_ctx);
 
-    _csync_ctx->callbacks.checkSelectiveSyncNewFolderHook = nullptr;
+    _csync_ctx->callbacks.checkSelectiveSyncNewObjectHook = nullptr;
     _csync_ctx->callbacks.checkSelectiveSyncBlackListHook = nullptr;
     _csync_ctx->callbacks.update_callback = nullptr;
     _csync_ctx->callbacks.update_callback_userdata = nullptr;

@@ -141,7 +141,7 @@ struct OCSYNC_EXPORT csync_s {
 
       /* hooks for checking the white list (uses the update_callback_userdata) */
       int (*checkSelectiveSyncBlackListHook)(void*, const QByteArray &) = nullptr;
-      int (*checkSelectiveSyncNewFolderHook)(void *, const QByteArray & /* path */, OCC::RemotePermissions) = nullptr;
+      int (*checkSelectiveSyncNewObjectHook)(void *, const QByteArray & /* path */, OCC::RemotePermissions, const bool &isDirectory) = nullptr;
 
 
       csync_vio_opendir_hook remote_opendir_hook = nullptr;

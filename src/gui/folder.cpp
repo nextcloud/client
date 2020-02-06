@@ -96,8 +96,8 @@ Folder::Folder(const FolderDefinition &definition,
     connect(_engine.data(), &SyncEngine::transmissionProgress, this, &Folder::slotTransmissionProgress);
     connect(_engine.data(), &SyncEngine::itemCompleted,
         this, &Folder::slotItemCompleted);
-    connect(_engine.data(), &SyncEngine::newBigFolder,
-        this, &Folder::slotNewBigFolderDiscovered);
+    connect(_engine.data(), &SyncEngine::newBigObject,
+        this, &Folder::slotNewBigObjectDiscovered);
     connect(_engine.data(), &SyncEngine::seenLockedFile, FolderMan::instance(), &FolderMan::slotSyncOnceFileUnlocks);
     connect(_engine.data(), &SyncEngine::aboutToPropagate,
         this, &Folder::slotLogPropagationStart);
@@ -693,8 +693,8 @@ void Folder::setSyncOptions()
     SyncOptions opt;
     ConfigFile cfgFile;
 
-    auto newFolderLimit = cfgFile.newBigFolderSizeLimit();
-    opt._newBigFolderSizeLimit = newFolderLimit.first ? newFolderLimit.second * 1000LL * 1000LL : -1; // convert from MB to B
+    auto newSizeLimit = cfgFile.newBigFolderSizeLimit();
+    opt._newBigFolderSizeLimit = newSizeLimit.first ? newSizeLimit.second * 1000LL * 1000LL : -1; // convert from MB to B
     opt._confirmExternalStorage = cfgFile.confirmExternalStorage();
     opt._moveFilesToTrash = cfgFile.moveToTrash();
 
@@ -944,11 +944,12 @@ void Folder::slotItemCompleted(const SyncFileItemPtr &item)
     emit ProgressDispatcher::instance()->itemCompleted(alias(), item);
 }
 
-void Folder::slotNewBigFolderDiscovered(const QString &newF, bool isExternal)
+void Folder::slotNewBigObjectDiscovered(const QString &newO, bool isExternal, bool isFolder)
 {
-    auto newFolder = newF;
-    if (!newFolder.endsWith(QLatin1Char('/'))) {
-        newFolder += QLatin1Char('/');
+    auto newObject = newO;
+
+    if (isFolder && !newObject.endsWith(QLatin1Char('/'))) {
+        newObject += QLatin1Char('/');
     }
     auto journal = journalDb();
 
@@ -956,24 +957,34 @@ void Folder::slotNewBigFolderDiscovered(const QString &newF, bool isExternal)
     bool ok1, ok2;
     auto blacklist = journal->getSelectiveSyncList(SyncJournalDb::SelectiveSyncBlackList, &ok1);
     auto whitelist = journal->getSelectiveSyncList(SyncJournalDb::SelectiveSyncWhiteList, &ok2);
-    if (ok1 && ok2 && !blacklist.contains(newFolder) && !whitelist.contains(newFolder)) {
-        blacklist.append(newFolder);
+    if (ok1 && ok2 && !blacklist.contains(newObject) && !whitelist.contains(newObject)) {
+        blacklist.append(newObject);
         journal->setSelectiveSyncList(SyncJournalDb::SelectiveSyncBlackList, blacklist);
     }
 
     // And add the entry to the undecided list and signal the UI
     auto undecidedList = journal->getSelectiveSyncList(SyncJournalDb::SelectiveSyncUndecidedList, &ok1);
     if (ok1) {
-        if (!undecidedList.contains(newFolder)) {
-            undecidedList.append(newFolder);
+        if (!undecidedList.contains(newObject)) {
+            undecidedList.append(newObject);
             journal->setSelectiveSyncList(SyncJournalDb::SelectiveSyncUndecidedList, undecidedList);
-            emit newBigFolderDiscovered(newFolder);
+            emit newBigObjectDiscovered(newObject, isFolder);
         }
-        QString message = !isExternal ? (tr("A new folder larger than %1 MB has been added: %2.\n")
-                                                .arg(ConfigFile().newBigFolderSizeLimit().second)
-                                                .arg(newF))
-                                      : (tr("A folder from an external storage has been added.\n"));
-        message += tr("Please go in the settings to select it if you wish to download it.");
+		
+		QString message = "";
+		if (isFolder) {
+            message = !isExternal ? (tr("A new folder larger than %1 MB has been added: %2.\n")
+                                                 .arg(ConfigFile().newBigFolderSizeLimit().second)
+                                                 .arg(newO))
+                                          : (tr("A folder from an external storage has been added.\n"));
+            message += tr("Please go in the settings to select it if you wish to download it.");
+        } else {
+            message = !isExternal ? (tr("A new file larger than %1 MB has been added: %2.\n")
+                                                    .arg(ConfigFile().newBigFolderSizeLimit().second)
+                                                    .arg(newO))
+                                            : (tr("A file from an external storage has been added.\n"));
+            message += tr("Please go in the settings to select it if you wish to download it.");
+		}
 
         auto logger = Logger::instance();
         logger->postOptionalGuiLog(Theme::instance()->appNameGUI(), message);

@@ -192,7 +192,7 @@ bool LsColXMLParser::parse(const QByteArray &xml, QHash<QString, ExtraFolderInfo
     QXmlStreamReader reader(xml);
     reader.addExtraNamespaceDeclaration(QXmlStreamNamespaceDeclaration("d", "DAV:"));
 
-    QStringList folders;
+    SyncObjectList syncObjects;
     QString currentHref;
     QMap<QString, QString> currentTmpProperties;
     QMap<QString, QString> currentHttp200Properties;
@@ -238,7 +238,7 @@ bool LsColXMLParser::parse(const QByteArray &xml, QHash<QString, ExtraFolderInfo
             // All those elements are properties
             QString propertyContent = readContentsAsString(reader);
             if (name == QLatin1String("resourcetype") && propertyContent.contains("collection")) {
-                folders.append(currentHref);
+                syncObjects.push_back(std::make_tuple(currentHref, propertyContent.contains("collection") ? true : false));
             } else if (name == QLatin1String("size")) {
                 bool ok = false;
                 auto s = propertyContent.toLongLong(&ok);
@@ -283,7 +283,7 @@ bool LsColXMLParser::parse(const QByteArray &xml, QHash<QString, ExtraFolderInfo
         qCWarning(lcLsColJob) << "ERROR no WebDAV response?" << xml;
         return false;
     } else {
-        emit directoryListingSubfolders(folders);
+        emit directoryListingSubfolders(syncObjects);
         emit finishedWithoutError();
     }
     return true;

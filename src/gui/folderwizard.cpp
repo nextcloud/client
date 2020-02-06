@@ -305,7 +305,7 @@ bool FolderWizardRemotePath::selectByPath(QString path)
     return true;
 }
 
-void FolderWizardRemotePath::slotUpdateDirectories(const QStringList &list)
+void FolderWizardRemotePath::slotUpdateDirectories(const SyncObjectList &list)
 {
     QString webdavFolder = QUrl(_account->davUrl()).path();
 
@@ -317,14 +317,14 @@ void FolderWizardRemotePath::slotUpdateDirectories(const QStringList &list)
         root->setToolTip(0, tr("Choose this to sync the entire account"));
         root->setData(0, Qt::UserRole, "/");
     }
-    QStringList sortedList = list;
-    Utility::sortFilenames(sortedList);
-    foreach (QString path, sortedList) {
-        path.remove(webdavFolder);
-        QStringList paths = path.split('/');
+    SyncObjectList sortedList = list;
+    //Utility::sortFilenames(sortedList);
+    foreach (auto syncObject, sortedList) {
+        std::get<0>(syncObject).remove(webdavFolder);
+        QStringList paths = std::get<0>(syncObject).split('/');
         if (paths.last().isEmpty())
             paths.removeLast();
-        recursiveInsert(root, paths, path);
+        recursiveInsert(root, paths, std::get<0>(syncObject));
     }
     root->setExpanded(true);
 }
@@ -382,7 +382,7 @@ void FolderWizardRemotePath::slotLsColFolderEntry()
         this, &FolderWizardRemotePath::slotTypedPathFound);
 }
 
-void FolderWizardRemotePath::slotTypedPathFound(const QStringList &subpaths)
+void FolderWizardRemotePath::slotTypedPathFound(const SyncObjectList &subpaths)
 {
     slotUpdateDirectories(subpaths);
     selectByPath(_ui.folderEntry->text());

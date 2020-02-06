@@ -15,6 +15,8 @@
 #ifndef FOLDERSTATUSMODEL_H
 #define FOLDERSTATUSMODEL_H
 
+#include <tuple>
+
 #include <accountfwd.h>
 #include <QAbstractItemModel>
 #include <QLoggingCategory>
@@ -39,7 +41,7 @@ class FolderStatusModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    enum {FileIdRole = Qt::UserRole+1};
+    enum { FileIdRole = Qt::UserRole + 1 };
 
     FolderStatusModel(QObject *parent = nullptr);
     ~FolderStatusModel();
@@ -55,6 +57,12 @@ public:
     bool canFetchMore(const QModelIndex &parent) const override;
     void fetchMore(const QModelIndex &parent) override;
     bool hasChildren(const QModelIndex &parent = QModelIndex()) const override;
+
+    struct SyncObject
+    {
+        QString	path;
+        bool	isFolder;
+    };
 
     struct SubFolderInfo
     {
@@ -140,12 +148,12 @@ public slots:
     void slotSetProgress(const ProgressInfo &progress);
 
 private slots:
-    void slotUpdateDirectories(const QStringList &);
+    void slotUpdateDirectories(const std::vector<std::tuple<QString, bool>> &);
     void slotGatherPermissions(const QString &name, const QMap<QString, QString> &properties);
     void slotLscolFinishedWithError(QNetworkReply *r);
     void slotFolderSyncStateChange(Folder *f);
     void slotFolderScheduleQueueChanged();
-    void slotNewBigFolder();
+    void slotNewBigObject();
 
     /**
      * "In progress" labels for fetching data from the server are only

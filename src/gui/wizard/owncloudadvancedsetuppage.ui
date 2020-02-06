@@ -145,7 +145,7 @@
             <item>
              <widget class="QCheckBox" name="confCheckBoxSize">
               <property name="text">
-               <string>Ask for confirmation before synchroni&amp;zing folders larger than</string>
+               <string>Ask for confirmation before synchroni&amp;zing files and folders larger than</string>
               </property>
              </widget>
             </item>
@@ -155,7 +155,7 @@
                <number>999999</number>
               </property>
               <property name="value">
-               <number>99</number>
+               <number>500</number>
               </property>
              </widget>
             </item>

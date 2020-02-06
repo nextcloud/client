@@ -8,6 +8,8 @@
 
 namespace OCC {
 
+typedef std::vector<std::tuple<QString, bool>> SyncObjectList;
+
 class OwncloudPropagator;
 class PropagateRemoteDeleteEncrypted : public QObject
 {
@@ -21,7 +23,7 @@ signals:
     void finished(bool success);
 
 private:
-    void slotFolderEncryptedIdReceived(const QStringList &list);
+    void slotFolderEncryptedIdReceived(const SyncObjectList &list);
     void slotTryLock(const QByteArray &folderId);
     void slotFolderLockedSuccessfully(const QByteArray &fileId, const QByteArray &token);
     void slotFolderEncryptedMetadataReceived(const QJsonDocument &json, int statusCode);

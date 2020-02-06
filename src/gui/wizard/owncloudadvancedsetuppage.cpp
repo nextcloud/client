@@ -133,9 +133,9 @@ void OwncloudAdvancedSetupPage::initializePage()
     }
 
     ConfigFile cfgFile;
-    auto newFolderLimit = cfgFile.newBigFolderSizeLimit();
-    _ui.confCheckBoxSize->setChecked(newFolderLimit.first);
-    _ui.confSpinBox->setValue(newFolderLimit.second);
+    auto newSizeLimit = cfgFile.newBigFolderSizeLimit();
+    _ui.confCheckBoxSize->setChecked(newSizeLimit.first);
+    _ui.confSpinBox->setValue(newSizeLimit.second);
     _ui.confCheckBoxExternal->setChecked(cfgFile.confirmExternalStorage());
 }
 

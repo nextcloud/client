@@ -912,8 +912,8 @@ void SyncEngine::startSync()
     connect(discoveryJob, &DiscoveryJob::folderDiscovered,
         this, &SyncEngine::slotFolderDiscovered);
 
-    connect(discoveryJob, &DiscoveryJob::newBigFolder,
-        this, &SyncEngine::newBigFolder);
+    connect(discoveryJob, &DiscoveryJob::newBigObject,
+        this, &SyncEngine::newBigObject);
 
 
     // This is used for the DiscoveryJob to be able to request the main thread/

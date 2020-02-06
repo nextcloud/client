@@ -31,11 +31,11 @@ void PropagateRemoteDeleteEncrypted::start()
     job->start();
 }
 
-void PropagateRemoteDeleteEncrypted::slotFolderEncryptedIdReceived(const QStringList &list)
+void PropagateRemoteDeleteEncrypted::slotFolderEncryptedIdReceived(const SyncObjectList &list)
 {
     qCDebug(PROPAGATE_REMOVE_ENCRYPTED) << "Received id of folder, trying to lock it so we can prepare the metadata";
     auto job = qobject_cast<LsColJob *>(sender());
-    const ExtraFolderInfo folderInfo = job->_folderInfos.value(list.first());
+    const ExtraFolderInfo folderInfo = job->_folderInfos.value(std::get<0>(list.at(0)));
     slotTryLock(folderInfo.fileId);
 }
 

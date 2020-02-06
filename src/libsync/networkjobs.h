@@ -27,6 +27,8 @@ class QJsonObject;
 
 namespace OCC {
 
+typedef std::vector<std::tuple<QString, bool>> SyncObjectList;
+
 /**
  * @brief The EntityExistsJob class
  * @ingroup libsync
@@ -86,7 +88,7 @@ public:
                const QString &expectedPath);
 
 signals:
-    void directoryListingSubfolders(const QStringList &items);
+    void directoryListingSubfolders(const SyncObjectList &items);
     void directoryListingIterated(const QString &name, const QMap<QString, QString> &properties);
     void finishedWithError(QNetworkReply *reply);
     void finishedWithoutError();
@@ -113,7 +115,7 @@ public:
     QList<QByteArray> properties() const;
 
 signals:
-    void directoryListingSubfolders(const QStringList &items);
+    void directoryListingSubfolders(const SyncObjectList &items);
     void directoryListingIterated(const QString &name, const QMap<QString, QString> &properties);
     void finishedWithError(QNetworkReply *reply);
     void finishedWithoutError();

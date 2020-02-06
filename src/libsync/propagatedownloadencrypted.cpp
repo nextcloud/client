@@ -56,10 +56,10 @@ void PropagateDownloadEncrypted::folderIdError()
   qCDebug(lcPropagateDownloadEncrypted) << "Failed to get encrypted metadata of folder";
 }
 
-void PropagateDownloadEncrypted::checkFolderId(const QStringList &list)
+void PropagateDownloadEncrypted::checkFolderId(const SyncObjectList &list)
 {
   auto job = qobject_cast<LsColJob*>(sender());
-  const QString folderId = list.first();
+  const QString folderId = std::get<0>(list.at(0));
   qCDebug(lcPropagateDownloadEncrypted) << "Received id of folder" << folderId;
 
   const ExtraFolderInfo &folderInfo = job->_folderInfos.value(folderId);
