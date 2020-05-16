@@ -17,6 +17,7 @@
 #include "common/utility.h"
 #include <QFile>
 #include <QFileInfo>
+#include <sys/time.h>
 
 // We use some internals of csync:
 extern "C" int c_utimes(const char *, const struct timeval *);

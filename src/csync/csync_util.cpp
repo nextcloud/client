@@ -25,6 +25,10 @@
 #define _GNU_SOURCE
 #endif
 
+#ifdef __HAIKU__
+#define _BSD_SOURCE
+#endif
+
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>

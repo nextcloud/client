@@ -52,8 +52,6 @@ set(libsync_SRCS
     syncfilestatustracker.cpp
     syncresult.cpp
     theme.cpp
-    clientsideencryption.cpp
-    clientsideencryptionjobs.cpp
     creds/dummycredentials.cpp
     creds/abstractcredentials.cpp
     creds/credentialscommon.cpp
@@ -62,7 +60,10 @@ set(libsync_SRCS
 if(TOKEN_AUTH_ONLY)
     set (libsync_SRCS ${libsync_SRCS} creds/tokencredentials.cpp)
 else()
-    set (libsync_SRCS ${libsync_SRCS} creds/httpcredentials.cpp)
+    set (libsync_SRCS ${libsync_SRCS} creds/httpcredentials.cpp
+        clientsideencryption.cpp
+        clientsideencryptionjobs.cpp
+    )
 endif()
 
 # These headers are installed for libowncloudsync to be used by 3rd party apps

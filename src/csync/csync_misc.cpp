@@ -121,7 +121,9 @@ CSYNC_STATUS csync_errno_to_status(int error, CSYNC_STATUS default_status)
   case ENOMEM:                /* Out of memory */
   case EFAULT:                /* Bad address */
 #ifndef _WIN32
+#ifdef ENOTBLK
   case ENOTBLK:               /* Block device required */
+#endif
 #endif
   case EBUSY:                 /* Device or resource busy */
   case EXDEV:                 /* Cross-device link */
