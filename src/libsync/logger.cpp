@@ -224,14 +224,18 @@ void Logger::setLogFlush(bool flush)
 
 void Logger::setLogDebug(bool debug)
 {
-    QLoggingCategory::setFilterRules(debug ? QStringLiteral("nextcloud.*.debug=true") : QString());
+    const QSet<QString> rules = {debug ? QStringLiteral("nextcloud.*.debug=true") : QString()};
+    if (debug) {
+        addLogRule(rules);
+    } else {
+        removeLogRule(rules);
+    }
     _logDebug = debug;
 }
 
 QString Logger::temporaryFolderLogDirPath() const
 {
-    QString dirName = APPLICATION_SHORTNAME + QString("-logdir");
-    return QDir::temp().filePath(dirName);
+    return QDir::temp().filePath(QStringLiteral(APPLICATION_SHORTNAME "-logdir"));
 }
 
 void Logger::setupTemporaryFolderLogDir()
@@ -255,6 +259,12 @@ void Logger::disableTemporaryFolderLogDir()
     setLogDebug(false);
     setLogFile(QString());
     _temporaryFolderLogDir = false;
+}
+
+void Logger::setLogRules(const QSet<QString> &rules)
+{
+    _logRules = rules;
+    QLoggingCategory::setFilterRules(rules.toList().join(QLatin1Char('\n')));
 }
 
 static bool compressLog(const QString &originalName, const QString &targetName)
