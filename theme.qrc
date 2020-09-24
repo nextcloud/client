@@ -162,5 +162,6 @@
         <file>theme/colored/Nextcloud-sidebar.svg</file>
         <file>theme/add.svg</file>
         <file>theme/share.svg</file>
+        <file>theme/info.svg</file>
     </qresource>
 </RCC>

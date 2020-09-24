@@ -40,6 +40,8 @@ set(client_UI_SRCS
     mnemonicdialog.ui
     tray/Window.qml
     tray/UserLine.qml
+    tray/HeaderButton.qml
+    tray/Notification.qml
     wizard/flow2authwidget.ui
     wizard/owncloudadvancedsetuppage.ui
     wizard/owncloudconnectionmethoddialog.ui

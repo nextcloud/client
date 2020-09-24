@@ -61,6 +61,7 @@ void Systray::setTrayEngine(QQmlApplicationEngine *trayEngine)
 
 Systray::Systray()
     : QSystemTrayIcon(nullptr)
+    ,_notificationList(QStringList())
 {
     qmlRegisterSingletonType<UserModel>("com.nextcloud.desktopclient", 1, 0, "UserModel",
         [](QQmlEngine *, QJSEngine *) -> QObject * {
@@ -185,6 +186,21 @@ void Systray::pauseResumeSync()
     } else {
         _syncIsPaused = true;
         emit pauseSync();
+    }
+}
+
+QString Systray::getLastNotification() const {
+    if (!_notificationList.isEmpty()) {
+        return _notificationList.last();
+    } else {
+        return QString();
+    }
+}
+
+void Systray::dismissLastNotification() {
+    if (!_notificationList.isEmpty()) {
+        _notificationList.removeLast();
+        emit notificationsChanged();
     }
 }
 

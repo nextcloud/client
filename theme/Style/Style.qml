@@ -8,6 +8,7 @@ QtObject {
     property color ncBlue:      "#0082c9"
     property color ncBlueHover: "#009dd9"
     property color lightHover:  "#f7f7f7"
+    property color lightMessage:"#fafafa"
     property color menuBorder:  "#bdbdbd"
 
     // Fonts
@@ -38,6 +39,10 @@ QtObject {
     property int headerButtonIconSize: 32
 
     property int activityLabelBaseWidth: 240
+
+    property int notificationLabelWidth: 316
+
+    property int notificationHeight: 60
 
     // Visual behaviour
     property bool hoverEffectsEnabled: true
