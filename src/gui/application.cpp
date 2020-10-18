@@ -227,7 +227,7 @@ Application::Application(int &argc, char **argv)
     if (_showLogWindow) {
         _gui->slotToggleLogBrowser(); // _showLogWindow is set in parseOptions.
     }
-#if WITH_LIBCLOUDPROVIDERS
+#ifdef WITH_LIBCLOUDPROVIDERS
     _gui->setupCloudProviders();
 #endif
 
