@@ -4,8 +4,6 @@
 <dict>
         <key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<key>LSUIElement</key>
-	<true/>
 	<key>CFBundleDevelopmentRegion</key>
         <string>English</string>
         <key>CFBundleExecutable</key>
@@ -16,6 +14,8 @@
         <string>@APPLICATION_REV_DOMAIN@</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
+        <key>CFBundleName</key>
+        <string>@APPLICATION_NAME_XML_ESCAPED@</string>
         <key>CFBundleLongVersionString</key>
         <string>@APPLICATION_NAME_XML_ESCAPED@ @MIRALL_VERSION_STRING@</string>
         <key>CFBundlePackageType</key>

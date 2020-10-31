@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QUrl>
+#include <QTimer>
 
 #include "accountfwd.h"
 #include "creds/flow2auth.h"
@@ -33,6 +34,7 @@ public:
 protected:
     void closeEvent(QCloseEvent * e) override;
     void changeEvent(QEvent *) override;
+    void setVisible(bool visible) override;
 
 public slots:
     void slotFlow2AuthResult(Flow2Auth::Result, const QString &errorString, const QString &user, const QString &appPassword);
@@ -43,6 +45,7 @@ signals:
     void styleChanged();
     void onActivate();
     void onClose();
+    void onSetVisible(bool visible);
 
 private:
     void customizeStyle();
@@ -57,6 +60,8 @@ private:
     QVBoxLayout *_layout;
     QVBoxLayout *_containerLayout;
     HeaderBanner *_headerBanner;
+
+    QTimer _raiseDelayTimer;
 };
 
 } // namespace OCC

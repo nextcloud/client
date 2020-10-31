@@ -13,6 +13,7 @@
  */
 #include "configfile.h"
 #include "sslerrordialog.h"
+#include "owncloudgui.h"
 
 #include <QtGui>
 #include <QtNetwork>
@@ -75,6 +76,11 @@ SslErrorDialog::SslErrorDialog(AccountPtr account, QWidget *parent)
         okButton->setDefault(true);
         connect(okButton, &QAbstractButton::clicked, this, &QDialog::accept);
         connect(cancelButton, &QAbstractButton::clicked, this, &QDialog::reject);
+    }
+
+    if (!parent) {
+        // Dialog visibility
+        connect(this, &SslErrorDialog::onSetVisible, ownCloudGui::instance(), &ownCloudGui::slotDialogVisibilityChanged);
     }
 }
 
@@ -221,6 +227,12 @@ bool SslErrorDialog::trustConnection()
     qCInfo(lcSslErrorDialog) << "SSL-Connection is trusted: " << stat;
 
     return stat;
+}
+
+void SslErrorDialog::setVisible(bool visible)
+{
+    emit onSetVisible(visible);
+    QDialog::setVisible(visible);
 }
 
 } // end namespace

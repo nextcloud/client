@@ -70,9 +70,11 @@ private slots:
 signals:
     void toggleAnimation(bool);
     void styleChanged();
+    void onSetVisible(bool visible);
 
 protected:
     void changeEvent(QEvent *) override;
+    void setVisible(bool visible) override;
 
 private:
     void showSharingUi();

@@ -54,6 +54,12 @@ public:
     bool trustConnection();
     QList<QSslCertificate> unknownCerts() const { return _unknownCerts; }
 
+signals:
+    void onSetVisible(bool visible);
+
+protected:
+    void setVisible(bool visible) override;
+
 private:
     QString styleSheet() const;
     bool _allTrusted;

@@ -44,6 +44,12 @@ public:
     /// Resets the dialog for new credential entry.
     void reset();
 
+signals:
+    void onSetVisible(bool visible);
+
+protected:
+    void setVisible(bool visible) override;
+
 private:
     Ui::ProxyAuthDialog *ui;
 };

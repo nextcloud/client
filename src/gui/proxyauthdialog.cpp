@@ -15,6 +15,8 @@
 #include "proxyauthdialog.h"
 #include "ui_proxyauthdialog.h"
 
+#include "owncloudgui.h"
+
 namespace OCC {
 
 ProxyAuthDialog::ProxyAuthDialog(QWidget *parent)
@@ -22,6 +24,11 @@ ProxyAuthDialog::ProxyAuthDialog(QWidget *parent)
     , ui(new Ui::ProxyAuthDialog)
 {
     ui->setupUi(this);
+
+    if (!parent) {
+        // Dialog visibility
+        connect(this, &ProxyAuthDialog::onSetVisible, ownCloudGui::instance(), &ownCloudGui::slotDialogVisibilityChanged);
+    }
 }
 
 ProxyAuthDialog::~ProxyAuthDialog()
@@ -49,6 +56,12 @@ void ProxyAuthDialog::reset()
     ui->usernameEdit->setFocus();
     ui->usernameEdit->clear();
     ui->passwordEdit->clear();
+}
+
+void ProxyAuthDialog::setVisible(bool visible)
+{
+    emit onSetVisible(visible);
+    QDialog::setVisible(visible);
 }
 
 } // namespace OCC

@@ -15,6 +15,7 @@
 #include "legalnotice.h"
 #include "ui_legalnotice.h"
 #include "theme.h"
+#include "owncloudgui.h"
 
 namespace OCC {
 
@@ -26,6 +27,11 @@ LegalNotice::LegalNotice(QDialog *parent)
     _ui->setupUi(this);
 
     connect(_ui->closeButton, &QPushButton::clicked, this, &LegalNotice::accept);
+
+    if (!parent) {
+        // Dialog visibility
+        connect(this, &LegalNotice::onSetVisible, ownCloudGui::instance(), &ownCloudGui::slotDialogVisibilityChanged);
+    }
 
     customizeStyle();
 }
@@ -66,6 +72,12 @@ void LegalNotice::customizeStyle()
     _ui->notice->setText(notice);
     _ui->notice->setWordWrap(true);
     _ui->notice->setOpenExternalLinks(true);
+}
+
+void LegalNotice::setVisible(bool visible)
+{
+    emit onSetVisible(visible);
+    QDialog::setVisible(visible);
 }
 
 } // namespace OCC

@@ -37,8 +37,12 @@ public:
     explicit LegalNotice(QDialog *parent = nullptr);
     ~LegalNotice();
 
+signals:
+    void onSetVisible(bool visible);
+
 protected:
     void changeEvent(QEvent *) override;
+    void setVisible(bool visible) override;
 
 private:
     void customizeStyle();

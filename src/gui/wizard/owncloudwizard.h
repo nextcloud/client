@@ -100,9 +100,11 @@ signals:
     void needCertificate();
     void styleChanged();
     void onActivate();
+    void onSetVisible(bool visible);
 
 protected:
     void changeEvent(QEvent *) override;
+    void setVisible(bool visible) override;
 
 private:
     void customizeStyle();

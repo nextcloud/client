@@ -7,28 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>591</width>
-    <height>360</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Legal notice</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="header">
-     <property name="font">
-      <font>
-       <pointsize>13</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Legal notice</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
    <item>
     <widget class="QLabel" name="notice">
      <property name="text">

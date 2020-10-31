@@ -42,8 +42,6 @@
 #include "owncloudsetupwizard.h"
 #include "version.h"
 
-#include "config.h"
-
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #endif
@@ -103,7 +101,7 @@ namespace {
 
 Application::Application(int &argc, char **argv)
     : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv)
-    , _gui(nullptr)
+    , _gui(ownCloudGui::instance(this))
     , _theme(Theme::instance())
     , _helpOnly(false)
     , _versionOnly(false)
@@ -138,7 +136,11 @@ Application::Application(int &argc, char **argv)
 #endif
 
     setApplicationName(_theme->appName());
+#ifndef Q_OS_MAC
+    // For macOS the icon is set in the MacOSXBundleInfo.plist file. Setting it here lead to Dock display
+    // errors, shortly drawing an opaque background while the icon is bouncing at app launch.
     setWindowIcon(_theme->applicationIcon());
+#endif
     setAttribute(Qt::AA_UseHighDpiPixmaps, true);
 
     auto confDir = ConfigFile().configPath();
@@ -223,7 +225,7 @@ Application::Application(int &argc, char **argv)
 
     // Setting up the gui class will allow tray notifications for the
     // setup that follows, like folder setup
-    _gui = new ownCloudGui(this);
+    _gui->init();
     if (_showLogWindow) {
         _gui->slotToggleLogBrowser(); // _showLogWindow is set in parseOptions.
     }
@@ -270,9 +272,6 @@ Application::Application(int &argc, char **argv)
 
     // Cleanup at Quit.
     connect(this, &QCoreApplication::aboutToQuit, this, &Application::slotCleanup);
-
-    // Allow other classes to hook into isShowingSettingsDialog() signals (re-auth widgets, for example)
-    connect(_gui.data(), &ownCloudGui::isShowingSettingsDialog, this, &Application::slotGuiIsShowingSettings);
 
     _gui->createTray();
 }
@@ -667,11 +666,6 @@ bool Application::versionOnly()
 void Application::showMainDialog()
 {
     _gui->slotOpenMainDialog();
-}
-
-void Application::slotGuiIsShowingSettings()
-{
-    emit isShowingSettingsDialog();
 }
 
 } // namespace OCC

@@ -109,6 +109,9 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
 
     // allow Flow2 page to poll on window activation
     connect(this, &OwncloudWizard::onActivate, _flow2CredsPage, &Flow2AuthCredsPage::slotPollNow);
+
+    // Dialog visibility
+    connect(this, &OwncloudWizard::onSetVisible, ownCloudGui::instance(), &ownCloudGui::slotDialogVisibilityChanged);
 }
 
 void OwncloudWizard::setAccount(AccountPtr account)
@@ -317,6 +320,12 @@ void OwncloudWizard::bringToTop()
 {
     // bring wizard to top
     ownCloudGui::raiseDialog(this);
+}
+
+void OwncloudWizard::setVisible(bool visible)
+{
+    emit onSetVisible(visible);
+    QWizard::setVisible(visible);
 }
 
 } // end namespace

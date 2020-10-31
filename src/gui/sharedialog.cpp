@@ -77,6 +77,9 @@ ShareDialog::ShareDialog(QPointer<AccountState> accountState,
     // We want to act on account state changes
     connect(_accountState.data(), &AccountState::stateChanged, this, &ShareDialog::slotAccountStateChanged);
 
+    // Dialog visibility
+    connect(this, &ShareDialog::onSetVisible, ownCloudGui::instance(), &ownCloudGui::slotDialogVisibilityChanged);
+
     // Set icon
     QFileInfo f_info(_localPath);
     QFileIconProvider icon_provider;
@@ -402,6 +405,12 @@ void ShareDialog::changeEvent(QEvent *e)
     }
 
     QDialog::changeEvent(e);
+}
+
+void ShareDialog::setVisible(bool visible)
+{
+    emit onSetVisible(visible);
+    QDialog::setVisible(visible);
 }
 
 } // namespace OCC

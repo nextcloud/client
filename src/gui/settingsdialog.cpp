@@ -127,6 +127,9 @@ SettingsDialog::SettingsDialog(ownCloudGui *gui, QWidget *parent)
 
     connect(this, &SettingsDialog::onActivate, gui, &ownCloudGui::slotSettingsDialogActivated);
 
+    // Dialog visibility
+    connect(this, &SettingsDialog::onSetVisible, gui, &ownCloudGui::slotDialogVisibilityChanged);
+
     customizeStyle();
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -173,6 +176,12 @@ void SettingsDialog::changeEvent(QEvent *e)
     }
 
     QDialog::changeEvent(e);
+}
+
+void SettingsDialog::setVisible(bool visible)
+{
+    emit onSetVisible(visible);
+    QDialog::setVisible(visible);
 }
 
 void SettingsDialog::slotSwitchPage(QAction *action)
