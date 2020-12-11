@@ -65,9 +65,13 @@ public:
 #endif
     void createTray();
 
+    void updateDialogVisibility(QDialog *dialog, bool visible);
+
 signals:
     void setupProxy();
     void serverError(int code, const QString &message);
+
+    // Allow other classes to hook into isShowingSettingsDialog() signals (re-auth widgets, for example)
     void isShowingSettingsDialog();
 
 public slots:
@@ -120,6 +124,7 @@ private:
 #endif
 
     QMap<QString, QPointer<ShareDialog>> _shareDialogs;
+    QList<QPointer<QDialog>> _visibleDialogs;
 
     QAction *_actionNewAccountWizard;
     QAction *_actionSettings;

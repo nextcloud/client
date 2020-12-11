@@ -42,8 +42,6 @@
 #include "owncloudsetupwizard.h"
 #include "version.h"
 
-#include "config.h"
-
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #endif
@@ -230,6 +228,9 @@ Application::Application(int &argc, char **argv)
 #if WITH_LIBCLOUDPROVIDERS
     _gui->setupCloudProviders();
 #endif
+
+    // Install event filter to keep track of visible dialogs
+    installEventFilter(this);
 
     FolderMan::instance()->setupFolders();
     _proxy.setupQtProxyFromConfig(); // folders have to be defined first, than we set up the Qt proxy.
@@ -672,6 +673,21 @@ void Application::showMainDialog()
 void Application::slotGuiIsShowingSettings()
 {
     emit isShowingSettingsDialog();
+}
+
+bool Application::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched && watched->isWidgetType()
+        && (event->type() == QEvent::Show || event->type() == QEvent::Hide)) {
+        auto dialog = qobject_cast<QDialog*>(watched);
+        const auto visible = (event->type() == QEvent::Show);
+
+        // Let ownCloudGui manage visible dialogs
+        Q_ASSERT(_gui);
+        _gui->updateDialogVisibility(dialog, visible);
+    }
+
+    return QObject::eventFilter(watched, event);
 }
 
 } // namespace OCC

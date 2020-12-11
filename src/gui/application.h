@@ -78,6 +78,7 @@ protected:
     void parseOptions(const QStringList &);
     void setupTranslations();
     void setupLogging();
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
     void folderRemoved();

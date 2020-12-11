@@ -167,11 +167,13 @@ void ownCloudGui::slotTrayClicked(QSystemTrayIcon::ActivationReason reason)
     if (reason == QSystemTrayIcon::Trigger) {
         if (OwncloudSetupWizard::bringWizardToFrontIfVisible()) {
             // brought wizard to front
-        } else if (_shareDialogs.size() > 0) {
-            // Share dialog(s) be hidden by other apps, bring them back
-            Q_FOREACH (const QPointer<ShareDialog> &shareDialog, _shareDialogs) {
-                Q_ASSERT(shareDialog.data());
-                raiseDialog(shareDialog);
+        } else if (!_visibleDialogs.isEmpty()) {
+            // Dialog(s) be hidden by other apps, bring them back (e.g. Share / Settings / Auth dialogs)
+            for (const QPointer<QDialog> &dialog : qAsConst(_visibleDialogs)) {
+                if (!dialog) {
+                    continue;
+                }
+                raiseDialog(dialog);
             }
         } else if (_tray->isOpen()) {
             _tray->hideWindow();
@@ -535,7 +537,6 @@ void ownCloudGui::slotSettingsDialogActivated()
 void ownCloudGui::slotShowSyncProtocol()
 {
     slotShowSettings();
-    //_settingsDialog->showActivityPage();
 }
 
 
@@ -679,5 +680,18 @@ void ownCloudGui::slotRemoveDestroyedShareDialogs()
     }
 }
 
+void ownCloudGui::updateDialogVisibility(QDialog *dialog, bool visible)
+{
+    if (dialog) {
+        const auto index = _visibleDialogs.indexOf(dialog);
+        const auto found = (index >= 0);
+
+        if (visible && !found) {
+            _visibleDialogs.append(dialog);
+        } else if (!visible && found) {
+            _visibleDialogs.removeAt(index);
+        }
+    }
+}
 
 } // end namespace
