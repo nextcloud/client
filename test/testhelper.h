@@ -17,7 +17,7 @@ public:
     }
 };
 
-static FolderDefinition folderDefinition(const QString &path) {
+static inline FolderDefinition folderDefinition(const QString &path) {
     FolderDefinition d;
     d.localPath = path;
     d.targetPath = path;
