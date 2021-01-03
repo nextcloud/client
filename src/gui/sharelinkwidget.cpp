@@ -82,13 +82,10 @@ ShareLinkWidget::ShareLinkWidget(AccountPtr account,
 
     _ui->errorLabel->hide();
 
-    bool sharingPossible = true;
     if (!_account->capabilities().sharePublicLink()) {
         qCWarning(lcShareLink) << "Link shares have been disabled";
-        sharingPossible = false;
     } else if (!(maxSharingPermissions & SharePermissionShare)) {
         qCWarning(lcShareLink) << "The file can not be shared because it was shared without sharing permission.";
-        sharingPossible = false;
     }
 
     _ui->enableShareLink->setChecked(false);
