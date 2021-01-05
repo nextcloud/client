@@ -531,6 +531,7 @@ bool OwncloudPropagator::localFileNameClash(const QString &relFile)
     const QString file(_localDir + relFile);
 
     if (!file.isEmpty() && Utility::fsCasePreserving()) {
+        qCDebug(lcPropagator) << "CaseClashCheck for " << file;
 #ifdef Q_OS_MAC
         QFileInfo fileInfo(file);
         if (!fileInfo.exists()) {
@@ -543,8 +544,6 @@ bool OwncloudPropagator::localFileNameClash(const QString &relFile)
             re = (!equal && !cName.endsWith(relFile, Qt::CaseSensitive));
         }
 #elif defined(Q_OS_WIN)
-        const QString file(_localDir + relFile);
-        qCDebug(lcPropagator) << "CaseClashCheck for " << file;
         WIN32_FIND_DATA FindFileData;
         HANDLE hFind;
 
