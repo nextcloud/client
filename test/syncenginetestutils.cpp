@@ -797,40 +797,44 @@ FakeQNAM::FakeQNAM(FileInfo initialRoot)
 
 QNetworkReply *FakeQNAM::createRequest(QNetworkAccessManager::Operation op, const QNetworkRequest &request, QIODevice *outgoingData)
 {
-    if (_override) {
-        if (auto reply = _override(op, request, outgoingData))
-            return reply;
-    }
-    const QString fileName = getFilePathFromUrl(request.url());
-    Q_ASSERT(!fileName.isNull());
-    if (_errorPaths.contains(fileName))
-        return new FakeErrorReply { op, request, this, _errorPaths[fileName] };
-
-    bool isUpload = request.url().path().startsWith(sUploadUrl.path());
-    FileInfo &info = isUpload ? _uploadFileInfo : _remoteRootFileInfo;
-
+    QNetworkReply *reply = nullptr;
     auto newRequest = request;
     newRequest.setRawHeader("X-Request-ID", OCC::AccessManager::generateRequestId());
-    auto verb = request.attribute(QNetworkRequest::CustomVerbAttribute);
-    FakeReply *reply = nullptr;
-    if (verb == QLatin1String("PROPFIND"))
-        // Ignore outgoingData always returning somethign good enough, works for now.
-        reply = new FakePropfindReply { info, op, newRequest, this };
-    else if (verb == QLatin1String("GET") || op == QNetworkAccessManager::GetOperation)
-        reply = new FakeGetReply { info, op, newRequest, this };
-    else if (verb == QLatin1String("PUT") || op == QNetworkAccessManager::PutOperation)
-        reply = new FakePutReply { info, op, newRequest, outgoingData->readAll(), this };
-    else if (verb == QLatin1String("MKCOL"))
-        reply = new FakeMkcolReply { info, op, newRequest, this };
-    else if (verb == QLatin1String("DELETE") || op == QNetworkAccessManager::DeleteOperation)
-        reply = new FakeDeleteReply { info, op, newRequest, this };
-    else if (verb == QLatin1String("MOVE") && !isUpload)
-        reply = new FakeMoveReply { info, op, newRequest, this };
-    else if (verb == QLatin1String("MOVE") && isUpload)
-        reply = new FakeChunkMoveReply { info, _remoteRootFileInfo, op, newRequest, this };
-    else {
-        qDebug() << verb << outgoingData;
-        Q_UNREACHABLE();
+    if (_override) {
+        if (auto _reply = _override(op, newRequest, outgoingData)) {
+            reply = _reply;
+        }
+    }
+    if (!reply) {
+        const QString fileName = getFilePathFromUrl(newRequest.url());
+        Q_ASSERT(!fileName.isNull());
+        if (_errorPaths.contains(fileName)) {
+            reply = new FakeErrorReply { op, newRequest, this, _errorPaths[fileName] };
+        }
+    }
+    if (!reply) {        const bool isUpload = newRequest.url().path().startsWith(sUploadUrl.path());
+        FileInfo &info = isUpload ? _uploadFileInfo : _remoteRootFileInfo;
+
+        auto verb = newRequest.attribute(QNetworkRequest::CustomVerbAttribute);
+        if (verb == QLatin1String("PROPFIND"))
+            // Ignore outgoingData always returning somethign good enough, works for now.
+            reply = new FakePropfindReply { info, op, newRequest, this };
+        else if (verb == QLatin1String("GET") || op == QNetworkAccessManager::GetOperation)
+            reply = new FakeGetReply { info, op, newRequest, this };
+        else if (verb == QLatin1String("PUT") || op == QNetworkAccessManager::PutOperation)
+            reply = new FakePutReply { info, op, newRequest, outgoingData->readAll(), this };
+        else if (verb == QLatin1String("MKCOL"))
+            reply = new FakeMkcolReply { info, op, newRequest, this };
+        else if (verb == QLatin1String("DELETE") || op == QNetworkAccessManager::DeleteOperation)
+            reply = new FakeDeleteReply { info, op, newRequest, this };
+        else if (verb == QLatin1String("MOVE") && !isUpload)
+            reply = new FakeMoveReply { info, op, newRequest, this };
+        else if (verb == QLatin1String("MOVE") && isUpload)
+            reply = new FakeChunkMoveReply { info, _remoteRootFileInfo, op, newRequest, this };
+        else {
+            qDebug() << verb << outgoingData;
+            Q_UNREACHABLE();
+        }
     }
     OCC::HttpLogger::logRequest(reply, op, outgoingData);
     return reply;
