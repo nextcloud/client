@@ -104,12 +104,6 @@ public:
     explicit SqlQuery(SqlDatabase &db);
     explicit SqlQuery(const QByteArray &sql, SqlDatabase &db);
     /**
-     * Prepare the SqlQuery if it was not prepared yet.
-     * Otherwise, clear the results and the bindings.
-     * return false if there is an error
-     */
-    bool initOrReset(const QByteArray &sql, SqlDatabase &db);
-    /**
      * Prepare the SqlQuery.
      * If the query was already prepared, this will first call finish(), and re-prepare it.
      * This function must only be used if the constructor was setting a SqlDatabase
@@ -174,8 +168,42 @@ private:
     QByteArray _sql;
 
     friend class SqlDatabase;
+    friend class PreparedSqlQueryRAII;
 };
 
+class OCSYNC_EXPORT PreparedSqlQueryRAII
+{
+public:
+    /**
+     * Simple Guard which allow reuse of prepared querys.
+     * The queries are reset in the destructor to prevent wal locks
+     */
+    PreparedSqlQueryRAII(SqlQuery *query);
+    /**
+     * Prepare the SqlQuery if it was not prepared yet.
+     */
+    PreparedSqlQueryRAII(SqlQuery *query, const QByteArray &sql, SqlDatabase &db);
+    ~PreparedSqlQueryRAII();
+
+    explicit operator bool() const { return _ok; }
+
+    SqlQuery *operator->() const
+    {
+        Q_ASSERT(_ok);
+        return _query;
+    }
+
+    SqlQuery &operator*() const &
+    {
+        Q_ASSERT(_ok);
+        return *_query;
+    }
+
+private:
+    SqlQuery *const _query;
+    bool _ok = true;
+    Q_DISABLE_COPY(PreparedSqlQueryRAII);
+};
 } // namespace OCC
 
 #endif // OWNSQL_H

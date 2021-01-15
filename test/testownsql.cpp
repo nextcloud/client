@@ -137,7 +137,7 @@ private slots:
         SqlQuery q3("SELECT * FROM addresses", _db);
         SqlQuery q4;
         SqlQuery q5;
-        q5.initOrReset("SELECT * FROM addresses", _db);
+        PreparedSqlQueryRAII testQuery(&q5, "SELECT * FROM addresses", _db);
         db.reset();
     }
 
