@@ -161,10 +161,10 @@ public:
     const QByteArray &lastQuery() const;
     int numRowsAffected();
     void reset_and_clear_bindings();
-    void finish();
 
 private:
     void bindValueInternal(int pos, const QVariant &value);
+    void finish();
 
     SqlDatabase *_sqldb = nullptr;
     sqlite3 *_db = nullptr;
@@ -172,6 +172,8 @@ private:
     QString _error;
     int _errId;
     QByteArray _sql;
+
+    friend class SqlDatabase;
 };
 
 } // namespace OCC

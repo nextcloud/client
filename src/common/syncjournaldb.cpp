@@ -396,10 +396,7 @@ bool SyncJournalDb::checkConnect()
             && createQuery.errorId() == SQLITE_IOERR
             && sqlite3_extended_errcode(_db.sqliteDb()) == SQLITE_IOERR_SHMMAP) {
             qCWarning(lcDb) << "IO error SHMMAP on table creation, attempting with DELETE journal mode";
-
             _journalMode = "DELETE";
-            createQuery.finish();
-            pragma1.finish();
             commitTransaction();
             _db.close();
             return checkConnect();
@@ -1864,8 +1861,6 @@ QVector<SyncJournalDb::PollInfo> SyncJournalDb::getPollInfos()
         info._url = query.stringValue(3);
         res.append(info);
     }
-
-    query.finish();
     return res;
 }
 
