@@ -133,6 +133,9 @@ namespace Utility {
     inline bool isLinux(); // use with care
     inline bool isBSD(); // use with care, does not match OS X
 
+    // convenience variable-safe QT_DEBUG passthrough
+    inline bool isDebugBuild();
+
     OCSYNC_EXPORT QString platformName();
     // crash helper for --debug
     OCSYNC_EXPORT void crash();
@@ -309,6 +312,16 @@ inline bool Utility::isLinux()
 inline bool Utility::isBSD()
 {
 #if defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
+    return true;
+#else
+    return false;
+#endif
+}
+
+
+inline bool Utility::isDebugBuild()
+{
+#ifdef QT_DEBUG
     return true;
 #else
     return false;
