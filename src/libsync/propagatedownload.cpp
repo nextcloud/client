@@ -62,9 +62,9 @@ QString OWNCLOUDSYNC_EXPORT createDownloadTmpFileName(const QString &previous)
     int overhead = 1 + 1 + 2 + 8; // slash dot dot-tilde ffffffff"
     int spaceForFileName = qMin(254, tmpFileName.length() + overhead) - overhead;
     if (tmpPath.length() > 0) {
-        return tmpPath + '/' + '.' + tmpFileName.left(spaceForFileName) + ".~" + (QString::number(uint(qrand() % 0xFFFFFFFF), 16));
+        return tmpPath + '/' + '.' + tmpFileName.left(spaceForFileName) + ".~" + (QString::number(uint((int) Utility::seededRandom.generate() % 0xFFFFFFFF), 16));
     } else {
-        return '.' + tmpFileName.left(spaceForFileName) + ".~" + (QString::number(uint(qrand() % 0xFFFFFFFF), 16));
+        return '.' + tmpFileName.left(spaceForFileName) + ".~" + (QString::number(uint((int) Utility::seededRandom.generate() % 0xFFFFFFFF), 16));
     }
 }
 

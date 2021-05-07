@@ -63,14 +63,13 @@ Q_LOGGING_CATEGORY(lcUtility, "nextcloud.sync.utility", QtInfoMsg)
 bool Utility::writeRandomFile(const QString &fname, int size)
 {
     int maxSize = 10 * 10 * 1024;
-    qsrand(QDateTime::currentMSecsSinceEpoch());
 
     if (size == -1)
-        size = qrand() % maxSize;
+        size = (int) seededRandom.generate() % maxSize;
 
     QString randString;
     for (int i = 0; i < size; i++) {
-        int r = qrand() % 128;
+        int r = (int) seededRandom.generate() % 128;
         randString.append(QChar(r));
     }
 

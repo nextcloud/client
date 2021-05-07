@@ -28,6 +28,7 @@
 #include <QElapsedTimer>
 #include <QLoggingCategory>
 #include <QMap>
+#include <QRandomGenerator>
 #include <QUrl>
 #include <QUrlQuery>
 #include <functional>
@@ -71,6 +72,8 @@ namespace Utility {
     OCSYNC_EXPORT void setLaunchOnStartup(const QString &appName, const QString &guiName, bool launch);
     OCSYNC_EXPORT uint convertSizeToUint(size_t &convertVar);
     OCSYNC_EXPORT int convertSizeToInt(size_t &convertVar);
+
+    OCSYNC_EXPORT QRandomGenerator seededRandom = QRandomGenerator(QDateTime::currentMSecsSinceEpoch());
 
 #ifdef Q_OS_WIN
     OCSYNC_EXPORT DWORD convertSizeToDWORD(size_t &convertVar);

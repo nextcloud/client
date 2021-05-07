@@ -15,7 +15,7 @@
  */
 
 #include <iostream>
-#include <random>
+// #include <QRandomGenerator>
 #include <qcoreapplication.h>
 #include <QStringList>
 #include <QUrl>
@@ -320,7 +320,7 @@ int main(int argc, char **argv)
     qputenv("OPENSSL_CONF", opensslConf.toLocal8Bit());
 #endif
 
-    qsrand(std::random_device()());
+    // QRandomGenerator randGen = QRandomGenerator(std::random_device()());
 
     CmdOptions options;
     options.silent = false;

@@ -31,6 +31,7 @@
 #include <QJsonArray>
 #include <QNetworkRequest>
 #include <QBuffer>
+#include <QRandomGenerator>
 
 namespace OCC {
 
@@ -42,7 +43,7 @@ AccountState::AccountState(AccountPtr account)
     , _state(AccountState::Disconnected)
     , _connectionStatus(ConnectionValidator::Undefined)
     , _waitingForNewCredentials(false)
-    , _maintenanceToConnectedDelay(60000 + (qrand() % (4 * 60000))) // 1-5min delay
+    , _maintenanceToConnectedDelay(60000 + ((int) QRandomGenerator::global()->generate() % (4 * 60000))) // 1-5min delay
     , _remoteWipe(new RemoteWipe(_account))
     , _userStatus(new UserStatus(this))
     , _isDesktopNotificationsAllowed(true)
