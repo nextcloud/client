@@ -263,6 +263,8 @@ bool OwncloudSetupPage::validatePage()
         stopSpinner();
         _checking = false;
         emit completeChanged();
+        // Cancel button is only shown on the first page
+        _ocWizard->setOption(QWizard::NoCancelButton);
         return true;
     }
 }

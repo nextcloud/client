@@ -121,6 +121,8 @@ void OwncloudHttpCredsPage::cleanupPage()
 {
     _ui.leUsername->clear();
     _ui.lePassword->clear();
+    // Cancel button is shown again if you go back to the first page
+    _ocWizard->setOption(QWizard::CancelButtonOnLeft);
 }
 
 bool OwncloudHttpCredsPage::validatePage()

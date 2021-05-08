@@ -18,6 +18,7 @@
 #include "configfile.h"
 #include "theme.h"
 #include "owncloudgui.h"
+#include "common/utility.h"
 
 #include "wizard/owncloudwizard.h"
 #include "wizard/welcomepage.h"
@@ -68,6 +69,27 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
     setPage(WizardCommon::Page_Result, _resultPage);
     setPage(WizardCommon::Page_WebView, _webViewPage);
 
+    // Add keyboard shortcut to allow the user to cancel wizard
+    auto *closeWindowAction = new QAction(this);
+    closeWindowAction->setShortcut(QKeySequence("Ctrl+W"));
+    connect(closeWindowAction, &QAction::triggered, this, &OwncloudWizard::reject);
+    addAction(closeWindowAction);
+
+    // Add keyboard shortcut to allow the user to quit
+    auto *quitAction = new QAction(this);
+    quitAction->setShortcut(QKeySequence("Ctrl+Q"));
+    connect(quitAction, &QAction::triggered, this, &QApplication::quit);
+    addAction(quitAction);
+
+    // Enable "Cancel" button
+    // (Will be re-disabled on second page of wizard)
+    // reject() is set to quit() if no accounts are set up
+    OwncloudWizard::setOption(QWizard::CancelButtonOnLeft);
+
+    if (AccountManager::instance()->accounts().isEmpty()) {
+        setButtonText(WizardButton::CancelButton, tr("Exit"));
+    }
+
     connect(this, &QDialog::finished, this, &OwncloudWizard::basicSetupFinished);
 
     // note: start Id is set by the calling class depending on if the
@@ -89,7 +111,6 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
     setWizardStyle(QWizard::ModernStyle);
     setOption(QWizard::NoBackButtonOnStartPage);
     setOption(QWizard::NoBackButtonOnLastPage);
-    setOption(QWizard::NoCancelButton);
     setButtonText(QWizard::CustomButton1, tr("Skip folders configuration"));
 
     // Change the next buttons size policy since we hide it on the
@@ -116,10 +137,7 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
 void OwncloudWizard::centerWindow()
 {
     const auto wizardWindow = window();
-    const auto screen = QGuiApplication::screenAt(wizardWindow->pos())
-        ? QGuiApplication::screenAt(wizardWindow->pos())
-        : QGuiApplication::primaryScreen();
-    const auto screenGeometry = screen->geometry();
+    const auto screenGeometry = QGuiApplication::screenAt(wizardWindow->pos())->geometry();
     const auto windowGeometry = wizardWindow->geometry();
     const auto newWindowPosition = screenGeometry.center() - QPoint(windowGeometry.width() / 2, windowGeometry.height() / 2);
     wizardWindow->move(newWindowPosition);
@@ -153,6 +171,16 @@ int OwncloudWizard::calculateLongestSideOfWizardPages(const QList<QSize> &pageSi
     return std::accumulate(std::cbegin(pageSizes), std::cend(pageSizes), 0, [](int current, const QSize &size) {
         return std::max({ current, size.width(), size.height() });
     });
+}
+
+void OwncloudWizard::reject()
+{
+    QWizard::reject();
+
+    // Quit if the user has never completed the wizard
+    if (AccountManager::instance()->accounts().isEmpty()) {
+        QApplication::quit();
+    }
 }
 
 void OwncloudWizard::setAccount(AccountPtr account)

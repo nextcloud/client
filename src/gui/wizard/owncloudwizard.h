@@ -115,6 +115,7 @@ protected:
 
 private:
     void customizeStyle();
+    void reject() override;
     void adjustWizardSize();
     int calculateLongestSideOfWizardPages(const QList<QSize> &pageSizes) const;
     QList<QSize> calculateWizardPageSizes() const;
