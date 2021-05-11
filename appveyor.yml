@@ -4,7 +4,7 @@ branches:
   only:
     - master
 
-clone_depth: 50
+clone_depth: 1
 
 
 init:
@@ -41,10 +41,8 @@ test_script:
 
 environment:
     matrix:
-    - TARGET: windows-msvc2017_32-cl
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    - TARGET: windows-msvc2017_64-cl
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - TARGET: windows-msvc2019_64-cl
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 artifacts:
   - path: binaries/*
