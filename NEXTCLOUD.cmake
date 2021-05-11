@@ -15,6 +15,32 @@ set( APPLICATION_VIRTUALFILE_SUFFIX "nextcloud" CACHE STRING "Virtual file suffi
 set( LINUX_PACKAGE_SHORTNAME "nextcloud" )
 set( LINUX_APPLICATION_ID "${APPLICATION_REV_DOMAIN}.${LINUX_PACKAGE_SHORTNAME}")
 
+if (NOT AD_HOC_NAME_SUFFIX)
+    if (QT_DEBUG)
+        set(AD_HOC_NAME_SUFFIX " Debug")
+        message(STATUS "QT_DEBUG is set to ${QT_DEBUG}, with no AD_HOC_NAME_SUFFIX, so AD_HOC_NAME_SUFFIX has been set to \"${AD_HOC_NAME_SUFFIX}\" by default. Set AD_HOC_NAME_SUFFIX to NO_SUFFIX to override.")
+    else()
+        set(AD_HOC_NAME_SUFFIX "NO_SUFFIX"
+            CACHE STRING
+            "Choose a suffix with which to append the application name, configuration directory, etc., in order to allow multiple builds to be tested separately and concurrently.
+            Characters other than a-z, A-Z, 0-9, \"_\", \".\", \"+\" and \"-\" will be stripped out where required by CMake.
+            Set to the empty string (\"\") or NO_SUFFIX to disable."
+            FORCE)
+    endif()
+endif ()
+
+if (NOT AD_HOC_NAME_SUFFIX STREQUAL "NO_SUFFIX")
+    message(STATUS "AD_HOC_NAME_SUFFIX is set to a value other than \"\". Name variables will be appended with safe variations of AD_HOC_NAME_SUFFIX value \"${AD_HOC_NAME_SUFFIX}\" to prevent conflicts.")
+    string(REGEX REPLACE [^a-zA-Z0-9\._+-] "" SUFFIX_STRIPPED "${AD_HOC_NAME_SUFFIX}")
+    string(TOLOWER ${SUFFIX_STRIPPED} SUFFIX_LOWER)
+    string(APPEND APPLICATION_NAME "${AD_HOC_NAME_SUFFIX}")
+    string(APPEND APPLICATION_SHORTNAME "${SUFFIX_STRIPPED}")
+    string(APPEND APPLICATION_EXECUTABLE "${SUFFIX_LOWER}")
+    string(APPEND APPLICATION_REV_DOMAIN "${SUFFIX_LOWER}")
+    string(APPEND LINUX_PACKAGE_SHORTNAME "${SUFFIX_LOWER}")
+    string(APPEND LINUX_APPLICATION_ID "${SUFFIX_LOWER}")
+endif()
+
 set( THEME_CLASS            "NextcloudTheme" )
 set( WIN_SETUP_BITMAP_PATH  "${CMAKE_SOURCE_DIR}/admin/win/nsi" )
 
