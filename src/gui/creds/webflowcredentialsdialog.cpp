@@ -58,6 +58,10 @@ WebFlowCredentialsDialog::WebFlowCredentialsDialog(Account *account, bool useFlo
     auto app = static_cast<Application *>(qApp);
     connect(app, &Application::isShowingSettingsDialog, this, &WebFlowCredentialsDialog::slotShowSettingsDialog);
 
+    // Delay between calls to ownCloudGui::raiseDialog, to not annoy the users while they're switching to the Settings dialog
+    _raiseDelayTimer.setInterval(1000);
+    _raiseDelayTimer.setSingleShot(true);
+
     _errorLabel = new QLabel();
     _errorLabel->hide();
     _containerLayout->addWidget(_errorLabel);
@@ -144,6 +148,11 @@ void WebFlowCredentialsDialog::customizeStyle()
 
 void WebFlowCredentialsDialog::slotShowSettingsDialog()
 {
+    if (_raiseDelayTimer.isActive())
+        return;
+
+    _raiseDelayTimer.start();
+
     // bring window to top but slightly delay, to avoid being hidden behind the SettingsDialog
     QTimer::singleShot(100, this, [this] {
         ownCloudGui::raiseDialog(this);
