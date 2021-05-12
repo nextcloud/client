@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>@APPLICATION_REV_DOMAIN@</id>
+  <name>@APPLICATION_NAME@ Desktop</name>
+  <name xml:lang="oc">@APPLICATION_NAME@ sincronizacion del client</name>
+  <name xml:lang="ar">@APPLICATION_NAME@ زبون مزامنة مكتبي</name>
+  <name xml:lang="bg_BG">@APPLICATION_NAME@ клиент десктоп синхронизация</name>
+  <name xml:lang="ca">Client de sincronització d'escriptori @APPLICATION_NAME@</name>
+  <name xml:lang="da">@APPLICATION_NAME@ skrivebordsklient til synk</name>
+  <name xml:lang="de">@APPLICATION_NAME@ Desktop-Synchronisationsclient</name>
+  <name xml:lang="ja_JP">@APPLICATION_NAME@ デスクトップ同期クライアント</name>
+  <name xml:lang="el">@APPLICATION_NAME@ συγχρονισμός επιφάνειας εργασίας πελάτη</name>
+  <name xml:lang="en_GB">@APPLICATION_NAME@ Desktop</name>
+  <name xml:lang="es">@APPLICATION_NAME@ cliente de sincronización de escritorio</name>
+  <name xml:lang="de_DE">@APPLICATION_NAME@ Desktop-Synchronisationsclient</name>
+  <name xml:lang="eu">@APPLICATION_NAME@ mahaigaineko sinkronizazio bezeroa</name>
+  <name xml:lang="fa">@APPLICATION_EXECUTABLE@ نسخه‌ی همسان سازی مشتری</name>
+  <name xml:lang="fr">Client de synchronisation @APPLICATION_NAME@</name>
+  <name xml:lang="gl">@APPLICATION_NAME@ cliente de sincronización para escritorio</name>
+  <name xml:lang="he">@APPLICATION_NAME@ לקוח סנכרון שולחן עבודה </name>
+  <name xml:lang="ia">@APPLICATION_NAME@ cliente de synchronisation pro scriptorio</name>
+  <name xml:lang="id">Klien sync desktop @APPLICATION_NAME@</name>
+  <name xml:lang="is">@APPLICATION_NAME@ skjáborðsforrit samstillingar</name>
+  <name xml:lang="it">Client di sincronizzazione del desktop di @APPLICATION_NAME@</name>
+  <name xml:lang="ko">@APPLICATION_NAME@ 데스크톱 동기화 클라이언트</name>
+  <name xml:lang="hu_HU">@APPLICATION_NAME@ asztali szinkr. kliens</name>
+  <name xml:lang="af_ZA">@APPLICATION_NAME@ werkskermsinchroniseerkliënt</name>
+  <name xml:lang="nl">@APPLICATION_NAME@ desktop sync client </name>
+  <name xml:lang="et_EE">@APPLICATION_NAME@ sünkroonimise klient töölauale</name>
+  <name xml:lang="pl">@APPLICATION_NAME@ klient synchronizacji dla komputerów stacjonarnych</name>
+  <name xml:lang="pt_BR">@APPLICATION_NAME@ cliente de sincronização de desktop</name>
+  <name xml:lang="cs_CZ">@APPLICATION_NAME@ počítačový synchronizační klient</name>
+  <name xml:lang="ru">Настольный клиент синхронизации @APPLICATION_NAME@</name>
+  <name xml:lang="sl">@APPLICATION_NAME@ ‒ Program za usklajevanje datotek z namizjem</name>
+  <name xml:lang="sq">Klient njëkohësimesh @APPLICATION_NAME@ për desktop</name>
+  <name xml:lang="fi_FI">@APPLICATION_NAME@ työpöytäsynkronointisovellus</name>
+  <name xml:lang="sv">@APPLICATION_NAME@ desktop synk-klient</name>
+  <name xml:lang="tr">@APPLICATION_NAME@ masaüstü eşitleme istemcisi</name>
+  <name xml:lang="uk">Настільний клієнт синхронізації @APPLICATION_NAME@</name>
+  <name xml:lang="ro">@APPLICATION_NAME@ client de sincronizare pe desktop</name>
+  <name xml:lang="zh_CN">@APPLICATION_NAME@ 桌面同步客户端</name>
+  <name xml:lang="zh_HK">@APPLICATION_NAME@ 桌面版同步客户端</name>
+  <name xml:lang="zh_TW">@APPLICATION_NAME@ 桌面同步客戶端</name>
+  <name xml:lang="es_AR">Cliente de sincronización para escritorio @APPLICATION_NAME@ </name>
+  <name xml:lang="lt_LT">@APPLICATION_NAME@ darbalaukio programa</name>
+  <name xml:lang="th_TH"> @APPLICATION_NAME@ ไคลเอนต์ประสานข้อมูลเดสก์ท็อป</name>
+  <name xml:lang="es_MX">Cliente de escritorio para  sincronziación de @APPLICATION_NAME@</name>
+  <name xml:lang="nb_NO">@APPLICATION_NAME@ skrivebordssynkroniseringsklient </name>
+  <name xml:lang="nn_NO">@APPLICATION_NAME@ klient for å synkronisera frå skrivebord</name>
+  <name xml:lang="pt_PT">@APPLICATION_NAME@ - Cliente de Sincronização para PC</name>
+  <name xml:lang="lb">@APPLICATION_NAME@ Desktop Sync Client</name>
+  <summary>@APPLICATION_NAME@ desktop synchronization client</summary>
+  <summary xml:lang="oc">@APPLICATION_NAME@ sincronizacion del client</summary>
+  <summary xml:lang="ar">@APPLICATION_NAME@ زبون مزامنة مكتبي</summary>
+  <summary xml:lang="bg_BG">@APPLICATION_NAME@ клиент за десктоп синхронизация</summary>
+  <summary xml:lang="ca">Client de sincronització d'escriptori @APPLICATION_NAME@</summary>
+  <summary xml:lang="da">@APPLICATION_NAME@ skrivebordsklient til synkronisering</summary>
+  <summary xml:lang="de">@APPLICATION_NAME@ Desktop-Synchronisationsclient</summary>
+  <summary xml:lang="ja_JP">@APPLICATION_NAME@ デスクトップ同期クライアント</summary>
+  <summary xml:lang="el">@APPLICATION_NAME@ συγχρονισμός επιφάνειας εργασίας πελάτη</summary>
+  <summary xml:lang="en_GB">@APPLICATION_NAME@ desktop synchronisation client</summary>
+  <summary xml:lang="es">@APPLICATION_NAME@ cliente de sincronización de escritorio</summary>
+  <summary xml:lang="de_DE">@APPLICATION_NAME@ Desktop-Synchronisationsclient</summary>
+  <summary xml:lang="eu">@APPLICATION_NAME@ mahaigaineko sinkronizazio bezeroa</summary>
+  <summary xml:lang="fr">Synchronisez vos dossiers avec un serveur @APPLICATION_NAME@</summary>
+  <summary xml:lang="gl">@APPLICATION_NAME@ cliente de sincronización para escritorio</summary>
+  <summary xml:lang="he">@APPLICATION_NAME@ לקוח סנכון שולחן עבודה</summary>
+  <summary xml:lang="ia">@APPLICATION_NAME@ cliente de synchronisation pro scriptorio</summary>
+  <summary xml:lang="id">Klien sinkronisasi desktop @APPLICATION_NAME@</summary>
+  <summary xml:lang="is">@APPLICATION_NAME@ skjáborðsforrit samstillingar</summary>
+  <summary xml:lang="it">Client di sincronizzazione del desktop di @APPLICATION_NAME@</summary>
+  <summary xml:lang="ko">@APPLICATION_NAME@ 데스크톱 동기화 클라이언트</summary>
+  <summary xml:lang="hu_HU">@APPLICATION_NAME@ asztali szinkronizációs kliens</summary>
+  <summary xml:lang="af_ZA">@APPLICATION_NAME@ werkskermsinchroniseerkliënt</summary>
+  <summary xml:lang="nl">@APPLICATION_NAME@ desktop synchronisatie client</summary>
+  <summary xml:lang="et_EE">@APPLICATION_NAME@ sünkroonimise klient töölauale</summary>
+  <summary xml:lang="pl">@APPLICATION_NAME@ klient synchronizacji dla komputerów stacjonarnych</summary>
+  <summary xml:lang="pt_BR">@APPLICATION_NAME@ cliente de sincronização do computador</summary>
+  <summary xml:lang="cs_CZ">@APPLICATION_NAME@ počítačový synchronizační klient</summary>
+  <summary xml:lang="ru">Настольный клиент синхронизации @APPLICATION_NAME@ </summary>
+  <summary xml:lang="sl">@APPLICATION_NAME@ ‒ Program za usklajevanje datotek z namizjem</summary>
+  <summary xml:lang="sq">Klient njëkohësimesh @APPLICATION_NAME@ për desktop</summary>
+  <summary xml:lang="fi_FI">@APPLICATION_NAME@ työpöytäsynkronointisovellus</summary>
+  <summary xml:lang="sv">@APPLICATION_NAME@ desktop synkroniseringsklient</summary>
+  <summary xml:lang="tr">@APPLICATION_NAME@ masaüstü eşitleme istemcisi</summary>
+  <summary xml:lang="uk">Настільний клієнт синхронізації @APPLICATION_NAME@</summary>
+  <summary xml:lang="ro">@APPLICATION_NAME@ client de sincronizare pe desktop</summary>
+  <summary xml:lang="zh_CN">@APPLICATION_NAME@ 桌面同步客户端</summary>
+  <summary xml:lang="zh_HK">@APPLICATION_NAME@ 桌面版同步客户端</summary>
+  <summary xml:lang="zh_TW">@APPLICATION_NAME@ 桌面同步客戶端</summary>
+  <summary xml:lang="es_AR">Cliente de sincronización para escritorio @APPLICATION_NAME@ </summary>
+  <summary xml:lang="lt_LT">@APPLICATION_NAME@ darbalaukio sinchronizavimo programa</summary>
+  <summary xml:lang="th_TH">@APPLICATION_NAME@ ไคลเอนต์ประสานข้อมูลเดสก์ท็อป</summary>
+  <summary xml:lang="es_MX">Cliente de escritorio para  sincronziación de @APPLICATION_NAME@</summary>
+  <summary xml:lang="nb_NO">@APPLICATION_NAME@ skrivebordssynkroniseringsklient</summary>
+  <summary xml:lang="nn_NO">@APPLICATION_NAME@ klient for å synkronisera frå skrivebord</summary>
+  <summary xml:lang="pt_PT">@APPLICATION_NAME@ - Cliente de Sincronização para PC</summary>
+  <summary xml:lang="lb">@APPLICATION_NAME@ Desktop Synchronisatioun Client</summary>
+  <description>
+    <p>The @APPLICATION_NAME@ desktop client allows you to keep one or more folders full of
+your photos, videos and documents synchronized with your server. Any file you
+add, modify or delete in the synced folders on your desktop or laptop will show
+up, change or disappear on the server and all other connected devices. Thanks
+to the client, you can work with your files even when you are not online!</p>
+  </description>
+  <languages>
+    <lang>en</lang>
+    <lang>oc</lang>
+    <lang>ar</lang>
+    <lang>bg_BG</lang>
+    <lang>ca</lang>
+    <lang>da</lang>
+    <lang>de</lang>
+    <lang>ja_JP</lang>
+    <lang>el</lang>
+    <lang>en_GB</lang>
+    <lang>es</lang>
+    <lang>de_DE</lang>
+    <lang>eu</lang>
+    <lang>fr</lang>
+    <lang>gl</lang>
+    <lang>he</lang>
+    <lang>ia</lang>
+    <lang>id</lang>
+    <lang>is</lang>
+    <lang>it</lang>
+    <lang>ko</lang>
+    <lang>hu_HU</lang>
+    <lang>af_ZA</lang>
+    <lang>nl</lang>
+    <lang>et_EE</lang>
+    <lang>pl</lang>
+    <lang>pt_BR</lang>
+    <lang>cs_CZ</lang>
+    <lang>ru</lang>
+    <lang>sl</lang>
+    <lang>sq</lang>
+    <lang>fi_FI</lang>
+    <lang>sv</lang>
+    <lang>tr</lang>
+    <lang>uk</lang>
+    <lang>ro</lang>
+    <lang>zh_CN</lang>
+    <lang>zh_HK</lang>
+    <lang>zh_TW</lang>
+    <lang>es_AR</lang>
+    <lang>lt_LT</lang>
+    <lang>th_TH</lang>
+    <lang>es_MX</lang>
+    <lang>nb_NO</lang>
+    <lang>nn_NO</lang>
+    <lang>pt_PT</lang>
+    <lang>lb</lang>
+  </languages>
+  <project_license>GPL-2.0+</project_license>
+  <metadata_license>CC0-1.0</metadata_license>
+  <launchable type="desktop-id">@APPLICATION_REV_DOMAIN@</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <caption>The options dialog</caption>
+      <image>https://nextcloud.com/wp-content/themes/next/assets/img/clients/desktop/linux.png?x16328</image>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://@APPLICATION_DOMAIN@/</url>
+  <releases>
+    <release date="2021-02-19" version="3.1.3"/>
+    <release date="2021-02-05" version="3.1.2"/>
+    <release date="2020-10-30" version="3.0.3"/>
+    <release date="2020-09-24" version="3.0.2"/>
+    <release date="2020-08-28" version="3.0.1"/>
+    <release date="2020-08-18" version="3.0.0"/>
+    <release date="2020-07-10" version="2.6.5"/>
+    <release date="2020-03-04" version="2.6.4"/>
+    <release date="2020-02-17" version="2.6.3"/>
+    <release date="2019-12-24" version="2.6.2"/>
+    <release date="2019-11-04" version="2.6.1"/>
+    <release date="2019-09-27" version="2.6.0"/>
+    <release date="2019-07-22" version="2.5.3"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

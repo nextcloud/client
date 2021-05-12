@@ -262,6 +262,7 @@ if(BUILD_TESTING)
 endif()
 
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+configure_file(metainfo.xml.in ${CMAKE_CURRENT_BINARY_DIR}/${APPLICATION_REV_DOMAIN}.metainfo.xml)
 configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 if(BUILD_OWNCLOUD_OSX_BUNDLE)
