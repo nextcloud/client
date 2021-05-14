@@ -1,4 +1,9 @@
 if(SPHINX_FOUND)
+    set(SPHINXOPTS )
+    set(PAPER )
+    set(PAPEROPT_a4 -D latex_paper_size=a4)
+    set(PAPEROPT_letter -D latex_paper_size=letter)
+    set(ALLSPHINXOPTS -d ${CMAKE_CURRENT_BINARY_DIR}/doctrees ${PAPEROPT_${PAPER}} ${SPHINXOPTS} ${CMAKE_CURRENT_SOURCE_DIR})
 
     # Sphinx cache with pickled ReST documents
     set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
@@ -16,7 +21,7 @@ if(SPHINX_FOUND)
     install(DIRECTORY ${SPHINX_PDF_DIR} DESTINATION ${APPLICATION_DOC_DIR} OPTIONAL)
     install(DIRECTORY ${SPHINX_QCH_DIR} DESTINATION ${APPLICATION_DOC_DIR} OPTIONAL)
 
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/conf.py" conf.py COPYONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in conf.py)
 
     if(WITH_DOC)
        add_custom_target(doc ALL DEPENDS doc-html COMMENT "Building documentation...")
@@ -70,12 +75,7 @@ if(SPHINX_FOUND)
                                 -D html_theme=owncloud_org
 				${CMAKE_CURRENT_SOURCE_DIR}
 				${SPHINX_HTML_DIR}/org )
-    add_custom_target( doc-html-com ${SPHINX_EXECUTABLE}
-	                        -q -c . -b html
-				-d ${SPHINX_CACHE_DIR}/html
-                                -D html_theme=owncloud_com
-				${CMAKE_CURRENT_SOURCE_DIR}
-				${SPHINX_HTML_DIR}/com )
+    add_custom_target(doc-html-com ${SPHINX_EXECUTABLE} -c ${CMAKE_CURRENT_BINARY_DIR} -b html -D html_theme='nextcloud_com' ${ALLSPHINXOPTS} ${SPHINX_HTML_DIR}/com)
 
     ## Building CHM files requires HTML Help Workshop. Since it requires wine
     ## with special dependencies, it's impossible to write a cmake check for it.

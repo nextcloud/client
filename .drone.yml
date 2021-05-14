@@ -139,11 +139,27 @@ kind: pipeline
 name: Documentation
 
 steps:
-- name: build
-  image: nextcloudci/documentation:documentation-5
+- name: cmake
+  image: nextcloudci/client-5.12:client-5.12-12
+  volumes:
+    - name: build
+      path: /drone/build
   commands:
-    - cd doc
-    - make html
+    - cd /drone/build
+    - cmake -G Ninja -DCMAKE_C_COMPILER=gcc-10 -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_BUILD_TYPE=Debug -DBUILD_UPDATER=ON -DBUILD_TESTING=1 -DSANITIZE_ADDRESS=ON ../src
+- name: build
+  image: nextcloudci/client-5.12:client-5.12-12
+  volumes:
+    - name: build
+      path: /drone/build
+  commands:
+    - cd /drone/build
+    - ninja doc-html-com
+
+volumes:
+- name: build
+  temp: {}
+
 trigger:
   branch:
     - master
