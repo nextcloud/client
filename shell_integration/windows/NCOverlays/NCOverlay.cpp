@@ -154,7 +154,7 @@ IFACEMETHODIMP NCOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pI
 
     if (GetModuleFileName(instanceHandle, pwszIconFile, cchMax) == 0) {
         HRESULT hResult = HRESULT_FROM_WIN32(GetLastError());
-        wcerr << L"IsOK? " << (hResult == S_OK) << L" with path " << pwszIconFile << L", index " << *pIndex << endl;
+        wcerr << L"IsOK? " << (hResult == S_OK) << L" with path " << pwszIconFile << L", index " << *pIndex; wcerr.flush();
         return hResult;
     }
 

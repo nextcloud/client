@@ -80,17 +80,17 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
 
         QTextStream ts(&iniFile);
         ts.setCodec("UTF-8");
-        ts << QLatin1String("[Desktop Entry]") << endl
-           << QLatin1String("Name=") << guiName << endl
-           << QLatin1String("GenericName=") << QLatin1String("File Synchronizer") << endl
-           << QLatin1String("Exec=\"") << executablePath << "\" --background" << endl
-           << QLatin1String("Terminal=") << "false" << endl
-           << QLatin1String("Icon=") << APPLICATION_ICON_NAME << endl
-           << QLatin1String("Categories=") << QLatin1String("Network") << endl
-           << QLatin1String("Type=") << QLatin1String("Application") << endl
-           << QLatin1String("StartupNotify=") << "false" << endl
-           << QLatin1String("X-GNOME-Autostart-enabled=") << "true" << endl
-           << QLatin1String("X-GNOME-Autostart-Delay=10") << endl;
+        ts << QLatin1String("[Desktop Entry]"); ts.flush();
+        ts << QLatin1String("Name=") << guiName; ts.flush();
+        ts << QLatin1String("GenericName=") << QLatin1String("File Synchronizer"); ts.flush();
+        ts << QLatin1String("Exec=\"") << executablePath << "\" --background"; ts.flush();
+        ts << QLatin1String("Terminal=") << "false"; ts.flush();
+        ts << QLatin1String("Icon=") << APPLICATION_ICON_NAME; ts.flush();
+        ts << QLatin1String("Categories=") << QLatin1String("Network"); ts.flush();
+        ts << QLatin1String("Type=") << QLatin1String("Application"); ts.flush();
+        ts << QLatin1String("StartupNotify=") << "false"; ts.flush();
+        ts << QLatin1String("X-GNOME-Autostart-enabled=") << "true"; ts.flush();
+        ts << QLatin1String("X-GNOME-Autostart-Delay=10"); ts.flush();
     } else {
         if (!QFile::remove(desktopFileLocation)) {
             qCWarning(lcUtility) << "Could not remove autostart desktop file";

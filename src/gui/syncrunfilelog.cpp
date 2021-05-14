@@ -80,12 +80,12 @@ void SyncRunFileLog::start(const QString &folderPath)
 
 
     if (!exists) {
-        _out << folderPath << endl;
+        _out << folderPath; _out.flush();
         // We are creating a new file, add the note.
         _out << "# timestamp | duration | file | instruction | dir | modtime | etag | "
                 "size | fileId | status | errorString | http result code | "
-                "other size | other modtime | X-Request-ID"
-             << endl;
+                "other size | other modtime | X-Request-ID";
+        _out.flush();
 
         FileSystem::setFileHidden(filename, true);
     }
@@ -93,7 +93,7 @@ void SyncRunFileLog::start(const QString &folderPath)
 
     _totalDuration.start();
     _lapDuration.start();
-    _out << "#=#=#=# Syncrun started " << dateTimeStr(QDateTime::currentDateTimeUtc()) << endl;
+    _out << "#=#=#=# Syncrun started " << dateTimeStr(QDateTime::currentDateTimeUtc()); _out.flush();
 }
 void SyncRunFileLog::logItem(const SyncFileItem &item)
 {
@@ -131,21 +131,21 @@ void SyncRunFileLog::logItem(const SyncFileItem &item)
     _out << QString::number(item._previousModtime) << L;
     _out << item._requestId << L;
 
-    _out << endl;
+    _out.flush();
 }
 
 void SyncRunFileLog::logLap(const QString &name)
 {
     _out << "#=#=#=#=# " << name << " " << dateTimeStr(QDateTime::currentDateTimeUtc())
          << " (last step: " << _lapDuration.restart() << " msec"
-         << ", total: " << _totalDuration.elapsed() << " msec)" << endl;
+         << ", total: " << _totalDuration.elapsed() << " msec)"; _out.flush();
 }
 
 void SyncRunFileLog::finish()
 {
     _out << "#=#=#=# Syncrun finished " << dateTimeStr(QDateTime::currentDateTimeUtc())
          << " (last step: " << _lapDuration.elapsed() << " msec"
-         << ", total: " << _totalDuration.elapsed() << " msec)" << endl;
+         << ", total: " << _totalDuration.elapsed() << " msec)"; _out.flush();
     _file->close();
 }
 }

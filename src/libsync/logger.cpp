@@ -136,7 +136,7 @@ void Logger::doLog(const QString &msg)
     {
         QMutexLocker lock(&_mutex);
         if (_logstream) {
-            (*_logstream) << msg << endl;
+            (*_logstream) << msg << "\n";
             if (_doFileFlush)
                 _logstream->flush();
         }

@@ -656,16 +656,13 @@ void Application::showHelp()
     QTextStream stream(&helpText);
     stream << _theme->appName()
            << QLatin1String(" version ")
-           << _theme->version() << endl;
+           << _theme->version(); stream.flush();
 
-    stream << QLatin1String("File synchronisation desktop utility.") << endl
-           << endl
-           << QLatin1String(optionsC);
+    stream << QLatin1String("File synchronisation desktop utility."); stream.flush();
+    stream << QLatin1String(optionsC);
 
     if (_theme->appName() == QLatin1String("ownCloud"))
-        stream << endl
-               << "For more information, see http://www.owncloud.org" << endl
-               << endl;
+        stream << "For more information, see http://www.owncloud.org"; stream.flush();
 
     displayHelpText(helpText);
 }
@@ -678,8 +675,8 @@ void Application::showVersion()
 void Application::showHint(std::string errorHint)
 {
     static QString binName = QFileInfo(QCoreApplication::applicationFilePath()).fileName();
-    std::cerr << errorHint << std::endl;
-    std::cerr << "Try '" << binName.toStdString() << " --help' for more information" << std::endl;
+    std::cerr << errorHint; std::cerr.flush();
+    std::cerr << "Try '" << binName.toStdString() << " --help' for more information"; std::cerr.flush();
     std::exit(1);
 }
 

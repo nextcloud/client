@@ -170,33 +170,33 @@ void help()
 {
     const char *binaryName = APPLICATION_EXECUTABLE "cmd";
 
-    std::cout << binaryName << " - command line " APPLICATION_NAME " client tool" << std::endl;
-    std::cout << "" << std::endl;
-    std::cout << "Usage: " << binaryName << " [OPTION] <source_dir> <server_url>" << std::endl;
-    std::cout << "" << std::endl;
-    std::cout << "A proxy can either be set manually using --httpproxy." << std::endl;
-    std::cout << "Otherwise, the setting from a configured sync client will be used." << std::endl;
-    std::cout << std::endl;
-    std::cout << "Options:" << std::endl;
-    std::cout << "  --silent, -s           Don't be so verbose" << std::endl;
-    std::cout << "  --httpproxy [proxy]    Specify a http proxy to use." << std::endl;
-    std::cout << "                         Proxy is http://server:port" << std::endl;
-    std::cout << "  --trust                Trust the SSL certification." << std::endl;
-    std::cout << "  --exclude [file]       Exclude list file" << std::endl;
-    std::cout << "  --unsyncedfolders [file]    File containing the list of unsynced remote folders (selective sync)" << std::endl;
-    std::cout << "  --user, -u [name]      Use [name] as the login name" << std::endl;
-    std::cout << "  --password, -p [pass]  Use [pass] as password" << std::endl;
-    std::cout << "  -n                     Use netrc (5) for login" << std::endl;
-    std::cout << "  --non-interactive      Do not block execution with interaction" << std::endl;
-    std::cout << "  --nonshib              Use Non Shibboleth WebDAV authentication" << std::endl;
-    std::cout << "  --davpath [path]       Custom themed dav path, overrides --nonshib" << std::endl;
-    std::cout << "  --max-sync-retries [n] Retries maximum n times (default to 3)" << std::endl;
-    std::cout << "  --uplimit [n]          Limit the upload speed of files to n KB/s" << std::endl;
-    std::cout << "  --downlimit [n]        Limit the download speed of files to n KB/s" << std::endl;
-    std::cout << "  -h                     Sync hidden files, do not ignore them" << std::endl;
-    std::cout << "  --version, -v          Display version and exit" << std::endl;
-    std::cout << "  --logdebug             More verbose logging" << std::endl;
-    std::cout << "" << std::endl;
+    std::cout << binaryName << " - command line " APPLICATION_NAME " client tool"; std::cout.flush();
+    std::cout << ""; std::cout.flush();
+    std::cout << "Usage: " << binaryName << " [OPTION] <source_dir> <server_url>"; std::cout.flush();
+    std::cout << ""; std::cout.flush();
+    std::cout << "A proxy can either be set manually using --httpproxy."; std::cout.flush();
+    std::cout << "Otherwise, the setting from a configured sync client will be used."; std::cout.flush();
+    std::cout << ""; std::cout.flush();
+    std::cout << "Options:"; std::cout.flush();
+    std::cout << "  --silent, -s           Don't be so verbose"; std::cout.flush();
+    std::cout << "  --httpproxy [proxy]    Specify a http proxy to use."; std::cout.flush();
+    std::cout << "                         Proxy is http://server:port"; std::cout.flush();
+    std::cout << "  --trust                Trust the SSL certification."; std::cout.flush();
+    std::cout << "  --exclude [file]       Exclude list file"; std::cout.flush();
+    std::cout << "  --unsyncedfolders [file]    File containing the list of unsynced remote folders (selective sync)"; std::cout.flush();
+    std::cout << "  --user, -u [name]      Use [name] as the login name"; std::cout.flush();
+    std::cout << "  --password, -p [pass]  Use [pass] as password"; std::cout.flush();
+    std::cout << "  -n                     Use netrc (5) for login"; std::cout.flush();
+    std::cout << "  --non-interactive      Do not block execution with interaction"; std::cout.flush();
+    std::cout << "  --nonshib              Use Non Shibboleth WebDAV authentication"; std::cout.flush();
+    std::cout << "  --davpath [path]       Custom themed dav path, overrides --nonshib"; std::cout.flush();
+    std::cout << "  --max-sync-retries [n] Retries maximum n times (default to 3)"; std::cout.flush();
+    std::cout << "  --uplimit [n]          Limit the upload speed of files to n KB/s"; std::cout.flush();
+    std::cout << "  --downlimit [n]        Limit the download speed of files to n KB/s"; std::cout.flush();
+    std::cout << "  -h                     Sync hidden files, do not ignore them"; std::cout.flush();
+    std::cout << "  --version, -v          Display version and exit"; std::cout.flush();
+    std::cout << "  --logdebug             More verbose logging"; std::cout.flush();
+    std::cout << ""; std::cout.flush();
     exit(0);
 }
 
@@ -230,7 +230,7 @@ void parseOptions(const QStringList &app_args, CmdOptions *options)
     }
     QFileInfo fi(options->source_dir);
     if (!fi.exists()) {
-        std::cerr << "Source dir '" << qPrintable(options->source_dir) << "' does not exist." << std::endl;
+        std::cerr << "Source dir '" << qPrintable(options->source_dir) << "' does not exist."; std::cerr.flush();
         exit(1);
     }
     options->source_dir = fi.absoluteFilePath();
