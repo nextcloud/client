@@ -55,7 +55,6 @@ AccountState::AccountState(AccountPtr account)
         this, &AccountState::slotCredentialsFetched);
     connect(account.data(), &Account::credentialsAsked,
         this, &AccountState::slotCredentialsAsked);
-
     connect(this, &AccountState::isConnectedChanged, [=]{
         // Get the Apps available on the server if we're now connected.
         if (isConnected()) {
@@ -107,6 +106,7 @@ void AccountState::setState(State state)
         if (_state == SignedOut) {
             _connectionStatus = ConnectionValidator::Undefined;
             _connectionErrors.clear();
+            _account->jobQueue()->clear();
         } else if (oldState == SignedOut && _state == Disconnected) {
             // If we stop being voluntarily signed-out, try to connect and
             // auth right now!
@@ -120,6 +120,7 @@ void AccountState::setState(State state)
         }
         if (oldState == Connected || _state == Connected) {
             emit isConnectedChanged();
+            _account->jobQueue()->setBlocked(false);
         }
     }
 
@@ -452,7 +453,7 @@ void AccountState::fetchNavigationApps(){
     job->getNavigationApps();
 }
 
-void AccountState::fetchUserStatus() 
+void AccountState::fetchUserStatus()
 {
     connect(_userStatus, &UserStatus::fetchUserStatusFinished, this, &AccountState::statusChanged);
     _userStatus->fetchUserStatus(_account);

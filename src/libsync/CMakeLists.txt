@@ -24,6 +24,7 @@ set(libsync_SRCS
     encryptfolderjob.cpp
     filesystem.cpp
     httplogger.cpp
+    jobqueue.cpp
     logger.cpp
     accessmanager.cpp
     configfile.cpp

@@ -35,6 +35,7 @@
 #include <memory>
 #include "capabilities.h"
 #include "clientsideencryption.h"
+#include "jobqueue.h"
 
 class QSettings;
 class QNetworkReply;
@@ -152,15 +153,6 @@ public:
         QNetworkRequest req = QNetworkRequest(),
         QIODevice *data = nullptr);
 
-    /** Create and start network job for a simple one-off request.
-     *
-     * More complicated requests typically create their own job types.
-     */
-    SimpleNetworkJob *sendRequest(const QByteArray &verb,
-        const QUrl &url,
-        QNetworkRequest req = QNetworkRequest(),
-        QIODevice *data = nullptr);
-
     /** The ssl configuration during the first connection */
     QSslConfiguration getOrCreateSslConfig();
     QSslConfiguration sslConfiguration() const { return _sslConfiguration; }
@@ -255,6 +247,8 @@ public:
     PushNotifications *pushNotifications() const;
     void setPushNotificationsReconnectInterval(int interval);
 
+    JobQueue *jobQueue();
+
 public slots:
     /// Used when forgetting credentials
     void clearQNAMCache();
@@ -330,10 +324,13 @@ private:
     static QString _configFileName;
 
     QString _davPath; // defaults to value from theme, might be overwritten in brandings
+
     ClientSideEncryption _e2e;
 
     /// Used in RemoteWipe
     bool _wroteAppPassword = false;
+
+    JobQueue _jobQueue;
 
     friend class AccountManager;
 

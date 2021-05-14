@@ -56,10 +56,6 @@ void MoveJob::start()
     } else {
         sendRequest("MOVE", makeDavUrl(path()), req);
     }
-
-    if (reply()->error() != QNetworkReply::NoError) {
-        qCWarning(lcPropagateRemoteMove) << " Network error: " << reply()->errorString();
-    }
     AbstractNetworkJob::start();
 }
 

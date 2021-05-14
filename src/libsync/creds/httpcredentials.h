@@ -108,8 +108,6 @@ public:
     // Whether we are using OAuth
     bool isUsingOAuth() const { return !_refreshToken.isNull(); }
 
-    bool retryIfNeeded(AbstractNetworkJob *) override;
-
 private Q_SLOTS:
     void slotAuthentication(QNetworkReply *, QAuthenticator *);
 

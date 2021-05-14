@@ -89,10 +89,6 @@ void PUTFileJob::start()
         sendRequest("PUT", makeDavUrl(path()), req, _device);
     }
 
-    if (reply()->error() != QNetworkReply::NoError) {
-        qCWarning(lcPutJob) << " Network error: " << reply()->errorString();
-    }
-
     connect(reply(), &QNetworkReply::uploadProgress, this, &PUTFileJob::uploadProgress);
     connect(this, &AbstractNetworkJob::networkActivity, account().data(), &Account::propagatorNetworkActivity);
     _requestTimer.start();

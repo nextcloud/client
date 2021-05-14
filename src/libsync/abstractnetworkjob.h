@@ -15,7 +15,13 @@
 
 #pragma once
 
+#include "accountfwd.h"
+#include "jobqueue.h"
+
+#include "common/asserts.h"
+
 #include "owncloudlib.h"
+
 #include <QObject>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -23,8 +29,6 @@
 #include <QElapsedTimer>
 #include <QDateTime>
 #include <QTimer>
-#include "accountfwd.h"
-#include "common/asserts.h"
 
 class QUrl;
 
@@ -50,7 +54,8 @@ public:
     void setPath(const QString &path);
     QString path() const { return _path; }
 
-    void setReply(QNetworkReply *reply);
+    QUrl url() { return _request.url(); }
+
     QNetworkReply *reply() const { return _reply; }
 
     void setIgnoreCredentialFailure(bool ignore);
@@ -94,9 +99,19 @@ public:
     /** Make a new request */
     void retry();
 
+    /** Abort the job due to an error */
+    void abort();
+
     /** static variable the HTTP timeout (in seconds). If set to 0, the default will be used
      */
     static int httpTimeout;
+
+    /** whether or noth this job should be restarted after authentication */
+    bool  isAuthenticationJob() const;
+    void  setAuthenticationJob(bool b);
+
+    /** How many times was that job retried */
+    int retryCount() const { return _retryCount; }
 
 public slots:
     void setTimeout(qint64 msec);
@@ -124,16 +139,11 @@ protected:
      *
      * Takes ownership of the requestBody (to allow redirects).
      */
-    QNetworkReply *sendRequest(const QByteArray &verb, const QUrl &url,
+    void sendRequest(const QByteArray &verb, const QUrl &url,
         QNetworkRequest req = QNetworkRequest(),
         QIODevice *requestBody = nullptr);
 
-    // sendRequest does not take a relative path instead of an url,
-    // but the old API allowed that. We have this undefined overload
-    // to help catch usage errors
-    QNetworkReply *sendRequest(const QByteArray &verb, const QString &relativePath,
-        QNetworkRequest req = QNetworkRequest(),
-        QIODevice *requestBody = nullptr);
+    void setReply(QNetworkReply *reply);
 
     /** Makes this job drive a pre-made QNetworkReply
      *
@@ -191,6 +201,8 @@ protected:
 private:
     QNetworkReply *addTimer(QNetworkReply *reply);
     bool _ignoreCredentialFailure;
+    QNetworkRequest _request;
+    QByteArray _verb;
     QPointer<QNetworkReply> _reply; // (QPointer because the NetworkManager may be destroyed before the jobs at exit)
     QString _path;
     QTimer _timer;
@@ -202,6 +214,9 @@ private:
     //
     // Reparented to the currently running QNetworkReply.
     QPointer<QIODevice> _requestBody;
+
+    bool _isAuthenticationJob = false;
+    int _retryCount = 0;
 };
 
 /**

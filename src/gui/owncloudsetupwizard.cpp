@@ -223,36 +223,36 @@ void OwncloudSetupWizard::slotFindServerBehindRedirect()
     AccountPtr account = _ocWizard->account();
 
     // Step 2: Resolve any permanent redirect chains on the base url
-    auto redirectCheckJob = account->sendRequest("GET", account->url());
+//    auto redirectCheckJob = account->sendRequest("GET", account->url());
 
-    // Use a significantly reduced timeout for this redirect check:
-    // the 5-minute default is inappropriate.
-    redirectCheckJob->setTimeout(qMin(2000ll, redirectCheckJob->timeoutMsec()));
+//    // Use a significantly reduced timeout for this redirect check:
+//    // the 5-minute default is inappropriate.
+//    redirectCheckJob->setTimeout(qMin(2000ll, redirectCheckJob->timeoutMsec()));
 
-    // Grab the chain of permanent redirects and adjust the account url
-    // accordingly
-    auto permanentRedirects = std::make_shared<int>(0);
-    connect(redirectCheckJob, &AbstractNetworkJob::redirected, this,
-        [permanentRedirects, account](QNetworkReply *reply, const QUrl &targetUrl, int count) {
-            int httpCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-            if (count == *permanentRedirects && (httpCode == 301 || httpCode == 308)) {
-                qCInfo(lcWizard) << account->url() << " was redirected to" << targetUrl;
-                account->setUrl(targetUrl);
-                *permanentRedirects += 1;
-            }
-        });
+//    // Grab the chain of permanent redirects and adjust the account url
+//    // accordingly
+//    auto permanentRedirects = std::make_shared<int>(0);
+//    connect(redirectCheckJob, &AbstractNetworkJob::redirected, this,
+//        [permanentRedirects, account](QNetworkReply *reply, const QUrl &targetUrl, int count) {
+//            int httpCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+//            if (count == *permanentRedirects && (httpCode == 301 || httpCode == 308)) {
+//                qCInfo(lcWizard) << account->url() << " was redirected to" << targetUrl;
+//                account->setUrl(targetUrl);
+//                *permanentRedirects += 1;
+//            }
+//        });
 
-    // Step 3: When done, start checking status.php.
-    connect(redirectCheckJob, &SimpleNetworkJob::finishedSignal, this,
-        [this, account]() {
-            auto *job = new CheckServerJob(account, this);
-            job->setIgnoreCredentialFailure(true);
-            connect(job, &CheckServerJob::instanceFound, this, &OwncloudSetupWizard::slotFoundServer);
-            connect(job, &CheckServerJob::instanceNotFound, this, &OwncloudSetupWizard::slotNoServerFound);
-            connect(job, &CheckServerJob::timeout, this, &OwncloudSetupWizard::slotNoServerFoundTimeout);
-            job->setTimeout((account->url().scheme() == "https") ? 30 * 1000 : 10 * 1000);
-            job->start();
-    });
+//    // Step 3: When done, start checking status.php.
+//    connect(redirectCheckJob, &SimpleNetworkJob::finishedSignal, this,
+//        [this, account]() {
+//            auto *job = new CheckServerJob(account, this);
+//            job->setIgnoreCredentialFailure(true);
+//            connect(job, &CheckServerJob::instanceFound, this, &OwncloudSetupWizard::slotFoundServer);
+//            connect(job, &CheckServerJob::instanceNotFound, this, &OwncloudSetupWizard::slotNoServerFound);
+//            connect(job, &CheckServerJob::timeout, this, &OwncloudSetupWizard::slotNoServerFoundTimeout);
+//            job->setTimeout((account->url().scheme() == "https") ? 30 * 1000 : 10 * 1000);
+//            job->start();
+//    });
 }
 
 void OwncloudSetupWizard::slotFoundServer(const QUrl &url, const QJsonObject &info)

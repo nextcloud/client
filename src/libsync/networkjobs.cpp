@@ -96,10 +96,6 @@ void RequestEtagJob::start()
     buf->open(QIODevice::ReadOnly);
     // assumes ownership
     sendRequest("PROPFIND", makeDavUrl(path()), req, buf);
-
-    if (reply()->error() != QNetworkReply::NoError) {
-        qCWarning(lcEtagJob) << "request network error: " << reply()->errorString();
-    }
     AbstractNetworkJob::start();
 }
 
@@ -891,9 +887,10 @@ bool JsonApiJob::finished()
 
 
 DetermineAuthTypeJob::DetermineAuthTypeJob(AccountPtr account, QObject *parent)
-    : QObject(parent)
-    , _account(account)
+    : AbstractNetworkJob(account, QString(), parent)
 {
+    setAuthenticationJob(true);
+    setIgnoreCredentialFailure(true);
 }
 
 void DetermineAuthTypeJob::start()
@@ -905,49 +902,51 @@ void DetermineAuthTypeJob::start()
     req.setAttribute(HttpCredentials::DontAddCredentialsAttribute, true);
     // Don't reuse previous auth credentials
     req.setAttribute(QNetworkRequest::AuthenticationReuseAttribute, QNetworkRequest::Manual);
+    sendRequest("PROPFIND", _account->davUrl(), req);
+    AbstractNetworkJob::start();
 
     // Start three parallel requests
 
     // 1. determines whether it's a basic auth server
-    auto get = _account->sendRequest("GET", _account->url(), req);
+    /*auto get =*/ sendRequest("GET", _account->url(), req);
 
     // 2. checks the HTTP auth method.
-    auto propfind = _account->sendRequest("PROPFIND", _account->davUrl(), req);
+    /*auto propfind =*/ sendRequest("PROPFIND", _account->davUrl(), req);
 
     // 3. Determines if the old flow has to be used (GS for now)
     auto oldFlowRequired = new JsonApiJob(_account, "/ocs/v2.php/cloud/capabilities", this);
 
-    get->setTimeout(30 * 1000);
-    propfind->setTimeout(30 * 1000);
-    oldFlowRequired->setTimeout(30 * 1000);
-    get->setIgnoreCredentialFailure(true);
-    propfind->setIgnoreCredentialFailure(true);
-    oldFlowRequired->setIgnoreCredentialFailure(true);
+//    get->setTimeout(30 * 1000);
+//    propfind->setTimeout(30 * 1000);
+//    oldFlowRequired->setTimeout(30 * 1000);
+//    get->setIgnoreCredentialFailure(true);
+//    propfind->setIgnoreCredentialFailure(true);
+//    oldFlowRequired->setIgnoreCredentialFailure(true);
 
-    connect(get, &SimpleNetworkJob::finishedSignal, this, [this, get]() {
-        if (get->reply()->error() == QNetworkReply::AuthenticationRequiredError) {
-            _resultGet = Basic;
-        } else {
-            _resultGet = LoginFlowV2;
-        }
-        _getDone = true;
-        checkAllDone();
-    });
-    connect(propfind, &SimpleNetworkJob::finishedSignal, this, [this](QNetworkReply *reply) {
-        auto authChallenge = reply->rawHeader("WWW-Authenticate").toLower();
-        if (authChallenge.contains("bearer ")) {
-            _resultPropfind = OAuth;
-        } else {
-            if (authChallenge.isEmpty()) {
-                qCWarning(lcDetermineAuthTypeJob) << "Did not receive WWW-Authenticate reply to auth-test PROPFIND";
-            } else {
-                qCWarning(lcDetermineAuthTypeJob) << "Unknown WWW-Authenticate reply to auth-test PROPFIND:" << authChallenge;
-            }
-            _resultPropfind = Basic;
-        }
-        _propfindDone = true;
-        checkAllDone();
-    });
+//    connect(get, &SimpleNetworkJob::finishedSignal, this, [this, get]() {
+//        if (get->reply()->error() == QNetworkReply::AuthenticationRequiredError) {
+//            _resultGet = Basic;
+//        } else {
+//            _resultGet = LoginFlowV2;
+//        }
+//        _getDone = true;
+//        checkAllDone();
+//    });
+//    connect(propfind, &SimpleNetworkJob::finishedSignal, this, [this](QNetworkReply *reply) {
+//        auto authChallenge = reply->rawHeader("WWW-Authenticate").toLower();
+//        if (authChallenge.contains("bearer ")) {
+//            _resultPropfind = OAuth;
+//        } else {
+//            if (authChallenge.isEmpty()) {
+//                qCWarning(lcDetermineAuthTypeJob) << "Did not receive WWW-Authenticate reply to auth-test PROPFIND";
+//            } else {
+//                qCWarning(lcDetermineAuthTypeJob) << "Unknown WWW-Authenticate reply to auth-test PROPFIND:" << authChallenge;
+//            }
+//            _resultPropfind = Basic;
+//        }
+//        _propfindDone = true;
+//        checkAllDone();
+//    });
     connect(oldFlowRequired, &JsonApiJob::jsonReceived, this, [this](const QJsonDocument &json, int statusCode) {
         if (statusCode == 200) {
             _resultOldFlow = LoginFlowV2;
@@ -1011,17 +1010,38 @@ void DetermineAuthTypeJob::checkAllDone()
     deleteLater();
 }
 
+bool DetermineAuthTypeJob::finished()
+{
+    auto authChallenge = reply()->rawHeader("WWW-Authenticate").toLower();
+    auto result = AuthType::Basic;
+    if (authChallenge.contains("bearer ")) {
+        result = AuthType::OAuth;
+    } else if (authChallenge.isEmpty()) {
+        qCWarning(lcDetermineAuthTypeJob) << "Did not receive WWW-Authenticate reply to auth-test PROPFIND";
+    }
+    qCInfo(lcDetermineAuthTypeJob) << "Auth type for" << _account->davUrl() << "is" << result;
+    emit this->authType(result);
+    return true;
+}
+
 SimpleNetworkJob::SimpleNetworkJob(AccountPtr account, QObject *parent)
     : AbstractNetworkJob(account, QString(), parent)
 {
 }
 
-QNetworkReply *SimpleNetworkJob::startRequest(const QByteArray &verb, const QUrl &url,
+void SimpleNetworkJob::start()
+{
+    sendRequest(_simpleVerb, _simpleUrl, _simpleRequest, _simpleBody);
+    AbstractNetworkJob::start();
+}
+
+void SimpleNetworkJob::prepareRequest(const QByteArray &verb, const QUrl &url,
     QNetworkRequest req, QIODevice *requestBody)
 {
-    auto reply = sendRequest(verb, url, req, requestBody);
-    start();
-    return reply;
+    _simpleVerb = verb;
+    _simpleUrl = url;
+    _simpleRequest = req;
+    _simpleBody = requestBody;
 }
 
 bool SimpleNetworkJob::finished()
