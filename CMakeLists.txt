@@ -46,9 +46,6 @@ if(NOT CRASHREPORTER_EXECUTABLE)
     set(CRASHREPORTER_EXECUTABLE "${APPLICATION_EXECUTABLE}_crash_reporter")
 endif()
 
-set(synclib_NAME "${APPLICATION_EXECUTABLE}sync")
-set(csync_NAME "${APPLICATION_EXECUTABLE}_csync")
-
 include(Warnings)
 
 include(${CMAKE_SOURCE_DIR}/VERSION.cmake)

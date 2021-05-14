@@ -1,14 +1,12 @@
 project(cmd)
 set(CMAKE_AUTOMOC TRUE)
 
-set(cmd_NAME ${APPLICATION_EXECUTABLE}cmd)
-
 add_library(cmdCore STATIC simplesslerrorhandler.cpp netrcparser.cpp)
 
 target_link_libraries(cmdCore
   PUBLIC
-  "${csync_NAME}"
-  "${synclib_NAME}"
+  nextcloud_csync
+  nextcloudsync
   Qt5::Core
   Qt5::Network
   )
@@ -27,23 +25,24 @@ if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
 endif()
 
 if(NOT BUILD_LIBRARIES_ONLY)
-    add_executable(${cmd_NAME} cmd.cpp)
-    set_target_properties(${cmd_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY} )
+    add_executable(nextcloudcmd cmd.cpp)
+    set_target_properties(nextcloudcmd PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+        RUNTIME_OUTPUT_NAME ${APPLICATION_EXECUTABLE}cmd)
 
-    target_link_libraries(${cmd_NAME} cmdCore)
+    target_link_libraries(nextcloudcmd cmdCore)
 endif()
 
 # OSX: Copy nextcloudcmd to app bundle, src/gui will run macdeployqt
 if(BUILD_OWNCLOUD_OSX_BUNDLE)
-    add_custom_command(TARGET ${cmd_NAME} POST_BUILD
+    add_custom_command(TARGET nextcloudcmd POST_BUILD
         COMMAND "cp"
-            "$<TARGET_FILE:${cmd_NAME}>"
+            "$<TARGET_FILE:nextcloudcmd>"
             "${BIN_OUTPUT_DIRECTORY}/${OWNCLOUD_OSX_BUNDLE}/Contents/MacOS"
         COMMENT "Copying nextcloudcmd..."
     )
 elseif(NOT BUILD_LIBRARIES_ONLY)
-    install(TARGETS ${cmd_NAME}
+    install(TARGETS nextcloudcmd
 	    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

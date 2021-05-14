@@ -103,19 +103,20 @@ set(creds_HEADERS
 IF (NOT APPLE)
     INSTALL(
         FILES ${owncloudsync_HEADERS}
-	DESTINATION ${INCLUDE_INSTALL_DIR}/${synclib_NAME}/mirall
+	DESTINATION ${INCLUDE_INSTALL_DIR}/nextcloudsync/mirall
     )
     INSTALL(
         FILES ${creds_HEADERS}
-	DESTINATION ${INCLUDE_INSTALL_DIR}/${synclib_NAME}/creds
+	DESTINATION ${INCLUDE_INSTALL_DIR}/nextcloudsync/creds
     )
 ENDIF(NOT APPLE)
 
 find_package(Qt5 REQUIRED COMPONENTS WebSockets)
-add_library(${synclib_NAME} SHARED ${libsync_SRCS})
-target_link_libraries(${synclib_NAME}
+add_library(nextcloudsync SHARED ${libsync_SRCS})
+set_target_properties(nextcloudsync PROPERTIES LIBRARY_OUTPUT_NAME ${APPLICATION_EXECUTABLE}sync)
+target_link_libraries(nextcloudsync
   PUBLIC
-  "${csync_NAME}"
+  nextcloud_csync
   OpenSSL::Crypto
   OpenSSL::SSL
   ${OS_SPECIFIC_LINK_LIBRARIES}
@@ -126,36 +127,36 @@ target_link_libraries(${synclib_NAME}
 
 if (NOT TOKEN_AUTH_ONLY)
     find_package(Qt5 REQUIRED COMPONENTS Widgets Svg)
-    target_link_libraries(${synclib_NAME} PUBLIC Qt5::Widgets Qt5::Svg qt5keychain)
+    target_link_libraries(nextcloudsync PUBLIC Qt5::Widgets Qt5::Svg qt5keychain)
 endif()
 
 if(Inotify_FOUND)
-    target_include_directories(${synclib_NAME} PRIVATE ${Inotify_INCLUDE_DIRS})
-    target_link_libraries(${synclib_NAME} PUBLIC ${Inotify_LIBRARIES})
+    target_include_directories(nextcloudsync PRIVATE ${Inotify_INCLUDE_DIRS})
+    target_link_libraries(nextcloudsync PUBLIC ${Inotify_LIBRARIES})
 endif()
 
-GENERATE_EXPORT_HEADER( ${synclib_NAME}
-	BASE_NAME ${synclib_NAME}
+GENERATE_EXPORT_HEADER( nextcloudsync
+	BASE_NAME nextcloudsync
 	EXPORT_MACRO_NAME OWNCLOUDSYNC_EXPORT
         EXPORT_FILE_NAME owncloudlib.h
 	STATIC_DEFINE OWNCLOUD_BUILT_AS_STATIC
 )
 
-target_include_directories(${synclib_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(nextcloudsync PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 
-set_target_properties( ${synclib_NAME}  PROPERTIES
+set_target_properties( nextcloudsync  PROPERTIES
 	VERSION ${MIRALL_VERSION}
 	SOVERSION ${MIRALL_SOVERSION}
 	RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
 if(NOT BUILD_OWNCLOUD_OSX_BUNDLE)
-    install(TARGETS ${synclib_NAME}
+    install(TARGETS nextcloudsync
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 else()
-    install(TARGETS ${synclib_NAME} DESTINATION ${OWNCLOUD_OSX_BUNDLE}/Contents/MacOS)
+    install(TARGETS nextcloudsync DESTINATION ${OWNCLOUD_OSX_BUNDLE}/Contents/MacOS)
 endif()
