@@ -471,7 +471,7 @@ OCC::Result<void, QString> OCC::CfApiWrapper::registerSyncRoot(const QString &pa
     const auto version = std::wstring(providerVersion.toStdWString().data());
 
     CF_SYNC_REGISTRATION info;
-    info.StructSize = sizeof(info) + (name.length() + version.length()) * sizeof(wchar_t);
+    info.StructSize = static_cast<ULONG>(sizeof(info) + (name.length() + version.length()) * sizeof(wchar_t));
     info.ProviderName = name.data();
     info.ProviderVersion = version.data();
     info.SyncRootIdentity = nullptr;
