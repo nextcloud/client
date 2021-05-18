@@ -213,10 +213,8 @@ set( final_src
     ${MIRALL_RC_SRC}
     ${client_SRCS}
     ${client_UI_SRCS}
-    ${guiMoc}
     ${client_I18N}
     ${3rdparty_SRC}
-    ${3rdparty_MOC}
 )
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} PREFIX "Source Files" FILES ${client_SRCS})
