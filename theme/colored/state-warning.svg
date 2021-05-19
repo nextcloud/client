@@ -1,1 +1,8 @@
-<svg width="16" height="16" version="1.1" viewBox="0 0 4.2333 4.2333" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(.87498 0 0 .87498 .26458 -255.9)"><circle cx="2.1167" cy="294.88" r="2.1167" fill="#e0d92d" stroke-width=".25066"/><path d="m2.1167 293.83v1.3156" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width=".52917"/><circle cx="2.1103" cy="295.95" r=".33073" fill="#fcffff"/></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 16 16"
+    xmlns="http://www.w3.org/2000/svg" version="1.1">
+    <circle cx="8" cy="8" r="7" style="fill:rgb(224,217,45);"/>
+    <path d="M8,4.518L8,8.869" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:1.75px;"/>
+    <circle cx="8" cy="11.529" r="1.094" style="fill:rgb(252,255,255);"/>
+</svg>

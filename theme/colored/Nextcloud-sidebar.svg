@@ -1,22 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 23.0.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1"
-	 id="svg2" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1024 1024"
-	 style="enable-background:new 0 0 1024 1024;" xml:space="preserve">
-<style type="text/css">
-	.st0{fill:#FFFFFF;}
-</style>
-<sodipodi:namedview  bordercolor="#666666" borderopacity="1" fit-margin-bottom="0" fit-margin-left="0" fit-margin-right="0" fit-margin-top="0" gridtolerance="10" guidetolerance="10" id="namedview8" inkscape:current-layer="svg2" inkscape:cx="-225.44227" inkscape:cy="284.0991" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-height="480" inkscape:window-width="640" inkscape:zoom="0.32" objecttolerance="10" pagecolor="#ffffff" showgrid="false">
-	</sodipodi:namedview>
-<g>
-</g>
-<path id="path6" inkscape:connector-curvature="0" class="st0" d="M513.6,266.9c-106.7,0-196.3,73.1-223.6,171.3
-	c-23.9-52.6-76.5-89.8-137.6-89.8C69.2,348.5,0.8,416.9,0.8,500c0,83.2,68.4,151.6,151.6,151.6c61.1,0,113.7-37.3,137.5-89.9
-	c27.4,98.3,117,171.4,223.7,171.4c106.1,0,195.2-72.3,223.2-169.7c24.3,51.6,76.1,88.2,136.5,88.2c83.2,0,151.6-68.4,151.6-151.6
-	c0-83.2-68.4-151.6-151.6-151.6c-60.4,0-112.2,36.6-136.5,88.2C708.8,339.2,619.7,266.9,513.6,266.9L513.6,266.9z M513.6,355.9
-	c80.1,0,144.1,64,144.1,144.1c0,80.1-64,144.2-144.1,144.1c-80.1,0-144.1-64-144.1-144.1C369.5,419.9,433.5,355.9,513.6,355.9
-	L513.6,355.9z M152.3,437.4c35.1,0,62.6,27.5,62.6,62.6c0,35.1-27.5,62.6-62.6,62.6c-35.1,0-62.6-27.5-62.6-62.6
-	C89.8,464.9,117.2,437.4,152.3,437.4L152.3,437.4z M873.2,437.4c35.1,0,62.6,27.5,62.6,62.6c0,35.1-27.5,62.6-62.6,62.6
-	c-35.1,0-62.6-27.5-62.6-62.6C810.6,464.9,838.1,437.4,873.2,437.4L873.2,437.4z"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1024 1024"
+	xmlns="http://www.w3.org/2000/svg" version="1.1">
+	<path d="M513.6,266.9C406.9,266.9 317.3,340 290,438.2C266.1,385.6 213.5,348.4 152.4,348.4C69.2,348.5 0.8,416.9 0.8,500C0.8,583.2 69.2,651.6 152.4,651.6C213.5,651.6 266.1,614.3 289.9,561.7C317.3,660 406.9,733.1 513.6,733.1C619.7,733.1 708.8,660.8 736.8,563.4C761.1,615 812.9,651.6 873.3,651.6C956.5,651.6 1024.9,583.2 1024.9,500C1024.9,416.8 956.5,348.4 873.3,348.4C812.9,348.4 761.1,385 736.8,436.6C708.8,339.2 619.7,266.9 513.6,266.9ZM513.6,355.9C593.7,355.9 657.7,419.9 657.7,500C657.7,580.1 593.7,644.2 513.6,644.1C433.5,644.1 369.5,580.1 369.5,500C369.5,419.9 433.5,355.9 513.6,355.9ZM152.3,437.4C187.4,437.4 214.9,464.9 214.9,500C214.9,535.1 187.4,562.6 152.3,562.6C117.2,562.6 89.7,535.1 89.7,500C89.8,464.9 117.2,437.4 152.3,437.4ZM873.2,437.4C908.3,437.4 935.8,464.9 935.8,500C935.8,535.1 908.3,562.6 873.2,562.6C838.1,562.6 810.6,535.1 810.6,500C810.6,464.9 838.1,437.4 873.2,437.4Z" style="fill:white;fill-rule:nonzero;"/>
 </svg>

@@ -1,1 +1,6 @@
-<svg width="24" height="24" enable-background="new 0 0 24 24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m8 16h8v-8h-8v8zm4-14c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10z" fill="#49B382"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg" version="1.1">
+    <circle cx="12" cy="12" r="10" style="fill:rgb(73,179,130);"/>
+</svg>

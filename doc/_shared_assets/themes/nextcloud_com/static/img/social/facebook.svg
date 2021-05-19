@@ -1,1 +1,7 @@
-<?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 512 512" height="512px" id="Layer_1" version="1.1" viewBox="0 0 512 512" width="512px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g><path clip-rule="evenodd" d="M256.23,512C396.81,512,512,396.81,512,256.23   C512,115.184,396.81,0,256.23,0C115.184,0,0,115.184,0,256.23C0,396.81,115.184,512,256.23,512L256.23,512z" fill="#3A5BA2" fill-rule="evenodd"/><path clip-rule="evenodd" d="M224.023,160.085c0-35.372,28.575-63.946,63.938-63.946h48.072   v63.946h-32.199c-8.608,0-15.873,7.257-15.873,15.873v32.192h48.072v63.938h-48.072v144.22h-63.938v-144.22h-48.065V208.15h48.065   V160.085z" fill="#FFFFFF" fill-rule="evenodd"/></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 512 512"
+    xmlns="http://www.w3.org/2000/svg" version="1.1">
+    <circle fill="rgb(58,91,162)" cx="256" cy="256" r="256" />
+    <path fill="white" d="M224.023,160.085C224.023,124.713 252.598,96.139 287.961,96.139L336.033,96.139L336.033,160.085L303.834,160.085C295.226,160.085 287.961,167.342 287.961,175.958L287.961,208.15L336.033,208.15L336.033,272.088L287.961,272.088L287.961,416.308L224.023,416.308L224.023,272.088L175.958,272.088L175.958,208.15L224.023,208.15L224.023,160.085Z" />
+</svg>
