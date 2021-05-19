@@ -31,7 +31,6 @@ class PropagateDownloadEncrypted;
 class OWNCLOUDSYNC_EXPORT GETFileJob : public AbstractNetworkJob
 {
     Q_OBJECT
-    QIODevice *_device;
     QMap<QByteArray, QByteArray> _headers;
     QString _errorString;
     QByteArray _expectedEtagForResume;
@@ -50,6 +49,9 @@ class OWNCLOUDSYNC_EXPORT GETFileJob : public AbstractNetworkJob
 
     /// Will be set to true once we've seen a 2xx response header
     bool _saveBodyToFile = false;
+
+protected:
+    QIODevice *_device;
 
 public:
     // DOES NOT take ownership of the device.
@@ -110,12 +112,47 @@ public:
     qint64 expectedContentLength() const { return _expectedContentLength; }
     void setExpectedContentLength(qint64 size) { _expectedContentLength = size; }
 
+protected:
+    virtual qint64 writeToDevice(const char *data, qint64 len);
+
 signals:
     void finishedSignal();
     void downloadProgress(qint64, qint64);
 private slots:
     void slotReadyRead();
     void slotMetaDataChanged();
+};
+
+/**
+ * @brief The GETFileJob class
+ * @ingroup libsync
+ */
+class GETEncryptedFileJob : public GETFileJob
+{
+    Q_OBJECT
+
+public:
+    // DOES NOT take ownership of the device.
+    explicit GETEncryptedFileJob(AccountPtr account, const QString &path, QIODevice *device,
+        const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
+        qint64 resumeStart, EncryptedFile encryptedInfo, qint64 totalSize, QObject *parent = nullptr);
+    explicit GETEncryptedFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
+        const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
+        qint64 resumeStart, EncryptedFile encryptedInfo, qint64 totalSize, QObject *parent = nullptr);
+    virtual ~GETEncryptedFileJob();
+
+protected:
+    virtual qint64 writeToDevice(const char *data, qint64 len);
+
+signals:
+    void decryptionFinishedSignal();
+
+private:
+    EncryptedFile _encryptedInfo;
+    QSharedPointer<EncryptionHelper::StreamingDecryptor> _decryptor;
+    qint64 _totalSize = 0;
+    qint64 _writtenSoFar = 0;
+    QBuffer _buffer;
 };
 
 /**

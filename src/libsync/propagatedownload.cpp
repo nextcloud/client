@@ -94,7 +94,7 @@ GETFileJob::GETFileJob(AccountPtr account, const QString &path, QIODevice *devic
     , _hasEmittedFinishedSignal(false)
     , _lastModified()
 {
-}
+ }
 
 GETFileJob::GETFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
     const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
@@ -291,6 +291,11 @@ qint64 GETFileJob::currentDownloadPosition()
     return _resumeStart;
 }
 
+qint64 GETFileJob::writeToDevice(const char *data, qint64 len)
+{
+    return _device->write(data, len);
+}
+
 void GETFileJob::slotReadyRead()
 {
     if (!reply())
@@ -322,7 +327,7 @@ void GETFileJob::slotReadyRead()
             return;
         }
 
-        qint64 w = _device->write(buffer.constData(), r);
+        qint64 w = writeToDevice(buffer.constData(), r);
         if (w != r) {
             _errorString = _device->errorString();
             _errorStatus = SyncFileItem::NormalError;
@@ -376,6 +381,46 @@ QString GETFileJob::errorString() const
         return _errorString;
     }
     return AbstractNetworkJob::errorString();
+}
+
+GETEncryptedFileJob::GETEncryptedFileJob(AccountPtr account, const QString &path, QIODevice *device,
+    const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
+    qint64 resumeStart, EncryptedFile encryptedInfo, qint64 totalSize, QObject *parent)
+    : GETFileJob(account, path, device, headers, expectedEtagForResume, resumeStart, parent),
+      _encryptedInfo(encryptedInfo),
+      _totalSize(totalSize)
+{
+    _decryptor.reset(new EncryptionHelper::StreamingDecryptor(_device, encryptedInfo.encryptionKey, encryptedInfo.initializationVector, totalSize));
+}
+
+GETEncryptedFileJob::GETEncryptedFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
+    const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
+    qint64 resumeStart, EncryptedFile encryptedInfo, qint64 totalSize, QObject *parent)
+    : GETFileJob(account, url, device, headers, expectedEtagForResume, resumeStart, parent),
+      _encryptedInfo(encryptedInfo),
+      _totalSize(totalSize)
+{
+    _decryptor.reset(new EncryptionHelper::StreamingDecryptor(_device, encryptedInfo.encryptionKey, encryptedInfo.initializationVector, totalSize));
+}
+
+GETEncryptedFileJob::~GETEncryptedFileJob()
+{
+}
+
+qint64 GETEncryptedFileJob::writeToDevice(const char *data, qint64 len)
+{
+    auto sizeWritten = _decryptor->chunkDecryption(data, len);
+
+    _writtenSoFar += sizeWritten;
+
+    qCCritical(lcPropagateDownload) << "sizeWritten" << sizeWritten << "len" << len << "_writtenSoFar" << _writtenSoFar;
+
+    if (sizeWritten != -1 && _decryptor->isFinished()) {
+        emit decryptionFinishedSignal();
+        deleteLater();
+    }
+
+    return len;
 }
 
 void PropagateDownloadFile::start()

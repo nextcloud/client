@@ -23,6 +23,10 @@ class ReadPasswordJob;
 
 namespace OCC {
 
+namespace {
+class CipherCtx;
+}
+
 QString baseUrl();
 
 namespace EncryptionHelper {
@@ -65,6 +69,30 @@ namespace EncryptionHelper {
 
     bool fileDecryption(const QByteArray &key, const QByteArray& iv,
                                QFile *input, QFile *output);
+
+    bool chunkDecryption(const QByteArray &key, const QByteArray& iv,
+                               const QByteArray &input, QByteArray &output, bool isLastChunk);
+
+    class StreamingDecryptor {
+    public:
+        StreamingDecryptor(QIODevice *device, const QByteArray &key, const QByteArray& iv, qint64 totalSize);
+        ~StreamingDecryptor();
+
+        qint64 chunkDecryption(const char *input, qint64 inputLen);
+
+        bool isInitialized() const;
+
+        bool isFinished() const;
+
+    private:
+        CipherCtx *_ctx;
+        bool _isInitialized = false;
+        qint64 _decryptedSoFar = 0;
+        qint64 _writtenSoFar = 0;
+        qint64 _totalSize = 0;
+        bool _isFinished = false;
+        QIODevice *_output = nullptr;
+    };
 }
 
 class OWNCLOUDSYNC_EXPORT ClientSideEncryption : public QObject {

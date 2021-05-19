@@ -1777,4 +1777,207 @@ bool EncryptionHelper::fileDecryption(const QByteArray &key, const QByteArray& i
     return true;
 }
 
+bool EncryptionHelper::chunkDecryption(const QByteArray &key, const QByteArray& iv,
+                           const QByteArray &input, QByteArray &output, bool isLastChunk)
+{
+    // Init
+    CipherCtx ctx;
+
+    /* Create and initialise the context */
+    if(!ctx) {
+        qCInfo(lcCse()) << "Could not create context";
+        return false;
+    }
+
+    /* Initialise the decryption operation. */
+    if(!EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), nullptr, nullptr, nullptr)) {
+        qCInfo(lcCse()) << "Could not init cipher";
+        return false;
+    }
+    EVP_CIPHER_CTX_set_padding(ctx, 0);
+
+    /* Set IV length. */
+    if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN,  iv.size(), nullptr)) {
+        qCInfo(lcCse()) << "Could not set iv length";
+        return false;
+    }
+
+    /* Initialise key and IV */
+    if(!EVP_DecryptInit_ex(ctx, nullptr, nullptr, (const unsigned char *) key.constData(), (const unsigned char *) iv.constData())) {
+        qCInfo(lcCse()) << "Could not set key and iv";
+        return false;
+    }
+
+    qint64 size = isLastChunk ? input.size() - 16 : input.size();
+
+    QByteArray out(1024 + 16 - 1, '\0');
+    int len = 0;
+
+    int inputPos = 0;
+
+    while(inputPos < size) {
+
+        auto toRead = size - inputPos;
+        if (toRead > 1024) {
+            toRead = 1024;
+        }
+
+        QByteArray data = QByteArray(input.data() + inputPos, toRead);
+
+        if (data.size() == 0) {
+            qCInfo(lcCse()) << "Could not read data from file";
+            return false;
+        }
+
+        if(!EVP_DecryptUpdate(ctx, unsignedData(out), &len, (unsigned char *)data.constData(), data.size())) {
+            qCInfo(lcCse()) << "Could not decrypt";
+            return false;
+        }
+
+        output.append(out);
+
+        inputPos += toRead;
+    }
+
+    if (isLastChunk) {
+        QByteArray tag = QByteArray(input.data() + inputPos, 16);
+
+        /* Set expected tag value. Works in OpenSSL 1.0.1d and later */
+        if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, tag.size(), (unsigned char *)tag.constData())) {
+            qCInfo(lcCse()) << "Could not set expected tag";
+            return false;
+        }
+
+        if(1 != EVP_DecryptFinal_ex(ctx, unsignedData(out), &len)) {
+            qCInfo(lcCse()) << "Could finalize decryption";
+            return false;
+        }
+        output.append(out);
+    }
+
+    return true;
 }
+
+    EncryptionHelper::StreamingDecryptor::StreamingDecryptor(QIODevice *device, const QByteArray &key, const QByteArray& iv, qint64 totalSize) : _totalSize(totalSize), _output(device)
+    {
+        _ctx = new CipherCtx();
+        _isInitialized = true;
+
+        if (_ctx) {
+            /* Initialise the decryption operation. */
+            if(!EVP_DecryptInit_ex(*_ctx, EVP_aes_128_gcm(), nullptr, nullptr, nullptr)) {
+                qCInfo(lcCse()) << "Could not init cipher";
+                _isInitialized = false;
+            }
+
+            EVP_CIPHER_CTX_set_padding(*_ctx, 0);
+
+            /* Set IV length. */
+            if(!EVP_CIPHER_CTX_ctrl(*_ctx, EVP_CTRL_GCM_SET_IVLEN,  iv.size(), nullptr)) {
+                qCInfo(lcCse()) << "Could not set iv length";
+                _isInitialized = false;
+            }
+
+            /* Initialise key and IV */
+            if(!EVP_DecryptInit_ex(*_ctx, nullptr, nullptr, (const unsigned char *) key.constData(), (const unsigned char *) iv.constData())) {
+                qCInfo(lcCse()) << "Could not set key and iv";
+                _isInitialized = false;
+            }
+        }
+    }
+
+    EncryptionHelper::StreamingDecryptor::~StreamingDecryptor()
+    {
+        if (_ctx) {
+            delete _ctx;
+            _ctx = nullptr;
+        }
+    }
+
+    qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, qint64 inputLen)
+    {
+        qint64 size = _decryptedSoFar + inputLen == _totalSize ? inputLen - 16 : inputLen;
+
+        QByteArray out(1024 + 16 - 1, '\0');
+        int len = 0;
+
+        int inputPos = 0;
+
+        auto written = 0;
+
+        while(inputPos < size) {
+
+            auto toRead = size - inputPos;
+            if (toRead > 1024) {
+                toRead = 1024;
+            }
+
+            QByteArray data = QByteArray(input + inputPos, toRead);
+
+            if (data.size() == 0) {
+                qCInfo(lcCse()) << "Could not read data from file";
+                return -1;
+            }
+
+            if(!EVP_DecryptUpdate(*_ctx, unsignedData(out), &len, (unsigned char *)data.constData(), data.size())) {
+                qCInfo(lcCse()) << "Could not decrypt";
+                return -1;
+            }
+
+            auto w = _output->write(out, len);
+
+            if (w != -1) {
+                written += w;
+                _writtenSoFar += w;
+            } else {
+                written = -1;
+            }
+
+            inputPos += toRead;
+
+            _decryptedSoFar += toRead;
+        }
+
+        qCritical() <<"_decryptedSoFar:" << _decryptedSoFar << "_totalSize:" << _totalSize;
+
+        if (_totalSize - _decryptedSoFar == 16) {
+            QByteArray tag = QByteArray(input + inputPos, 16);
+
+            /* Set expected tag value. Works in OpenSSL 1.0.1d and later */
+            if(!EVP_CIPHER_CTX_ctrl(*_ctx, EVP_CTRL_GCM_SET_TAG, tag.size(), (unsigned char *)tag.constData())) {
+                qCInfo(lcCse()) << "Could not set expected tag";
+                return -1;
+            }
+
+            if(1 != EVP_DecryptFinal_ex(*_ctx, unsignedData(out), &len)) {
+                qCInfo(lcCse()) << "Could finalize decryption";
+                return -1;
+            }
+
+            auto w = _output->write(out, len);
+
+            if (w != -1) {
+                written += w;
+                _writtenSoFar += w;
+            } else {
+                written = -1;
+            }
+
+            _decryptedSoFar += 16;
+
+            _isFinished = true;
+        }
+
+        return written;
+    }
+
+    bool EncryptionHelper::StreamingDecryptor::isInitialized() const
+    {
+        return _isInitialized;
+    }
+
+    bool EncryptionHelper::StreamingDecryptor::isFinished() const
+    {
+        return _isFinished;
+    }
+};

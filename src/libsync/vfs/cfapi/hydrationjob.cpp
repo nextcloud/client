@@ -88,6 +88,35 @@ void OCC::HydrationJob::setFolderPath(const QString &folderPath)
     _folderPath = folderPath;
 }
 
+bool OCC::HydrationJob::isEncryptedFile() const
+{
+    return _isEncryptedFile;
+}
+
+void OCC::HydrationJob::setIsEncryptedFile(bool isEncrypted)
+{
+    _isEncryptedFile = isEncrypted;
+}
+
+QString OCC::HydrationJob::encryptedFileName() const
+{
+    return _encryptedFileName;
+}
+
+void OCC::HydrationJob::setEncryptedFileName(const QString &encryptedName)
+{
+    _encryptedFileName = encryptedName;
+}
+
+qint64 OCC::HydrationJob::fileTotalSize() const
+{
+    return _fileTotalSize;
+}
+void OCC::HydrationJob::setFileTotalSize(qint64 totalSize)
+{
+    _fileTotalSize = totalSize;
+}
+
 OCC::HydrationJob::Status OCC::HydrationJob::status() const
 {
     return _status;
