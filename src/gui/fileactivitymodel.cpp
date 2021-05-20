@@ -21,6 +21,7 @@
 #include <QLoggingCategory>
 #include <pushnotifications.h>
 #include <theme.h>
+#include <common/utility.h>
 
 #include "fileactivitydialog.h"
 #include "fileactivitymodel.h"
