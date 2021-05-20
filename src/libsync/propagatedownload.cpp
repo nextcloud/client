@@ -26,7 +26,8 @@
 #include "common/asserts.h"
 #include "clientsideencryptionjobs.h"
 #include "propagatedownloadencrypted.h"
-#include "common/vfs.h"
+#include <common/vfs.h>
+#include <common/constants.h>
 
 #include "configfile.h"
 
@@ -80,7 +81,6 @@ GETFileJob::GETFileJob(AccountPtr account, const QString &path, QIODevice *devic
     const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
     qint64 resumeStart, QObject *parent)
     : AbstractNetworkJob(account, path, parent)
-    , _device(device)
     , _headers(headers)
     , _expectedEtagForResume(expectedEtagForResume)
     , _expectedContentLength(-1)
@@ -93,14 +93,14 @@ GETFileJob::GETFileJob(AccountPtr account, const QString &path, QIODevice *devic
     , _bandwidthManager(nullptr)
     , _hasEmittedFinishedSignal(false)
     , _lastModified()
+    , _device(device)
 {
- }
+}
 
 GETFileJob::GETFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
     const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
     qint64 resumeStart, QObject *parent)
     : AbstractNetworkJob(account, url.toEncoded(), parent)
-    , _device(device)
     , _headers(headers)
     , _expectedEtagForResume(expectedEtagForResume)
     , _expectedContentLength(-1)
@@ -114,6 +114,7 @@ GETFileJob::GETFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
     , _bandwidthManager(nullptr)
     , _hasEmittedFinishedSignal(false)
     , _lastModified()
+    , _device(device)
 {
 }
 
@@ -386,21 +387,17 @@ QString GETFileJob::errorString() const
 GETEncryptedFileJob::GETEncryptedFileJob(AccountPtr account, const QString &path, QIODevice *device,
     const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
     qint64 resumeStart, EncryptedFile encryptedInfo, qint64 totalSize, QObject *parent)
-    : GETFileJob(account, path, device, headers, expectedEtagForResume, resumeStart, parent),
-      _encryptedInfo(encryptedInfo),
-      _totalSize(totalSize)
+    : GETFileJob(account, path, device, headers, expectedEtagForResume, resumeStart, parent)
 {
-    _decryptor.reset(new EncryptionHelper::StreamingDecryptor(_device, encryptedInfo.encryptionKey, encryptedInfo.initializationVector, totalSize));
+    _decryptor.reset(new EncryptionHelper::StreamingDecryptor(encryptedInfo.encryptionKey, encryptedInfo.initializationVector, totalSize));
 }
 
 GETEncryptedFileJob::GETEncryptedFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
     const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
     qint64 resumeStart, EncryptedFile encryptedInfo, qint64 totalSize, QObject *parent)
-    : GETFileJob(account, url, device, headers, expectedEtagForResume, resumeStart, parent),
-      _encryptedInfo(encryptedInfo),
-      _totalSize(totalSize)
+    : GETFileJob(account, url, device, headers, expectedEtagForResume, resumeStart, parent)
 {
-    _decryptor.reset(new EncryptionHelper::StreamingDecryptor(_device, encryptedInfo.encryptionKey, encryptedInfo.initializationVector, totalSize));
+    _decryptor.reset(new EncryptionHelper::StreamingDecryptor(encryptedInfo.encryptionKey, encryptedInfo.initializationVector, totalSize));
 }
 
 GETEncryptedFileJob::~GETEncryptedFileJob()
@@ -409,13 +406,22 @@ GETEncryptedFileJob::~GETEncryptedFileJob()
 
 qint64 GETEncryptedFileJob::writeToDevice(const char *data, qint64 len)
 {
-    auto sizeWritten = _decryptor->chunkDecryption(data, len);
+    if (!_decryptor->isInitialized()) {
+        return -1;
+    }
 
-    _writtenSoFar += sizeWritten;
+    const auto bytesDecrypted = _decryptor->chunkDecryption(data, _device, len);
 
-    qCCritical(lcPropagateDownload) << "sizeWritten" << sizeWritten << "len" << len << "_writtenSoFar" << _writtenSoFar;
+    if (bytesDecrypted == -1) {
+        qCCritical(lcPropagateDownload) << "Decryption failed!";
+        return -1;
+    }
 
-    if (sizeWritten != -1 && _decryptor->isFinished()) {
+    _writtenSoFar += bytesDecrypted;
+
+    qCCritical(lcPropagateDownload) << "bytesDecrypted" << bytesDecrypted << "len" << len << "_writtenSoFar" << _writtenSoFar;
+
+    if (bytesDecrypted != -1 && _decryptor->isFinished()) {
         emit decryptionFinishedSignal();
         deleteLater();
     }
@@ -471,6 +477,20 @@ void PropagateDownloadFile::startAfterIsEncryptedIsChecked()
             propagator()->_anotherSyncNeeded = true;
             done(SyncFileItem::SoftError, tr("File has changed since discovery"));
             return;
+        }
+
+        if (!_item->_encryptedFileName.isEmpty()) {
+            if (_item->_size != 0 && _item->_size == _item->_sizeNonE2EE) {
+                // if we're dehydrating a placeholder, we may need to set it's size back to (actual file size + OCC::CommonConstants::e2EeTagSize)
+                // make sure the server side metadata's tag is of the same size as we are expecting
+                Q_ASSERT(_downloadEncryptedHelper && _downloadEncryptedHelper->authenticationTagSize() == OCC::CommonConstants::e2EeTagSize);
+                if (!_downloadEncryptedHelper || _downloadEncryptedHelper->authenticationTagSize() != OCC::CommonConstants::e2EeTagSize) {
+                    qCritical(lcPropagateDownload) << "Downoaded file has incorrect non-encrypted size.";
+                    done(SyncFileItem::NormalError, tr("Encrypted file's tag from the server does not equal %1 bytes. Could not dehydrate.").arg(OCC::CommonConstants::e2EeTagSize));
+                    return;
+                }
+                _item->_size = _item->_sizeNonE2EE + _downloadEncryptedHelper->authenticationTagSize();
+            }
         }
 
         qCDebug(lcPropagateDownload) << "dehydrating file" << _item->_file;
@@ -1044,8 +1064,13 @@ void PropagateDownloadFile::contentChecksumComputed(const QByteArray &checksumTy
     _item->_checksumHeader = makeChecksumHeader(checksumType, checksum);
 
     if (_isEncrypted) {
+        const auto encryptedSize = _tmpFile.size();
         if (_downloadEncryptedHelper->decryptFile(_tmpFile)) {
-          downloadFinished();
+            Q_ASSERT(encryptedSize == _item->_size);
+            if (encryptedSize != _item->_size) {
+                qCritical(lcPropagateDownload) << "Downoaded file has incorrect encrypted size!";
+            }
+          downloadFinished(_item->_size);
         } else {
           done(SyncFileItem::NormalError, _downloadEncryptedHelper->errorString());
         }
@@ -1055,7 +1080,7 @@ void PropagateDownloadFile::contentChecksumComputed(const QByteArray &checksumTy
     }
 }
 
-void PropagateDownloadFile::downloadFinished()
+void PropagateDownloadFile::downloadFinished(qint64 encryptedFileSize)
 {
     ASSERT(!_tmpFile.isOpen());
     QString fn = propagator()->fullLocalPath(_item->_file);
@@ -1114,7 +1139,11 @@ void PropagateDownloadFile::downloadFinished()
         // phase by comparing size and mtime to the previous values. This
         // is necessary to avoid overwriting user changes that happened between
         // the discovery phase and now.
-        const qint64 expectedSize = _item->_previousSize;
+        Q_ASSERT(_item->_encryptedFileName.isEmpty() || _item->_previousSizeNonE2EE > 0);
+        if (!_item->_encryptedFileName.isEmpty() && _item->_previousSizeNonE2EE <= 0) {
+            qCCritical(lcPropagateDownload) << "no _previousSizeNonE2EE set for an encrypted item";
+        }
+        const qint64 expectedSize = !_item->_encryptedFileName.isEmpty() ? _item->_previousSizeNonE2EE : _item->_previousSize;
         const time_t expectedMtime = _item->_previousModtime;
         if (!FileSystem::verifyFileUnchanged(fn, expectedSize, expectedMtime)) {
             propagator()->_anotherSyncNeeded = true;
@@ -1144,7 +1173,18 @@ void PropagateDownloadFile::downloadFinished()
 
     // Maybe we downloaded a newer version of the file than we thought we would...
     // Get up to date information for the journal.
-    _item->_size = FileSystem::getSize(fn);
+    const auto sizeOnDisk = FileSystem::getSize(fn);
+
+    _item->_size = sizeOnDisk;
+
+    if (!_item->_encryptedFileName.isEmpty() && encryptedFileSize >= 0) {
+        // if it's an encrypted file, we must store it's non-encrypted size (without encryption tag)
+        _item->_sizeNonE2EE = sizeOnDisk;
+        Q_ASSERT(encryptedFileSize - sizeOnDisk == OCC::CommonConstants::e2EeTagSize);
+        if (encryptedFileSize - sizeOnDisk != OCC::CommonConstants::e2EeTagSize) {
+            qCritical(lcPropagateDownload) << "Downoaded file has incorrect non-encrypted size!";
+        }
+    }
 
     // Maybe what we downloaded was a conflict file? If so, set a conflict record.
     // (the data was prepared in slotGetFinished above)

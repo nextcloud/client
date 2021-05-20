@@ -23,10 +23,6 @@ class ReadPasswordJob;
 
 namespace OCC {
 
-namespace {
-class CipherCtx;
-}
-
 QString baseUrl();
 
 namespace EncryptionHelper {
@@ -70,30 +66,53 @@ namespace EncryptionHelper {
     bool fileDecryption(const QByteArray &key, const QByteArray& iv,
                                QFile *input, QFile *output);
 
-    bool chunkDecryption(const QByteArray &key, const QByteArray& iv,
-                               const QByteArray &input, QByteArray &output, bool isLastChunk);
+    //
+    // Simple classes for safe (RAII) handling of OpenSSL
+    // data structures
+    //
 
-    class StreamingDecryptor {
-    public:
-        StreamingDecryptor(QIODevice *device, const QByteArray &key, const QByteArray& iv, qint64 totalSize);
-        ~StreamingDecryptor();
+class CipherCtx {
+public:
+    CipherCtx() : _ctx(EVP_CIPHER_CTX_new())
+    {
+    }
 
-        qint64 chunkDecryption(const char *input, qint64 inputLen);
+    ~CipherCtx()
+    {
+        EVP_CIPHER_CTX_free(_ctx);
+    }
 
-        bool isInitialized() const;
+    operator EVP_CIPHER_CTX*()
+    {
+        return _ctx;
+    }
 
-        bool isFinished() const;
+private:
+    Q_DISABLE_COPY(CipherCtx)
+    EVP_CIPHER_CTX *_ctx;
+};
 
-    private:
-        CipherCtx *_ctx;
-        bool _isInitialized = false;
-        qint64 _decryptedSoFar = 0;
-        qint64 _writtenSoFar = 0;
-        qint64 _totalSize = 0;
-        bool _isFinished = false;
-        QIODevice *_output = nullptr;
-    };
-}
+class StreamingDecryptor {
+public:
+    StreamingDecryptor(const QByteArray &key, const QByteArray &iv, quint64 totalSize);
+    ~StreamingDecryptor();
+
+    qint32 chunkDecryption(const char *input, QIODevice *output, quint32 chunkSize);
+
+    bool isInitialized() const;
+    bool isFinished() const;
+
+private:
+    Q_DISABLE_COPY(StreamingDecryptor)
+
+    CipherCtx _ctx;
+    bool _isInitialized = false;
+    bool _isFinished = false;
+    quint64 _decryptedSoFar = 0;
+    quint64 _writtenSoFar = 0;
+    quint64 _totalSize = 0;
+};
+};
 
 class OWNCLOUDSYNC_EXPORT ClientSideEncryption : public QObject {
     Q_OBJECT

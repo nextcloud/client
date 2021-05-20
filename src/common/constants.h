@@ -1,5 +1,5 @@
 /*
- * Copyright (C) by Christian Kamm <mail@ckamm.de>
+ * Copyright (C) by Oleksandr Zolotov <alex@nextcloud.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -148,11 +148,8 @@ signals:
     void decryptionFinishedSignal();
 
 private:
-    EncryptedFile _encryptedInfo;
     QSharedPointer<EncryptionHelper::StreamingDecryptor> _decryptor;
-    qint64 _totalSize = 0;
     qint64 _writtenSoFar = 0;
-    QBuffer _buffer;
 };
 
 /**
@@ -233,7 +230,7 @@ private slots:
     void transmissionChecksumValidated(const QByteArray &checksumType, const QByteArray &checksum);
     /// Called when the download's checksum computation is done
     void contentChecksumComputed(const QByteArray &checksumType, const QByteArray &checksum);
-    void downloadFinished();
+    void downloadFinished(qint64 encryptedFileSize = -1);
     /// Called when it's time to update the db metadata
     void updateMetadata(bool isConflict);
 
@@ -258,6 +255,6 @@ private:
 
     QElapsedTimer _stopwatch;
 
-    PropagateDownloadEncrypted *_downloadEncryptedHelper;
+    PropagateDownloadEncrypted *_downloadEncryptedHelper = nullptr;
 };
 }

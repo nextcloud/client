@@ -24,7 +24,8 @@
 #include <QFileInfo>
 #include <QFile>
 #include <QThreadPool>
-#include "common/checksums.h"
+#include <common/checksums.h>
+#include <common/constants.h>
 #include "csync_exclude.h"
 #include "csync.h"
 
@@ -347,6 +348,7 @@ void ProcessDirectoryJob::processFile(PathTuple path,
     item->_file = path._target;
     item->_originalFile = path._original;
     item->_previousSize = dbEntry._fileSize;
+    item->_previousSizeNonE2EE = dbEntry._fileSizeNonE2EE;
     item->_previousModtime = dbEntry._modtime;
 
     if (dbEntry._modtime == localEntry.modtime && dbEntry._type == ItemTypeVirtualFile && localEntry.type == ItemTypeFile) {
@@ -507,6 +509,11 @@ void ProcessDirectoryJob::processFileAnalyzeRemoteInfo(
     item->_direction = SyncFileItem::Down;
     item->_modtime = serverEntry.modtime;
     item->_size = serverEntry.size;
+
+    if (!serverEntry.e2eMangledName.isEmpty()) {
+        // we've received an encrypted server entry, so, we must store it's actual size (without the E2EE tag at the end)
+        item->_sizeNonE2EE = serverEntry.size - OCC::CommonConstants::e2EeTagSize;
+    }
 
     auto postProcessServerNew = [=] () {
         auto tmp_path = path;
@@ -830,6 +837,7 @@ void ProcessDirectoryJob::processFileAnalyzeLocalInfo(
                 item->_instruction = CSYNC_INSTRUCTION_SYNC;
                 item->_type = ItemTypeVirtualFileDownload;
                 item->_previousSize = 1;
+                item->_previousSizeNonE2EE = 1;
             }
         } else if (serverModified
             || (isVfsWithSuffix() && dbEntry.isVirtualFile())) {
@@ -1196,6 +1204,7 @@ void ProcessDirectoryJob::processFileConflict(const SyncFileItemPtr &item, Proce
             rec._fileId = serverEntry.fileId;
             rec._modtime = serverEntry.modtime;
             rec._type = item->_type;
+            // do we also need non-E2EE size here?
             rec._fileSize = serverEntry.size;
             rec._remotePerm = serverEntry.remotePerm;
             rec._checksumHeader = serverEntry.checksumHeader;

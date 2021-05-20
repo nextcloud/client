@@ -18,6 +18,8 @@
 #include "propagatedownload.h"
 #include "vfs/cfapi/vfs_cfapi.h"
 
+#include "filesystem.h"
+
 #include <QLocalServer>
 #include <QLocalSocket>
 

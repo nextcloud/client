@@ -19,6 +19,7 @@ public:
   void start();
   bool decryptFile(QFile& tmpFile);
   QString errorString() const;
+  int authenticationTagSize();
 
 public slots:
   void checkFolderId(const QStringList &list);
