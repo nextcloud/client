@@ -92,7 +92,7 @@ Credential Handling
 
 ::
 
-  $ nextcloudcmd /home/user/my_sync_folder https://carla:secret@server/nextcloud/remote.php/webdav/
+  $ nextcloudcmd /home/user/my_sync_folder https://carla:secret@server/nextcloud/remote.php/dav/
 
 To synchronize the Nextcloud directory ``Music`` to the local directory
 ``media/music``, through a proxy listening on port ``8080``, and on a gateway
@@ -100,7 +100,7 @@ machine using IP address ``192.168.178.1``, the command line would be::
 
   $ nextcloudcmd --httpproxy http://192.168.178.1:8080 \
                 $HOME/media/music \
-                https://server/nextcloud/remote.php/webdav/Music
+                https://server/nextcloud/remote.php/dav/Music
 
 ``nextcloudcmd`` will prompt for the user name and password, unless they have
 been specified on the command line or ``-n`` has been passed.
@@ -121,4 +121,4 @@ Example
 ::
 
     $ nextcloudcmd /home/user/<my_sync_folder> \
-    https://<username>:<secret>@<server_address>/remote.php/webdav/<Directory_that_has_been_created>
+    https://<username>:<secret>@<server_address>/remote.php/dav/<Directory_that_has_been_created>

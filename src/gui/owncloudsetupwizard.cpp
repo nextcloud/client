@@ -465,7 +465,7 @@ void OwncloudSetupWizard::slotCreateLocalAndRemoteFolders(const QString &localFo
          *
          *         Purpose: Don't rely on unsafe paths, be extra careful.
          *
-         *         Example: https://cloud.example.com/remote.php/webdav//
+         *         Example: https://cloud.example.com/remote.php/dav//
          *
         */
         qCInfo(lcWizard) << "Sanitize got URL path:" << QString(_ocWizard->account()->url().toString() + '/' + _ocWizard->account()->davPath() + remoteFolder);
