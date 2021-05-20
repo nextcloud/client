@@ -105,6 +105,8 @@ public slots:
      */
     void slotShowShareDialog(const QString &sharePath, const QString &localPath, ShareDialogStartPage startPage);
 
+    void slotShowFileActivityDialog(const QString &sharePath, const QString &localPath);
+
     void slotRemoveDestroyedShareDialogs();
 
 private slots:

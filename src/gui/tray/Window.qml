@@ -601,8 +601,8 @@ Window {
                     anchors.left: activityItem.left
                     anchors.leftMargin: 8
                     anchors.rightMargin: 8
-                    Layout.preferredWidth: shareButton.icon.width
-                    Layout.preferredHeight: shareButton.icon.height
+                    Layout.preferredWidth: shareMenuItem.icon.width
+                    Layout.preferredHeight: shareMenuItem.icon.height
                     verticalAlignment: Qt.AlignCenter
                     cache: true
                     source: icon
@@ -809,7 +809,7 @@ Window {
                     }
 
                     Button {
-                        id: shareButton
+                        id: moreFileActionsButton
 
                         Layout.preferredWidth: (path === "") ? 0 : parent.height
                         Layout.preferredHeight: parent.height
@@ -818,7 +818,7 @@ Window {
                         hoverEnabled: true
                         visible: (path === "") ? false : true
                         display: AbstractButton.IconOnly
-                        icon.source: "qrc:///client/theme/share.svg"
+                        icon.source: "qrc:///client/theme/more.svg"
                         icon.color: "transparent"
                         background: Rectangle {
                             color: parent.hovered ? Style.lightHover : "transparent"
@@ -826,11 +826,35 @@ Window {
                         ToolTip.visible: hovered
                         ToolTip.delay: 1000
                         ToolTip.text: qsTr("Open share dialog")
-                        onClicked: Systray.openShareDialog(displayPath,absolutePath)
+                        onClicked: moreFileActionsContextMenu.popup()
 
                         Accessible.role: Accessible.Button
-                        Accessible.name: qsTr("Share %1").arg(displayPath)
-                        Accessible.onPressAction: shareButton.clicked()
+                        Accessible.name: qsTr("More actions on %1").arg(displayPath)
+                        Accessible.onPressAction: moreFileActionsButton.clicked()
+                    }
+
+                     Menu {
+                         id: moreFileActionsContextMenu
+                         MenuItem {
+                             id: shareMenuItem
+                             
+                             text: "Share"
+                             onClicked: Systray.openShareDialog(displayPath, absolutePath)
+
+                             Accessible.role: Accessible.MenuItem
+                             Accessible.name: qsTr("Share %1").arg(displayPath)
+                             Accessible.onPressAction: shareMenuItem.clicked()
+                         }
+                         MenuItem {
+                             id: activityMenuItem
+                             
+                             text: "Activity"
+                             onClicked: Systray.openFileActivityDialog(displayPath, absolutePath)
+
+                             Accessible.role: Accessible.MenuItem
+                             Accessible.name: qsTr("Share %1").arg(displayPath)
+                             Accessible.onPressAction: activityMenuItem.clicked()
+                         }
                     }
                 }
             }

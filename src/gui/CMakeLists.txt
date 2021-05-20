@@ -28,6 +28,7 @@ set(client_UI_SRCS
     networksettings.ui
     settingsdialog.ui
     sharedialog.ui
+    fileactivitydialog.ui
     sharelinkwidget.ui
     shareusergroupwidget.ui
     shareuserline.ui
@@ -83,6 +84,8 @@ set(client_SRCS
     settingsdialog.cpp
     sharedialog.cpp
     activityjob.cpp
+    fileactivitydialog.cpp
+    fileactivitymodel.cpp
     sharelinkwidget.cpp
     sharemanager.cpp
     shareusergroupwidget.cpp

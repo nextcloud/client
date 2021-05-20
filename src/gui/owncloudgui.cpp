@@ -29,6 +29,7 @@
 #include "common/syncjournalfilerecord.h"
 #include "creds/abstractcredentials.h"
 #include "guiutility.h"
+#include "fileactivitydialog.h"
 #ifdef WITH_LIBCLOUDPROVIDERS
 #include "cloudproviders/cloudprovidermanager.h"
 #endif
@@ -91,8 +92,12 @@ ownCloudGui::ownCloudGui(Application *parent)
 
     connect(_tray.data(), &Systray::openShareDialog,
         this, [=](const QString &sharePath, const QString &localPath) {
-                slotShowShareDialog(sharePath, localPath, ShareDialogStartPage::UsersAndGroups);
-            });
+            slotShowShareDialog(sharePath, localPath, ShareDialogStartPage::UsersAndGroups);
+        });
+    connect(_tray.data(), &Systray::openFileActivityDialog,
+        this, [=](const QString &sharePath, const QString &localPath) {
+            slotShowFileActivityDialog(sharePath, localPath);
+        });
 
     ProgressDispatcher *pd = ProgressDispatcher::instance();
     connect(pd, &ProgressDispatcher::progressInfo, this,
@@ -607,6 +612,31 @@ void ownCloudGui::raiseDialog(QWidget *raiseWidget)
         }
 #endif
     }
+}
+
+void ownCloudGui::slotShowFileActivityDialog(const QString &sharePath, const QString &localPath)
+{
+    Q_UNUSED(sharePath);
+
+    const auto folder = FolderMan::instance()->folderForPath(localPath);
+    if (!folder) {
+        qCWarning(lcApplication) << "Could not open file activity dialog for" << localPath << "no responsible folder found";
+        return;
+    }
+
+    const auto accountState = folder->accountState();
+
+    const QString file = localPath.mid(folder->cleanPath().length() + 1);
+    SyncJournalFileRecord fileRecord;
+
+    if (folder->journalDb()->getFileRecord(file, &fileRecord) && fileRecord.isValid()) {
+        const auto fileActivityDialog = new FileActivityDialog(accountState->account(), fileRecord._fileId);
+        fileActivityDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+        raiseDialog(fileActivityDialog);
+        return;
+    }
+
+    qCWarning(lcApplication) << "Can not open activity dialog on file" << file;
 }
 
 
