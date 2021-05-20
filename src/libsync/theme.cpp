@@ -274,10 +274,9 @@ bool Theme::isHidpi(QPaintDevice *dev)
 
 QIcon Theme::uiThemeIcon(const QString &iconName, bool uiHasDarkBg) const
 {
-    QString themeResBasePath = ":/client/theme/";
-    QString iconPath = themeResBasePath + (uiHasDarkBg?"white/":"black/") + iconName;
-    std::string icnPath = iconPath.toUtf8().constData();
-    return QIcon(QPixmap(iconPath));
+    const QString themeResBasePath = ":/client/theme/";
+    const QString iconPath = themeResBasePath + (uiHasDarkBg ? "white/" : "black/") + iconName;
+    return QIcon(iconPath);
 }
 
 QString Theme::hidpiFileName(const QString &fileName, QPaintDevice *dev)
