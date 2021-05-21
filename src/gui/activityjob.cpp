@@ -29,7 +29,7 @@ void OcsActivityJob::queryActivities(const Optional<QString> &objectType, const 
     startJsonApiJob();
 }
 
-void OcsActivityJob::startJsonApiJob(const Optional<QString> since)
+void OcsActivityJob::startJsonApiJob(const Optional<QString> &since)
 {
     const auto url = _objectType || _objectId ? QStringLiteral("ocs/v2.php/apps/activity/api/v2/activity/filter")
                                               : QStringLiteral("ocs/v2.php/apps/activity/api/v2/activity");
@@ -54,7 +54,7 @@ void OcsActivityJob::startJsonApiJob(const Optional<QString> since)
     job->start();
 }
 
-Activity OcsActivityJob::jsonObjectToActivity(QJsonObject activityJson)
+Activity OcsActivityJob::jsonObjectToActivity(const QJsonObject &activityJson)
 {
     Activity activity;
     activity._type = Activity::ActivityType;
@@ -72,11 +72,11 @@ Activity OcsActivityJob::jsonObjectToActivity(QJsonObject activityJson)
     return activity;
 }
 
-std::vector<Activity> OcsActivityJob::jsonArrayToActivities(QJsonArray activitiesJson)
+std::vector<Activity> OcsActivityJob::jsonArrayToActivities(const QJsonArray &activitiesJson)
 {
     std::vector<Activity> activities;
     for (const auto activ : activitiesJson) {
-        activities.emplace_back(jsonObjectToActivity(activ.toObject()));
+        activities.push_back(jsonObjectToActivity(activ.toObject()));
     }
     return activities;
 }
@@ -87,23 +87,23 @@ void OcsActivityJob::processActivities(const QJsonDocument &json)
     emit finished(jsonArrayToActivities(activitiesJson));
 }
 
-QUrl OcsActivityJob::parseLinkFromHeader(const QByteArray &linkRawHeader)
+static QUrl parseLinkFromHeader(const QByteArray &linkRawHeader)
 {
     // The link is ecapsulated in a tag. We need to parse this tag.
 
-    const auto linkHeaderTagMinimumExpectedLength = 14;
+    constexpr auto linkHeaderTagMinimumExpectedLength = 14;
     if (linkRawHeader.size() <= linkHeaderTagMinimumExpectedLength) {
         qCWarning(lcActivityJob) << "Link to next page submitted, but could not be parsed";
         return {};
     }
 
-    const auto linkHeaderTagUnnecessaryExcessPrefixLength = 1;
-    const auto linkHeaderTagUnnecessaryExcessSuffixLength = 14;
+    constexpr auto linkHeaderTagUnnecessaryExcessPrefixLength = 1;
+    constexpr auto linkHeaderTagUnnecessaryExcessSuffixLength = 14;
     return QString(linkRawHeader.chopped(linkHeaderTagUnnecessaryExcessSuffixLength)
                        .mid(linkHeaderTagUnnecessaryExcessPrefixLength));
 }
 
-QString OcsActivityJob::getQueryItemFromLink(const QUrl &url, const QString &queryItemName)
+static QString getQueryItemFromLink(const QUrl &url, const QString &queryItemName)
 {
     QUrlQuery query(url);
     if (!query.hasQueryItem(queryItemName)) {
@@ -112,7 +112,7 @@ QString OcsActivityJob::getQueryItemFromLink(const QUrl &url, const QString &que
     return query.queryItemValue(queryItemName);
 }
 
-QString OcsActivityJob::getSinceQueryItemFromLink(const QUrl &url)
+static QString getSinceQueryItemFromLink(const QUrl &url)
 {
     return getQueryItemFromLink(url, QStringLiteral("since"));
 }

@@ -38,9 +38,7 @@ public:
     FileActivityDelegate(QObject *parent = nullptr)
         : QStyledItemDelegate(parent)
     {
-        if (Theme::instance()->isHidpi()) {
-            _iconSize *= 2;
-        }
+        _iconSize *= Theme::pixelRatio();
     }
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
@@ -78,11 +76,6 @@ public:
     }
 
 private:
-    QString timestampReadable(const QModelIndex &index) const
-    {
-        return timestampReadable(qvariant_cast<FileActivity>(index.data()).timestamp());
-    }
-
     QString timestampReadable(const QDateTime &dateTime) const
     {
         return Utility::timeAgoInWords(dateTime.toLocalTime());
@@ -90,11 +83,13 @@ private:
 
     QRect timestampBox(const QStyleOptionViewItem &option, const FileActivity &fileActivity) const
     {
-        QFont f(option.font);
+        auto timestampFont = option.font;
 
-        f.setPointSizeF(timestampFontPointSize(option.font));
+        timestampFont.setPointSizeF(timestampFontPointSize(option.font));
 
-        return QFontMetrics(f).boundingRect(timestampReadable(fileActivity.timestamp())).adjusted(0, 0, 1, 1);
+        return QFontMetrics(timestampFont)
+            .boundingRect(timestampReadable(fileActivity.timestamp()))
+            .adjusted(0, 0, 1, 1);
     }
 
     QRect timestampBox(const QStyleOptionViewItem &option, const QModelIndex &index) const

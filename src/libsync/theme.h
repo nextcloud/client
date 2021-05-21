@@ -163,6 +163,8 @@ public:
 
     static QString hidpiFileName(const QString &iconName, const QColor &backgroundColor, QPaintDevice *dev = nullptr);
 
+    static double pixelRatio(QPaintDevice *dev = nullptr);
+
     static bool isHidpi(QPaintDevice *dev = nullptr);
 
     /**
