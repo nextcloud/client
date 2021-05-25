@@ -43,7 +43,11 @@ SyncJournalFileRecord SyncFileItem::toSyncJournalFileRecordWithInode(const QStri
     rec._fileSize = _size;
     Q_ASSERT(!_encryptedFileName.isEmpty() || _sizeNonE2EE == 0);
     if (_encryptedFileName.isEmpty() && _sizeNonE2EE != 0) {
-        qCWarning(lcFileItem) << "_sizeNonE2EE is non-zero for non-encrypted item.";
+        qCWarning(lcFileItem) << "_sizeNonE2EE is non-zero for a non-encrypted item.";
+    }
+    Q_ASSERT(_encryptedFileName.isEmpty() || _sizeNonE2EE != 0);
+    if (!_encryptedFileName.isEmpty() && _sizeNonE2EE == 0) {
+        qCWarning(lcFileItem) << "_sizeNonE2EE is zero for an encrypted item.";
     }
     rec._fileSizeNonE2EE = _sizeNonE2EE;
     rec._remotePerm = _remotePerm;
@@ -99,12 +103,12 @@ qint64 SyncFileItem::sizeForVfsPlaceholder() const
     if (_sizeNonE2EE != 0) {
         Q_ASSERT(!_encryptedFileName.isEmpty());
         if (_encryptedFileName.isEmpty()) {
-            qCritical(lcFileItem) << "VFS placeholder size is set for an non-encrypted file!";
+            qCWarning(lcFileItem) << "VFS placeholder size is set for an non-encrypted file!";
         } else {
             // encrypted and nonencrypted sizes are either same(for the file that's been hydrated already), or differ in OCC::CommonConstants::e2EeTagSize bytes
             Q_ASSERT(_size - _sizeNonE2EE == OCC::CommonConstants::e2EeTagSize || _size == _sizeNonE2EE);
             if (_size - _sizeNonE2EE != OCC::CommonConstants::e2EeTagSize && _size != _sizeNonE2EE) {
-                qCritical(lcFileItem) << "VFS placeholder size is set, but, it's incorrect! _size" << _size << "_sizeNonE2EE" << _sizeNonE2EE << " OCC::CommonConstants::e2EeTagSize" << OCC::CommonConstants::e2EeTagSize;
+                qCWarning(lcFileItem) << "VFS placeholder size is set, but, it's incorrect! _size" << _size << "_sizeNonE2EE" << _sizeNonE2EE << " OCC::CommonConstants::e2EeTagSize" << OCC::CommonConstants::e2EeTagSize;
             }
         }
 
@@ -113,7 +117,7 @@ qint64 SyncFileItem::sizeForVfsPlaceholder() const
 
     Q_ASSERT(_encryptedFileName.isEmpty());
     if (!_encryptedFileName.isEmpty()) {
-        qCritical(lcFileItem) << "Requested VFS placeholder size for an encrypted file, but it is not set!";
+        qCWarning(lcFileItem) << "Requested VFS placeholder size for an encrypted file, but it is not set!";
     }
 
     return _size;

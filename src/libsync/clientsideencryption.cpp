@@ -298,7 +298,7 @@ namespace {
     };
 
     QByteArray BIO2ByteArray(Bio &b) {
-        int pending = BIO_ctrl_pending(b);
+        int pending = static_cast<int>(BIO_ctrl_pending(b));
         QByteArray res(pending, '\0');
         BIO_read(b, unsignedData(res), pending);
         return res;
@@ -756,7 +756,7 @@ QByteArray decryptStringAsymmetric(EVP_PKEY *privateKey, const QByteArray& data)
         qCInfo(lcCseDecryption()) << "Size of data is: " << data.size();
     }
 
-    QByteArray out(outlen, '\0');
+    QByteArray out(static_cast<int>(outlen), '\0');
 
     if (EVP_PKEY_decrypt(ctx, unsignedData(out), &outlen, (unsigned char *)data.constData(), data.size()) <= 0) {
         const auto error = handleErrors();
@@ -807,7 +807,7 @@ QByteArray encryptStringAsymmetric(EVP_PKEY *publicKey, const QByteArray& data) 
         qCInfo(lcCse()) << "Encryption Length:" << outLen;
     }
 
-    QByteArray out(outLen, '\0');
+    QByteArray out(static_cast<int>(outLen), '\0');
     if (EVP_PKEY_encrypt(ctx, unsignedData(out), &outLen, (unsigned char *)data.constData(), data.size()) != 1) {
         qCInfo(lcCse()) << "Could not encrypt key." << err;
         exit(1);
@@ -1807,10 +1807,6 @@ EncryptionHelper::StreamingDecryptor::StreamingDecryptor(const QByteArray &key, 
     }
 }
 
-EncryptionHelper::StreamingDecryptor::~StreamingDecryptor()
-{
-}
-
 qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, QIODevice *output, quint32 chunkSize)
 {
     Q_ASSERT(isInitialized());
@@ -1850,10 +1846,9 @@ qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
     const bool isLastChunk = _decryptedSoFar + chunkSize == _totalSize;
 
     // last OCC::CommonConstants::e2EeTagSize bytes is ALWAYS a tag!!!
-    const int size = isLastChunk ? chunkSize - OCC::CommonConstants::e2EeTagSize : chunkSize;
+    const qint32 size = isLastChunk ? static_cast<qint32>(chunkSize) - OCC::CommonConstants::e2EeTagSize : static_cast<qint32>(chunkSize);
 
     Q_ASSERT(size >= 0);
-
     if (size < 0) {
         qCritical(lcCse()) << "Decryption failed. Invalid input!";
         return -1;
@@ -1865,10 +1860,11 @@ qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
     int inputPos = 0;
 
     while(inputPos < size) {
+        // read blockSize or less bytes
         QByteArray encryptedBlock = QByteArray(input + inputPos, qMin(size - inputPos, blockSize));
 
         if (encryptedBlock.size() == 0) {
-            qCritical(lcCse()) << "Could not read data from file";
+            qCritical(lcCse()) << "Could not read data from the input buffer.";
             return -1;
         }
 
@@ -1889,12 +1885,15 @@ qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
 
         bytesWritten += writtenToOutput;
 
+        // advance input position for further read
         inputPos += encryptedBlock.size();
 
         _decryptedSoFar += encryptedBlock.size();
     }
 
     if (isLastChunk) {
+        // if it's a last chunk, we'd need to read a tag at the end and finalize the decryption
+
         Q_ASSERT(chunkSize - inputPos == OCC::CommonConstants::e2EeTagSize);
         if (chunkSize - inputPos != OCC::CommonConstants::e2EeTagSize) {
             qCritical(lcCse()) << "Decryption failed. E2EE tag is missing!";
@@ -1933,7 +1932,7 @@ qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
 
     qCDebug(lcCse()) <<"Decrypting:" << _decryptedSoFar << "/" << _totalSize;
 
-    if (_isFinished) {
+    if (isFinished()) {
         qCDebug(lcCse()) << "Decryption complete";
     }
 

@@ -124,7 +124,7 @@ private slots:
 };
 
 /**
- * @brief The GETFileJob class
+ * @brief The GETEncryptedFileJob class that provides file decryption on the fly while the download is running
  * @ingroup libsync
  */
 class GETEncryptedFileJob : public GETFileJob
@@ -139,17 +139,13 @@ public:
     explicit GETEncryptedFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
         const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
         qint64 resumeStart, EncryptedFile encryptedInfo, qint64 totalSize, QObject *parent = nullptr);
-    virtual ~GETEncryptedFileJob();
+    virtual ~GETEncryptedFileJob() = default;
 
 protected:
     virtual qint64 writeToDevice(const char *data, qint64 len);
 
-signals:
-    void decryptionFinishedSignal();
-
 private:
     QSharedPointer<EncryptionHelper::StreamingDecryptor> _decryptor;
-    qint64 _writtenSoFar = 0;
 };
 
 /**

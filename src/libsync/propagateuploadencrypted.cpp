@@ -189,7 +189,7 @@ void PropagateUploadEncrypted::slotFolderEncryptedMetadataReceived(const QJsonDo
       _item->_sizeNonE2EE = input.size();
       Q_ASSERT(_item->_sizeNonE2EE + OCC::CommonConstants::e2EeTagSize == output.size());
       if (_item->_sizeNonE2EE + OCC::CommonConstants::e2EeTagSize != output.size()) {
-          qCritical(lcPropagateUploadEncrypted) << "Uploaded encerypted file with incorrect tag lenth!";
+          qCritical(lcPropagateUploadEncrypted) << "Uploaded encerypted file with incorrect tag length!";
       }
 
       encryptedFile.authenticationTag = tag;

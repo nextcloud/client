@@ -178,7 +178,7 @@ void ProcessDirectoryJob::process()
         // For windows, the hidden state is also discovered within the vio
         // local stat function.
         // Recall file shall not be ignored (#4420)
-        bool isHidden = e.localEntry.isHidden || (!f.first.isEmpty() && f.first[0] == '.' && f.first != QLatin1String(".sys.admin#recall#"));
+        bool isHidden = e.localEntry.isHidden || (f.first[0] == '.' && f.first != QLatin1String(".sys.admin#recall#"));
 #ifdef Q_OS_WIN
         // exclude ".lnk" files as they are not essential, but, causing troubles when enabling the VFS due to QFileInfo::isDir() and other methods are freezing, which causes the ".lnk" files to start hydrating and freezing the app eventually.
         const bool isServerEntryWindowsShortcut = !e.localEntry.isValid() && e.serverEntry.isValid() && !e.serverEntry.isDirectory && FileSystem::isLnkFile(e.serverEntry.name);
@@ -1204,8 +1204,10 @@ void ProcessDirectoryJob::processFileConflict(const SyncFileItemPtr &item, Proce
             rec._fileId = serverEntry.fileId;
             rec._modtime = serverEntry.modtime;
             rec._type = item->_type;
-            // do we also need non-E2EE size here?
             rec._fileSize = serverEntry.size;
+            if (!serverEntry.e2eMangledName.isEmpty()) {
+                rec._fileSizeNonE2EE = serverEntry.size - OCC::CommonConstants::e2EeTagSize;
+            }
             rec._remotePerm = serverEntry.remotePerm;
             rec._checksumHeader = serverEntry.checksumHeader;
             _discoveryData->_statedb->setFileRecord(rec);

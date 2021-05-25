@@ -12,13 +12,10 @@
  * for more details.
  */
 
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#pragma once
 
 namespace OCC {
 namespace CommonConstants {
-    const unsigned int e2EeTagSize = 16;
+    const qint32 e2EeTagSize = 16;
 };
 };
-
-#endif
