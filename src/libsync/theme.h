@@ -40,6 +40,7 @@ class OWNCLOUDSYNC_EXPORT Theme : public QObject
     Q_PROPERTY(bool branded READ isBranded CONSTANT)
     Q_PROPERTY(QString appNameGUI READ appNameGUI CONSTANT)
     Q_PROPERTY(QString appName READ appName CONSTANT)
+    Q_PROPERTY(QString appRevDomain READ appRevDomain CONSTANT)
     Q_PROPERTY(QUrl stateOnlineImageSource READ stateOnlineImageSource CONSTANT)
     Q_PROPERTY(QUrl stateOfflineImageSource READ stateOfflineImageSource CONSTANT)
     Q_PROPERTY(QUrl stateOnlineImageSource READ stateOnlineImageSource CONSTANT)
@@ -115,6 +116,20 @@ public:
      * @return QString with app name.
      */
     virtual QString appName() const;
+
+    /**
+     * @brief appRevDomain - Application Reverse Domain
+     *
+     * Use and redefine this as an application's XDG-compliant unique name.
+     * It is used for the cache, config, and log file directories.
+     *
+     * By default, the name is derived from the APPLICATION_REV_DOMAIN
+     * cmake variable, and should be the same. This method is only
+     * reimplementable for legacy reasons.
+     *
+     * @return QString with app name.
+     */
+    virtual QString appRevDomain() const;
 
     /**
      * @brief Returns full path to an online state icon

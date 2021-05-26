@@ -18,6 +18,8 @@
 #include "common/utility.h"
 #include "filesystem.h"
 #include <qfileinfo.h>
+#include <theme.h>
+#include <QStandardPaths>
 
 namespace OCC {
 
@@ -31,8 +33,18 @@ QString SyncRunFileLog::dateTimeStr(const QDateTime &dt)
 void SyncRunFileLog::start(const QString &folderPath)
 {
     const qint64 logfileMaxSize = 10 * 1024 * 1024; // 10MiB
+    QString temppath;
 
-    const QString logpath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (Utility::isMac()) {
+        // "~/Library/Logs/<appRevDomain>"
+        temppath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/../Logs/" + Theme::instance()->appRevDomain();
+    } else {
+        // "~/.local/share/<appRevDomain>", "/usr/local/share/<appRevDomain>", or "/usr/share/<appRevDomain>"
+        temppath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/" + Theme::instance()->appRevDomain();
+    }
+
+    const QString logpath = temppath;
+
     if(!QDir(logpath).exists()) {
         QDir().mkdir(logpath);
     }

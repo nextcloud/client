@@ -318,8 +318,8 @@ QString ConfigFile::configPath() const
 {
     if (_confDir.isEmpty()) {
         if (!Utility::isWindows()) {
-            // On Unix, use the AppConfigLocation for the settings, that's configurable with the XDG_CONFIG_HOME env variable.
-            _confDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+            // On Unix, use the ConfigLocation for the settings, that's configurable with the XDG_CONFIG_HOME env variable.
+            _confDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + Theme::instance()->appRevDomain();
         } else {
             // On Windows, use AppDataLocation, that's where the roaming data is and where we should store the config file
              auto newLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
@@ -712,13 +712,14 @@ QVariant ConfigFile::getValue(const QString &param, const QString &group,
 {
     QVariant systemSetting;
     if (Utility::isMac()) {
-        QSettings systemSettings(QLatin1String("/Library/Preferences/" APPLICATION_REV_DOMAIN ".plist"), QSettings::NativeFormat);
+        // QSettings systemSettings(QString("/Library/Preferences/" Theme::instance()->appRevDomain() ".plist"), QSettings::NativeFormat);
+        QSettings systemSettings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + Theme::instance()->appRevDomain() + "/" + Theme::instance()->appName() + ".plist", QSettings::NativeFormat);
         if (!group.isEmpty()) {
             systemSettings.beginGroup(group);
         }
         systemSetting = systemSettings.value(param, defaultValue);
     } else if (Utility::isUnix()) {
-        QSettings systemSettings(QString(SYSCONFDIR "/%1/%1.conf").arg(Theme::instance()->appName()), QSettings::NativeFormat);
+        QSettings systemSettings(QString(SYSCONFDIR "/%1/%1.conf").arg(Theme::instance()->appRevDomain()), QSettings::NativeFormat);
         if (!group.isEmpty()) {
             systemSettings.beginGroup(group);
         }

@@ -129,6 +129,14 @@ bool AccountManager::restoreFromLegacySettings()
     // try to open the correctly themed settings
     auto settings = ConfigFile::settingsWithGroup(Theme::instance()->appName());
 
+    if (settings->childKeys().isEmpty()) {
+        qCInfo(lcAccountManager) << "Migrate: restoreFromLegacySettings, checking settings group"
+                                << Theme::instance()->appRevDomain();
+
+        // try to open the correctly themed settings
+        settings = ConfigFile::settingsWithGroup(Theme::instance()->appRevDomain());
+    }
+
     // if the settings file could not be opened, the childKeys list is empty
     // then try to load settings from a very old place
     if (settings->childKeys().isEmpty()) {

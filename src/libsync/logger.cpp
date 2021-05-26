@@ -15,12 +15,14 @@
 #include "logger.h"
 
 #include "config.h"
+#include <theme.h>
 
 #include <QDir>
 #include <QStringList>
 #include <QtGlobal>
 #include <QTextCodec>
 #include <qmetaobject.h>
+#include <QStandardPaths>
 
 #include <iostream>
 
@@ -230,8 +232,12 @@ void Logger::setLogDebug(bool debug)
 
 QString Logger::temporaryFolderLogDirPath() const
 {
-    QString dirName = APPLICATION_SHORTNAME + QString("-logdir");
-    return QDir::temp().filePath(dirName);
+    if (Utility::isMac()) {
+        return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/../Logs/" + Theme::instance()->appRevDomain();
+    } else {
+        QString dirName = APPLICATION_SHORTNAME + QString("-logdir");
+        return QDir::temp().filePath(dirName);
+    }
 }
 
 void Logger::setupTemporaryFolderLogDir()
