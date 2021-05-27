@@ -4,10 +4,18 @@
  *          any purpose.
  *          */
 
+#include <QtGlobal>
 #include <QtTest>
 
 #include "folderwatcher_linux.h"
 #include "common/utility.h"
+
+#define CHECKED_SYSTEM(cmd_)                  \
+    do {                                      \
+        int result_ = system(cmd_);           \
+        Q_ASSERT(WIFEXITED(result_));         \
+        Q_ASSERT(WEXITSTATUS(result_) == 0);  \
+    } while(0)
 
 using namespace OCC;
 
@@ -64,7 +72,7 @@ private slots:
 
     void cleanupTestCase() {
         if( _root.startsWith(QDir::tempPath() )) {
-           system( QString("rm -rf %1").arg(_root).toLocal8Bit() );
+            CHECKED_SYSTEM( QString("rm -rf %1").arg(_root).toLocal8Bit() );
         }
     }
 };

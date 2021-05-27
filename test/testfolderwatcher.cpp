@@ -5,10 +5,18 @@
  *
  */
 
+#include <QtGlobal>
 #include <QtTest>
 
 #include "folderwatcher.h"
 #include "common/utility.h"
+
+#define CHECKED_SYSTEM(cmd_)                  \
+    do {                                      \
+        int result_ = system(cmd_);           \
+        Q_ASSERT(WIFEXITED(result_));         \
+        Q_ASSERT(WEXITSTATUS(result_) == 0);  \
+    } while(0)
 
 void touch(const QString &file)
 {
@@ -18,7 +26,7 @@ void touch(const QString &file)
     QString cmd;
     cmd = QString("touch %1").arg(file);
     qDebug() << "Command: " << cmd;
-    system(cmd.toLocal8Bit());
+    CHECKED_SYSTEM(cmd.toLocal8Bit());
 #endif
 }
 
@@ -30,7 +38,7 @@ void mkdir(const QString &file)
 #else
     QString cmd = QString("mkdir %1").arg(file);
     qDebug() << "Command: " << cmd;
-    system(cmd.toLocal8Bit());
+    CHECKED_SYSTEM(cmd.toLocal8Bit());
 #endif
 }
 
@@ -42,7 +50,7 @@ void rmdir(const QString &file)
 #else
     QString cmd = QString("rmdir %1").arg(file);
     qDebug() << "Command: " << cmd;
-    system(cmd.toLocal8Bit());
+    CHECKED_SYSTEM(cmd.toLocal8Bit());
 #endif
 }
 
@@ -53,7 +61,7 @@ void rm(const QString &file)
 #else
     QString cmd = QString("rm %1").arg(file);
     qDebug() << "Command: " << cmd;
-    system(cmd.toLocal8Bit());
+    CHECKED_SYSTEM(cmd.toLocal8Bit());
 #endif
 }
 
@@ -64,7 +72,7 @@ void mv(const QString &file1, const QString &file2)
 #else
     QString cmd = QString("mv %1 %2").arg(file1, file2);
     qDebug() << "Command: " << cmd;
-    system(cmd.toLocal8Bit());
+    CHECKED_SYSTEM(cmd.toLocal8Bit());
 #endif
 }
 
@@ -149,7 +157,7 @@ private slots:
         QString cmd;
         cmd = QString("echo \"xyz\" > %1").arg(file);
         qDebug() << "Command: " << cmd;
-        system(cmd.toLocal8Bit());
+        CHECKED_SYSTEM(cmd.toLocal8Bit());
 
         QVERIFY(waitForPathChanged(file));
     }
