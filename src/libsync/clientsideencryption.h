@@ -27,7 +27,7 @@ QString baseUrl();
 
 namespace EncryptionHelper {
     QByteArray generateRandomFilename();
-    QByteArray generateRandom(int size);
+    OWNCLOUDSYNC_EXPORT QByteArray generateRandom(int size);
     QByteArray generatePassword(const QString &wordlist, const QByteArray& salt);
     OWNCLOUDSYNC_EXPORT QByteArray encryptPrivateKey(
             const QByteArray& key,
@@ -60,10 +60,10 @@ namespace EncryptionHelper {
             const QByteArray& data
     );
 
-    bool fileEncryption(const QByteArray &key, const QByteArray &iv,
+    OWNCLOUDSYNC_EXPORT bool fileEncryption(const QByteArray &key, const QByteArray &iv,
                       QFile *input, QFile *output, QByteArray& returnTag);
 
-    bool fileDecryption(const QByteArray &key, const QByteArray& iv,
+    OWNCLOUDSYNC_EXPORT bool fileDecryption(const QByteArray &key, const QByteArray &iv,
                                QFile *input, QFile *output);
 
     //
@@ -92,7 +92,8 @@ private:
     EVP_CIPHER_CTX *_ctx;
 };
 
-class StreamingDecryptor {
+class OWNCLOUDSYNC_EXPORT StreamingDecryptor
+{
 public:
     StreamingDecryptor(const QByteArray &key, const QByteArray &iv, quint64 totalSize);
     ~StreamingDecryptor() = default;

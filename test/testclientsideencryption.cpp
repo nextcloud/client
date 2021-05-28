@@ -6,6 +6,9 @@
 
 #include <QtTest>
 
+#include <QTemporaryFile>
+#include <QRandomGenerator>
+
 #include "clientsideencryption.h"
 
 using namespace OCC;
@@ -131,6 +134,79 @@ private slots:
 
         // THEN
         QCOMPARE(data, originalData);
+    }
+
+    void testStreamingDecryptor()
+    {
+        QTemporaryFile dummyInputFile;
+
+        QVERIFY(dummyInputFile.open());
+
+        const auto dummyFileRandomContents = EncryptionHelper::generateRandom(272);
+
+        QCOMPARE(dummyInputFile.write(dummyFileRandomContents), dummyFileRandomContents.size());
+
+        const auto generateHash = [](const QByteArray &data) {
+            QCryptographicHash hash(QCryptographicHash::Sha1);
+            hash.addData(data);
+            return hash.result();
+        };
+
+        const QByteArray originalFileHash = generateHash(dummyFileRandomContents);
+
+        QVERIFY(!originalFileHash.isEmpty());
+
+        dummyInputFile.close();
+        QVERIFY(!dummyInputFile.isOpen());
+
+        const auto encryptionKey = EncryptionHelper::generateRandom(16);
+        const auto initializationVector = EncryptionHelper::generateRandom(16);
+
+        // test normal file encryption/decryption
+        QTemporaryFile dummyEncryptionOutputFile;
+
+        QByteArray tag;
+
+        QVERIFY(EncryptionHelper::fileEncryption(encryptionKey, initializationVector, &dummyInputFile, &dummyEncryptionOutputFile, tag));
+        dummyInputFile.close();
+        QVERIFY(!dummyInputFile.isOpen());
+
+        dummyEncryptionOutputFile.close();
+        QVERIFY(!dummyEncryptionOutputFile.isOpen());
+
+        QTemporaryFile dummyDecryptionOutputFile;
+
+        QVERIFY(EncryptionHelper::fileDecryption(encryptionKey, initializationVector, &dummyEncryptionOutputFile, &dummyDecryptionOutputFile));
+        QVERIFY(dummyDecryptionOutputFile.open());
+        const auto dummyDecryptionOutputFileHash = generateHash(dummyDecryptionOutputFile.readAll());
+        QCOMPARE(dummyDecryptionOutputFileHash, originalFileHash);
+
+        // test streaming decryptor
+        EncryptionHelper::StreamingDecryptor streamingDecryptor(encryptionKey, initializationVector, dummyEncryptionOutputFile.size());
+        QVERIFY(streamingDecryptor.isInitialized());
+
+        QBuffer chunkedOutputDecrypted;
+        QVERIFY(chunkedOutputDecrypted.open(QBuffer::WriteOnly));
+
+        QVERIFY(dummyEncryptionOutputFile.open());
+
+        const auto readBytesAvailable = dummyEncryptionOutputFile.bytesAvailable();
+        while (dummyEncryptionOutputFile.pos() < readBytesAvailable) {
+            // auto toRead = QRandomGenerator::global()->bounded(8, 128);
+            // decryption is going to fail if last chunk does not include or does not equal to 16-bytes tag (accumulation required? - but where? in the caller's code?)
+            auto toRead = 64;
+            if (dummyEncryptionOutputFile.pos() + toRead > readBytesAvailable) {
+                toRead = readBytesAvailable - dummyEncryptionOutputFile.pos();
+            }
+            const auto decryptedBytes = streamingDecryptor.chunkDecryption(dummyEncryptionOutputFile.read(toRead).constData(), &chunkedOutputDecrypted, toRead);
+            QVERIFY(decryptedBytes != -1);
+            QVERIFY(decryptedBytes == toRead || streamingDecryptor.isFinished());
+        }
+        chunkedOutputDecrypted.close();
+
+        QVERIFY(chunkedOutputDecrypted.open(QBuffer::ReadOnly));
+        QCOMPARE(generateHash(chunkedOutputDecrypted.readAll()), originalFileHash);
+        chunkedOutputDecrypted.close();
     }
 };
 
