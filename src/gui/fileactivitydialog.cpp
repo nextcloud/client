@@ -69,12 +69,12 @@ public:
         QStyleOptionViewItem opt(option);
         initStyleOption(&opt, index);
 
-        int textHeight = timestampBox(opt, index).height()
+        const auto textHeight = timestampBox(opt, index).height()
             + _spacingVertical + messageBox(opt, index).height();
-        int iconHeight = _iconSize;
-        int h = textHeight > iconHeight ? textHeight : iconHeight;
+        const auto iconHeight = _iconSize;
+        const auto fullHeight = textHeight > iconHeight ? textHeight : iconHeight;
 
-        return { opt.rect.width(), _margins.top() + h + _margins.bottom() };
+        return { opt.rect.width(), _margins.top() + fullHeight + _margins.bottom() };
     }
 
 private:

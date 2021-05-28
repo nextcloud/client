@@ -1,3 +1,16 @@
+/*
+ * Copyright (C) by Felix Weilbach <felix.weilbach@nextcloud.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ */
 #pragma once
 
 #include <QObject>
@@ -17,9 +30,7 @@ public:
     explicit ActivityJob(QObject *parent = nullptr);
 
     virtual void queryActivities(Optional<QString> objectType,
-        Optional<QString> objectId, int limit = defaultNumberActivitiesFetchedPerRequest) = 0;
-
-    static constexpr auto defaultNumberActivitiesFetchedPerRequest = 50;
+        Optional<QString> objectId, Optional<int> limit = {}) = 0;
 
 signals:
     void finished(const std::vector<Activity> &activities);
@@ -33,10 +44,12 @@ public:
     explicit OcsActivityJob(AccountPtr account, QObject *parent = nullptr);
 
     void queryActivities(Optional<QString> objectType,
-        Optional<QString> objectId, int limit = ActivityJob::defaultNumberActivitiesFetchedPerRequest) override;
+        Optional<QString> objectId, Optional<int> limit = {}) override;
 
 private:
-    void startJsonApiJob(const Optional<QString> &since = {});
+    void startJsonApiJob(const Optional<QString> &objectType = {}, const Optional<QString> &objectId = {},
+        const Optional<int> &since = {}, const Optional<int> &limit = {});
+    void startNextJsonApiJob(const QUrl &nextLink);
     void jsonApiJobFinished(const JsonApiJob &job, const QJsonDocument &json, int statusCode);
     Activity jsonObjectToActivity(const QJsonObject &activityJson);
     std::vector<Activity> jsonArrayToActivities(const QJsonArray &activitiesJson);
@@ -45,8 +58,7 @@ private:
     void processNextPage(const QNetworkReply *reply);
 
     AccountPtr _account;
-    int _limit = ActivityJob::defaultNumberActivitiesFetchedPerRequest;
-    Optional<QString> _objectId;
-    Optional<QString> _objectType;
+    // Optional<QString> _objectId;
+    // Optional<QString> _objectType;
 };
 }

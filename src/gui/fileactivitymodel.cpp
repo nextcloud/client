@@ -87,6 +87,7 @@ void FileActivityListModel::addFileActivity(const FileActivity &fileActivity)
 {
     const auto fileActivitiesMapIter = _fileActivityMap.find(fileActivity.id());
     if (fileActivitiesMapIter != _fileActivityMap.end()) {
+        // Update a already inserted activity
         const auto fileActivityToUpdate = std::get<1>(fileActivitiesMapIter->second);
         const auto fileActivityToUpdateIndex = std::get<0>(fileActivitiesMapIter->second);
         fileActivityToUpdate->setMessage(fileActivity.message());
@@ -94,6 +95,7 @@ void FileActivityListModel::addFileActivity(const FileActivity &fileActivity)
         fileActivityToUpdate->setTimestamp(fileActivity.timestamp());
         emit dataChanged(index(fileActivityToUpdateIndex), index(fileActivityToUpdateIndex));
     } else {
+        // Insert a new activity
         const auto rowIndex = rowCount();
         beginInsertRows(QModelIndex(), rowIndex, rowIndex);
         auto fileActivityPtr = std::make_unique<FileActivity>(fileActivity.id(), fileActivity.message(),
@@ -241,6 +243,7 @@ void FileActivityDialogModel::activitiesReceived(const std::vector<Activity> &ac
             }
             return FileActivity(activity._id, activity._subject, activity._dateTime, type);
         });
+
     _fileActivityListModel.addFileActivities(fileActivities);
     showActivities();
     hideProgress();

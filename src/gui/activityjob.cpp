@@ -1,3 +1,16 @@
+/*
+ * Copyright (C) by Felix Weilbach <felix.weilbach@nextcloud.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ */
 #include <QUrlQuery>
 #include <QJsonArray>
 
@@ -20,19 +33,17 @@ OcsActivityJob::OcsActivityJob(AccountPtr account, QObject *parent)
 {
 }
 
-void OcsActivityJob::queryActivities(Optional<QString> objectType, Optional<QString> objectId, int limit)
+void OcsActivityJob::queryActivities(Optional<QString> objectType, Optional<QString> objectId, Optional<int> limit)
 {
-    _limit = limit;
-    _objectId = std::move(objectId);
-    _objectType = std::move(objectType);
-
-    startJsonApiJob();
+    startJsonApiJob(objectType, objectId, limit);
 }
 
-void OcsActivityJob::startJsonApiJob(const Optional<QString> &since)
+void OcsActivityJob::startJsonApiJob(const Optional<QString> &objectType, const Optional<QString> &objectId,
+    const Optional<int> &since, const Optional<int> &limit)
 {
-    const auto url = _objectType || _objectId ? QStringLiteral("ocs/v2.php/apps/activity/api/v2/activity/filter")
-                                              : QStringLiteral("ocs/v2.php/apps/activity/api/v2/activity");
+    qCDebug(lcActivityJob) << "start activity job";
+    const auto url = objectType || objectId ? QStringLiteral("ocs/v2.php/apps/activity/api/v2/activity/filter")
+                                            : QStringLiteral("ocs/v2.php/apps/activity/api/v2/activity");
     auto job = new JsonApiJob(_account, url, this);
     QObject::connect(job, &JsonApiJob::jsonReceived,
         this, [this, job](const QJsonDocument &json, int statusCode) {
@@ -40,17 +51,34 @@ void OcsActivityJob::startJsonApiJob(const Optional<QString> &since)
         });
 
     QUrlQuery params;
-    if (_objectType) {
-        params.addQueryItem(QStringLiteral("object_type"), *_objectType);
+    if (objectType) {
+        params.addQueryItem(QStringLiteral("object_type"), *objectType);
     }
-    if (_objectId) {
-        params.addQueryItem(QStringLiteral("object_id"), *_objectId);
+    if (objectId) {
+        params.addQueryItem(QStringLiteral("object_id"), *objectId);
     }
     if (since) {
-        params.addQueryItem(QStringLiteral("since"), *since);
+        params.addQueryItem(QStringLiteral("since"), QString::number(*since));
     }
-    params.addQueryItem(QStringLiteral("limit"), QString::number(_limit));
+    if (limit) {
+        params.addQueryItem(QStringLiteral("limit"), QString::number(*limit));
+    }
     job->addQueryParams(params);
+    job->start();
+}
+
+void OcsActivityJob::startNextJsonApiJob(const QUrl &nextLink)
+{
+    qCDebug(lcActivityJob) << "start activity job" << nextLink;
+    QString nextLinkPath = nextLink.toString();
+    nextLinkPath.replace(_account->url().toString(), "");
+    qCDebug(lcActivityJob) << "path" << nextLinkPath;
+
+    auto job = new JsonApiJob(_account, nextLinkPath, this);
+    QObject::connect(job, &JsonApiJob::jsonReceived,
+        this, [this, job](const QJsonDocument &json, int statusCode) {
+            jsonApiJobFinished(*job, json, statusCode);
+        });
     job->start();
 }
 
@@ -90,31 +118,21 @@ void OcsActivityJob::processActivities(const QJsonDocument &json)
 static QUrl parseLinkFromHeader(const QByteArray &linkRawHeader)
 {
     // The link is ecapsulated in a tag. We need to parse this tag.
+    const QString tagPrefix = QStringLiteral("<");
+    const QString tagSuffix = QStringLiteral(">; rel=\"next\"");
 
-    constexpr auto linkHeaderTagMinimumExpectedLength = 14;
+    const auto linkHeaderTagMinimumExpectedLength = tagPrefix.size() + tagSuffix.size();
+
     if (linkRawHeader.size() <= linkHeaderTagMinimumExpectedLength) {
         qCWarning(lcActivityJob) << "Link to next page submitted, but could not be parsed";
         return {};
     }
 
-    constexpr auto linkHeaderTagUnnecessaryExcessPrefixLength = 1;
-    constexpr auto linkHeaderTagUnnecessaryExcessSuffixLength = 14;
-    return QString(linkRawHeader.chopped(linkHeaderTagUnnecessaryExcessSuffixLength)
-                       .mid(linkHeaderTagUnnecessaryExcessPrefixLength));
-}
+    auto link = linkRawHeader;
+    link.replace(tagPrefix, "");
+    link.replace(tagSuffix, "");
 
-static QString getQueryItemFromLink(const QUrl &url, const QString &queryItemName)
-{
-    QUrlQuery query(url);
-    if (!query.hasQueryItem(queryItemName)) {
-        return {};
-    }
-    return query.queryItemValue(queryItemName);
-}
-
-static QString getSinceQueryItemFromLink(const QUrl &url)
-{
-    return getQueryItemFromLink(url, QStringLiteral("since"));
+    return QUrl(link);
 }
 
 void OcsActivityJob::processNextPage(const QNetworkReply *reply)
@@ -122,21 +140,18 @@ void OcsActivityJob::processNextPage(const QNetworkReply *reply)
     if (reply->hasRawHeader("Link")) {
         const auto nextLink = parseLinkFromHeader(reply->rawHeader("Link"));
         if (!nextLink.isValid()) {
-            qCWarning(lcActivityJob) << "Link to next page submitted, but could not be parsed";
+            qCWarning(lcActivityJob) << "Link" << nextLink << "to next page submitted, but could not be parsed";
             emit error();
+            return;
         }
-        const auto since = getSinceQueryItemFromLink(nextLink);
-        if (since.isEmpty()) {
-            qCWarning(lcActivityJob) << "Link to next page submitted, but the link has no since query item";
-            emit error();
-        }
-        startJsonApiJob(since);
+        startNextJsonApiJob(nextLink);
     }
 }
 
 void OcsActivityJob::jsonApiJobFinished(const JsonApiJob &job, const QJsonDocument &json, int statusCode)
 {
-    if (statusCode != 200) {
+    if (statusCode != 200 && statusCode != 304) {
+        qCWarning(lcActivityJob) << "Json api job finished with status code" << statusCode;
         emit error();
         return;
     }

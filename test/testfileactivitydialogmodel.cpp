@@ -32,7 +32,7 @@
     const auto queryAcitivitiesCall = queryActivitiesCalls[index];                                        \
     QCOMPARE(*std::get<0>(queryAcitivitiesCall), (objectType));                                           \
     QCOMPARE(*std::get<1>(queryAcitivitiesCall), (objectId));                                             \
-    QCOMPARE(std::get<2>(queryAcitivitiesCall), (limit))
+    QCOMPARE(*std::get<2>(queryAcitivitiesCall), (limit))
 
 #define COMPARE_FILE_ACTIVITY(actualFileActivity, expectedId, expectedSubject, expectedFileAction, expectedDateTime) \
     QCOMPARE((actualFileActivity).id(), (expectedId));                                                               \
@@ -43,13 +43,14 @@
 class FakeActivityJob : public OCC::ActivityJob
 {
 public:
-    void queryActivities(OCC::Optional<QString> objectType, OCC::Optional<QString> objectId, int limit) override
+    void queryActivities(OCC::Optional<QString> objectType,
+        OCC::Optional<QString> objectId, OCC::Optional<int> limit = {}) override
     {
         _queryActivitiesCalls.emplace_back(objectType, objectId, limit);
         emit finished(_activities);
     }
 
-    std::vector<std::tuple<OCC::Optional<QString>, OCC::Optional<QString>, int>> queryActivitiesCalls() const
+    std::vector<std::tuple<OCC::Optional<QString>, OCC::Optional<QString>, OCC::Optional<int>>> queryActivitiesCalls() const
     {
         return _queryActivitiesCalls;
     }
@@ -58,7 +59,7 @@ public:
 
 
 private:
-    std::vector<std::tuple<OCC::Optional<QString>, OCC::Optional<QString>, int>> _queryActivitiesCalls;
+    std::vector<std::tuple<OCC::Optional<QString>, OCC::Optional<QString>, OCC::Optional<int>>> _queryActivitiesCalls;
     std::vector<OCC::Activity> _activities;
 };
 

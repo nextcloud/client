@@ -116,7 +116,7 @@ private:
     FileActivityListModel _fileActivityListModel;
     std::unique_ptr<ActivityJob> _activityJob;
     QTimer _activitiesPollTimer;
-    QString _fileId = "";
+    QString _fileId;
 };
 }
 
