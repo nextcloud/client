@@ -26,6 +26,7 @@
 #include "fileactivitydialog.h"
 #include "fileactivitymodel.h"
 #include "activityjob.h"
+#include "tray/ActivityListModel.h"
 
 Q_LOGGING_CATEGORY(lcFileActivityModel, "nextcloud.gui.fileactivitymodel", QtInfoMsg)
 
@@ -180,6 +181,14 @@ std::shared_ptr<QPixmap> FileActivityListModel::pixmapForActivityType(FileActivi
     }
 }
 
+void FileActivityListModel::clear()
+{
+    beginResetModel();
+    _fileActivities.clear();
+    _fileActivityMap.clear();
+    endResetModel();
+}
+
 constexpr auto defaultActivityPollInterval = 30 * 1000;
 
 FileActivityDialogModel::FileActivityDialogModel(std::unique_ptr<ActivityJob> activityJob, PushNotifications *pushNotifications, QObject *parent)
@@ -205,8 +214,6 @@ FileActivityDialogModel::FileActivityDialogModel(std::unique_ptr<ActivityJob> ac
 void FileActivityDialogModel::start(const QString &fileId)
 {
     _fileId = fileId;
-    hideActivities();
-    showProgress();
     queryActivities();
 }
 
@@ -215,7 +222,12 @@ void FileActivityDialogModel::queryActivities()
     if (_fileId.isEmpty()) {
         return;
     }
+
     hideError();
+    hideActivities();
+    showProgress();
+
+    _fileActivityListModel.clear();
     const QString type = "files";
     _activityJob->queryActivities(type, _fileId);
 }

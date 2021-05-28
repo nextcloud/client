@@ -79,6 +79,8 @@ public:
 
     static std::shared_ptr<QPixmap> pixmapForActivityType(FileActivity::Type type, int size);
 
+    void clear();
+
 private:
     static std::shared_ptr<QPixmap> getIconPixmap(const QString &iconName, int size);
 
