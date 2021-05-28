@@ -20,11 +20,11 @@ OcsActivityJob::OcsActivityJob(AccountPtr account, QObject *parent)
 {
 }
 
-void OcsActivityJob::queryActivities(const Optional<QString> &objectType, const Optional<QString> &objectId, int limit)
+void OcsActivityJob::queryActivities(Optional<QString> objectType, Optional<QString> objectId, int limit)
 {
     _limit = limit;
-    _objectId = objectId;
-    _objectType = objectType;
+    _objectId = std::move(objectId);
+    _objectType = std::move(objectType);
 
     startJsonApiJob();
 }

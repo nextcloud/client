@@ -13,10 +13,10 @@
  */
 #pragma once
 
-#include <QDialog>
-
 #include "fileactivitymodel.h"
 #include "account.h"
+
+#include <QDialog>
 
 namespace OCC {
 

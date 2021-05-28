@@ -16,8 +16,8 @@ class ActivityJob : public QObject
 public:
     explicit ActivityJob(QObject *parent = nullptr);
 
-    virtual void queryActivities(const Optional<QString> &objectType,
-        const Optional<QString> &objectId, int limit = defaultNumberActivitiesFetchedPerRequest) = 0;
+    virtual void queryActivities(Optional<QString> objectType,
+        Optional<QString> objectId, int limit = defaultNumberActivitiesFetchedPerRequest) = 0;
 
     static constexpr auto defaultNumberActivitiesFetchedPerRequest = 50;
 
@@ -32,8 +32,8 @@ class OcsActivityJob : public ActivityJob
 public:
     explicit OcsActivityJob(AccountPtr account, QObject *parent = nullptr);
 
-    void queryActivities(const Optional<QString> &objectType,
-        const Optional<QString> &objectId, int limit = ActivityJob::defaultNumberActivitiesFetchedPerRequest) override;
+    void queryActivities(Optional<QString> objectType,
+        Optional<QString> objectId, int limit = ActivityJob::defaultNumberActivitiesFetchedPerRequest) override;
 
 private:
     void startJsonApiJob(const Optional<QString> &since = {});

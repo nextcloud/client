@@ -11,6 +11,13 @@
  * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
  * for more details.
  */
+#include <theme.h>
+
+#include "activityjob.h"
+#include "fileactivitydialog.h"
+#include "fileactivitymodel.h"
+#include "ui_fileactivitydialog.h"
+
 #include <QStringListModel>
 #include <QStyledItemDelegate>
 #include <QSpinBox>
@@ -19,12 +26,7 @@
 #include <QLoggingCategory>
 #include <QAbstractItemModel>
 #include <QPalette>
-#include <theme.h>
 
-#include "activityjob.h"
-#include "fileactivitydialog.h"
-#include "fileactivitymodel.h"
-#include "ui_fileactivitydialog.h"
 
 Q_LOGGING_CATEGORY(lcFileActivity, "nextcloud.gui.fileactivity", QtInfoMsg)
 

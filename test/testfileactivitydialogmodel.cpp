@@ -43,7 +43,7 @@
 class FakeActivityJob : public OCC::ActivityJob
 {
 public:
-    void queryActivities(const OCC::Optional<QString> &objectType, const OCC::Optional<QString> &objectId, int limit) override
+    void queryActivities(OCC::Optional<QString> objectType, OCC::Optional<QString> objectId, int limit) override
     {
         _queryActivitiesCalls.emplace_back(objectType, objectId, limit);
         emit finished(_activities);
