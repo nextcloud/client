@@ -33,17 +33,16 @@ OcsActivityJob::OcsActivityJob(AccountPtr account, QObject *parent)
 {
 }
 
-void OcsActivityJob::queryActivities(Optional<QString> objectType, Optional<QString> objectId, Optional<int> limit)
+void OcsActivityJob::queryActivities(Optional<QString> objectType, Optional<QString> objectId, Optional<int> since)
 {
-    startJsonApiJob(objectType, objectId, limit);
+    startJsonApiJob(objectType, objectId, since);
 }
 
 void OcsActivityJob::startJsonApiJob(const Optional<QString> &objectType, const Optional<QString> &objectId,
-    const Optional<int> &since, const Optional<int> &limit)
+    const Optional<int> &since)
 {
     qCDebug(lcActivityJob) << "start activity job";
-    const auto url = objectType || objectId ? QStringLiteral("ocs/v2.php/apps/activity/api/v2/activity/filter")
-                                            : QStringLiteral("ocs/v2.php/apps/activity/api/v2/activity");
+    const QString url(QStringLiteral("ocs/v2.php/apps/activity/api/v2/activity/filter"));
     auto job = new JsonApiJob(_account, url, this);
     QObject::connect(job, &JsonApiJob::jsonReceived,
         this, [this, job](const QJsonDocument &json, int statusCode) {
@@ -51,6 +50,7 @@ void OcsActivityJob::startJsonApiJob(const Optional<QString> &objectType, const 
         });
 
     QUrlQuery params;
+    params.addQueryItem(QStringLiteral("sort"), QStringLiteral("asc"));
     if (objectType) {
         params.addQueryItem(QStringLiteral("object_type"), *objectType);
     }
@@ -59,9 +59,6 @@ void OcsActivityJob::startJsonApiJob(const Optional<QString> &objectType, const 
     }
     if (since) {
         params.addQueryItem(QStringLiteral("since"), QString::number(*since));
-    }
-    if (limit) {
-        params.addQueryItem(QStringLiteral("limit"), QString::number(*limit));
     }
     job->addQueryParams(params);
     job->start();

@@ -30,7 +30,7 @@ public:
     explicit ActivityJob(QObject *parent = nullptr);
 
     virtual void queryActivities(Optional<QString> objectType,
-        Optional<QString> objectId, Optional<int> limit = {}) = 0;
+        Optional<QString> objectId, Optional<int> since = {}) = 0;
 
 signals:
     void finished(const std::vector<Activity> &activities);
@@ -44,11 +44,11 @@ public:
     explicit OcsActivityJob(AccountPtr account, QObject *parent = nullptr);
 
     void queryActivities(Optional<QString> objectType,
-        Optional<QString> objectId, Optional<int> limit = {}) override;
+        Optional<QString> objectId, Optional<int> since = {}) override;
 
 private:
     void startJsonApiJob(const Optional<QString> &objectType = {}, const Optional<QString> &objectId = {},
-        const Optional<int> &since = {}, const Optional<int> &limit = {});
+        const Optional<int> &since = {});
     void startNextJsonApiJob(const QUrl &nextLink);
     void jsonApiJobFinished(const JsonApiJob &job, const QJsonDocument &json, int statusCode);
     Activity jsonObjectToActivity(const QJsonObject &activityJson);

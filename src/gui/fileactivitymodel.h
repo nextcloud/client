@@ -79,8 +79,6 @@ public:
 
     static std::shared_ptr<QPixmap> pixmapForActivityType(FileActivity::Type type, int size);
 
-    void clear();
-
 private:
     static std::shared_ptr<QPixmap> getIconPixmap(const QString &iconName, int size);
 
@@ -119,6 +117,7 @@ private:
     std::unique_ptr<ActivityJob> _activityJob;
     QTimer _activitiesPollTimer;
     QString _fileId;
+    int _since = 0;
 };
 }
 

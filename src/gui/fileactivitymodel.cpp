@@ -116,7 +116,7 @@ void FileActivityListModel::addFileActivity(const FileActivity &fileActivity)
 
 void FileActivityListModel::addFileActivities(const std::vector<FileActivity> &fileActivities)
 {
-    for (const auto fileActivity : fileActivities) {
+    for (const auto &fileActivity : fileActivities) {
         addFileActivity(fileActivity);
     }
 }
@@ -124,7 +124,7 @@ void FileActivityListModel::addFileActivities(const std::vector<FileActivity> &f
 int FileActivityListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return _fileActivities.size();
+    return static_cast<int>(_fileActivities.size());
 }
 
 QVariant FileActivityListModel::data(const QModelIndex &index, int role) const
@@ -165,9 +165,7 @@ std::shared_ptr<QPixmap> FileActivityListModel::getIconPixmap(const QString &ico
 std::shared_ptr<QPixmap> FileActivityListModel::pixmapForActivityType(FileActivity::Type type, int size)
 {
     QPalette palette;
-    auto theme = Theme::instance();
     const auto backgroundColor = palette.window().color();
-    const auto isDarkBackground = Theme::isDarkColor(backgroundColor);
 
     switch (type) {
     case FileActivity::Type::Changed:
@@ -179,14 +177,6 @@ std::shared_ptr<QPixmap> FileActivityListModel::pixmapForActivityType(FileActivi
     default:
         return getIconPixmap(QStringLiteral("activity.svg"), size);
     }
-}
-
-void FileActivityListModel::clear()
-{
-    beginResetModel();
-    _fileActivities.clear();
-    _fileActivityMap.clear();
-    endResetModel();
 }
 
 constexpr auto defaultActivityPollInterval = 30 * 1000;
@@ -214,6 +204,9 @@ FileActivityDialogModel::FileActivityDialogModel(std::unique_ptr<ActivityJob> ac
 void FileActivityDialogModel::start(const QString &fileId)
 {
     _fileId = fileId;
+
+    hideActivities();
+    showProgress();
     queryActivities();
 }
 
@@ -224,12 +217,8 @@ void FileActivityDialogModel::queryActivities()
     }
 
     hideError();
-    hideActivities();
-    showProgress();
-
-    _fileActivityListModel.clear();
     const QString type = "files";
-    _activityJob->queryActivities(type, _fileId);
+    _activityJob->queryActivities(type, _fileId, _since);
 }
 
 FileActivityListModel *FileActivityDialogModel::getActivityListModel()
@@ -241,7 +230,8 @@ void FileActivityDialogModel::activitiesReceived(const std::vector<Activity> &ac
 {
     std::vector<FileActivity> fileActivities;
     std::transform(
-        activites.cbegin(), activites.cend(), std::back_inserter(fileActivities), [](const Activity &activity) {
+        activites.cbegin(), activites.cend(), std::back_inserter(fileActivities), [&](const Activity &activity) {
+            _since = static_cast<int>(activity._id);
             FileActivity::Type type;
             if (activity._fileAction == "file_created") {
                 type = FileActivity::Type::Created;
@@ -253,7 +243,7 @@ void FileActivityDialogModel::activitiesReceived(const std::vector<Activity> &ac
                 qCWarning(lcFileActivityModel) << "Unknown file action" << activity._fileAction << "encountered";
                 type = FileActivity::Type::Unknown;
             }
-            return FileActivity(activity._id, activity._subject, activity._dateTime, type);
+            return FileActivity(static_cast<int>(activity._id), activity._subject, activity._dateTime, type);
         });
 
     _fileActivityListModel.addFileActivities(fileActivities);
