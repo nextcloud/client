@@ -38,7 +38,7 @@
     QCOMPARE((actualFileActivity).id(), (expectedId));                                                               \
     QCOMPARE((actualFileActivity).message(), (expectedSubject));                                                     \
     QCOMPARE((actualFileActivity).type(), (expectedFileAction));                                                     \
-    QCOMPARE((actualFileActivity).timestamp(), (expectedDateTime));
+    QCOMPARE((actualFileActivity).dateTime(), (expectedDateTime));
 
 class FakeActivityJob : public OCC::ActivityJob
 {
@@ -161,7 +161,7 @@ private slots:
             QVERIFY(listModel->data(listModel->index(0)).canConvert<OCC::FileActivity>());
             const auto fileActivity = qvariant_cast<OCC::FileActivity>(listModel->data(listModel->index(0)));
             COMPARE_FILE_ACTIVITY(fileActivity, activity1Updated.id(), activity1Updated.message(),
-                activity1Updated.type(), activity1Updated.timestamp());
+                activity1Updated.type(), activity1Updated.dateTime());
         }
         {
             QVERIFY(listModel->data(listModel->index(1)).canConvert<OCC::FileActivity>());
@@ -198,7 +198,7 @@ private slots:
             QVERIFY(listModel->data(listModel->index(0)).canConvert<OCC::FileActivity>());
             const auto fileActivity = qvariant_cast<OCC::FileActivity>(listModel->data(listModel->index(0)));
             COMPARE_FILE_ACTIVITY(fileActivity, newActivity.id(), newActivity.message(),
-                newActivity.type(), newActivity.timestamp());
+                newActivity.type(), newActivity.dateTime());
         }
         {
             QVERIFY(listModel->data(listModel->index(1)).canConvert<OCC::FileActivity>());

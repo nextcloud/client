@@ -11,6 +11,7 @@
  * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
  * for more details.
  */
+#include <cstddef>
 #include <iterator>
 #include <tuple>
 #include <algorithm>
@@ -29,6 +30,10 @@
 #include "tray/ActivityListModel.h"
 
 Q_LOGGING_CATEGORY(lcFileActivityModel, "nextcloud.gui.fileactivitymodel", QtInfoMsg)
+
+namespace {
+constexpr auto defaultActivityPollInterval = 20 * 1000;
+}
 
 namespace OCC {
 
@@ -57,7 +62,7 @@ void FileActivity::setMessage(const QString &message)
     _message = message;
 }
 
-QDateTime FileActivity::timestamp() const
+QDateTime FileActivity::dateTime() const
 {
     return _timestamp;
 }
@@ -79,9 +84,32 @@ void FileActivity::setType(Type type)
 
 std::unordered_map<int, std::unordered_map<QString, std::shared_ptr<QPixmap>>> FileActivityListModel::iconCache;
 
+static bool updateTimeAgo(FileActivityListModel::DisplayableFileActivity &fileActivity)
+{
+    const auto timeAgo = Utility::timeAgoInWords(fileActivity._dateTime.toLocalTime());
+
+    if (fileActivity._timeAgo != timeAgo) {
+        fileActivity._timeAgo = timeAgo;
+        return true;
+    }
+
+    return false;
+}
+
 FileActivityListModel::FileActivityListModel(QObject *parent)
     : QAbstractListModel(parent)
 {
+    _updateTimeAgoTimer.setInterval(defaultActivityPollInterval);
+    connect(&_updateTimeAgoTimer, &QTimer::timeout, this, [this] {
+        for (std::size_t i = 0; i < _fileActivities.size(); ++i) {
+            auto &fileActivity = *_fileActivities[i];
+            if (updateTimeAgo(fileActivity)) {
+                const auto fileActivityIndex = index(static_cast<int>(i));
+                emit dataChanged(fileActivityIndex, fileActivityIndex);
+            }
+        }
+    });
+    _updateTimeAgoTimer.start();
 }
 
 void FileActivityListModel::addFileActivity(const FileActivity &fileActivity)
@@ -91,26 +119,32 @@ void FileActivityListModel::addFileActivity(const FileActivity &fileActivity)
         // Update a already inserted activity
         const auto fileActivityToUpdate = std::get<1>(fileActivitiesMapIter->second);
         const auto fileActivityToUpdateIndex = std::get<0>(fileActivitiesMapIter->second);
-        fileActivityToUpdate->setMessage(fileActivity.message());
-        fileActivityToUpdate->setType(fileActivity.type());
-        fileActivityToUpdate->setTimestamp(fileActivity.timestamp());
+        fileActivityToUpdate->_message = fileActivity.message();
+        fileActivityToUpdate->_type = fileActivity.type();
+        fileActivityToUpdate->_dateTime = fileActivity.dateTime();
+        fileActivityToUpdate->_type = fileActivity.type();
+        updateTimeAgo(*fileActivityToUpdate);
         emit dataChanged(index(fileActivityToUpdateIndex), index(fileActivityToUpdateIndex));
     } else {
         // Insert a new activity
         const auto rowIndex = rowCount();
         beginInsertRows(QModelIndex(), rowIndex, rowIndex);
-        auto fileActivityPtr = std::make_unique<FileActivity>(fileActivity.id(), fileActivity.message(),
-            fileActivity.timestamp(), fileActivity.type());
-        _fileActivityMap[fileActivityPtr->id()] = std::make_tuple(_fileActivities.size(),
+        auto fileActivityPtr = std::make_unique<DisplayableFileActivity>();
+        fileActivityPtr->_id = fileActivity.id();
+        fileActivityPtr->_message = fileActivity.message();
+        fileActivityPtr->_dateTime = fileActivity.dateTime();
+        fileActivityPtr->_type = fileActivity.type();
+        updateTimeAgo(*fileActivityPtr);
+        _fileActivityMap[fileActivityPtr->_id] = std::make_tuple(_fileActivities.size(),
             fileActivityPtr.get());
         _fileActivities.emplace_back(std::move(fileActivityPtr));
         endInsertRows();
     }
 
     std::sort(_fileActivities.begin(), _fileActivities.end(),
-        [](const std::unique_ptr<FileActivity> &fileActivityLeft,
-            const std::unique_ptr<FileActivity> &fileActivityRight) {
-            return fileActivityLeft->timestamp() < fileActivityRight->timestamp();
+        [](const std::unique_ptr<FileActivityListModel::DisplayableFileActivity> &fileActivityLeft,
+            const std::unique_ptr<FileActivityListModel::DisplayableFileActivity> &fileActivityRight) {
+            return fileActivityLeft->_dateTime < fileActivityRight->_dateTime;
         });
 }
 
@@ -179,8 +213,6 @@ std::shared_ptr<QPixmap> FileActivityListModel::pixmapForActivityType(FileActivi
     }
 }
 
-constexpr auto defaultActivityPollInterval = 30 * 1000;
-
 FileActivityDialogModel::FileActivityDialogModel(std::unique_ptr<ActivityJob> activityJob, QObject *parent)
     : QObject(parent)
     , _activityJob(std::move(activityJob))
@@ -189,10 +221,10 @@ FileActivityDialogModel::FileActivityDialogModel(std::unique_ptr<ActivityJob> ac
     connect(_activityJob.get(), &OcsActivityJob::error, this, &FileActivityDialogModel::onErrorFetchingActivities);
 
     _activitiesPollTimer.setInterval(defaultActivityPollInterval);
-    _activitiesPollTimer.start();
     connect(&_activitiesPollTimer, &QTimer::timeout, this, [this] {
         queryActivities();
     });
+    _activitiesPollTimer.start();
 }
 
 void FileActivityDialogModel::start(const QString &fileId)

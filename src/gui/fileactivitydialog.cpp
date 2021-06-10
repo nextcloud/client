@@ -56,7 +56,7 @@ public:
         drawBackground(opt, painter);
         drawBottomLine(opt, index, painter);
         const auto contentRect = opt.rect.adjusted(_margins.left(), _margins.top(), -_margins.right(), -_margins.bottom());
-        const auto item = qvariant_cast<FileActivity>(index.data());
+        const auto item = qvariant_cast<FileActivityListModel::DisplayableFileActivity>(index.data());
         drawMessageIcon(contentRect, item, painter);
         const auto timestampRect = drawTimestamp(opt, contentRect, item, painter);
         drawMessage(opt, timestampRect, item, painter);
@@ -78,25 +78,20 @@ public:
     }
 
 private:
-    QString timestampReadable(const QDateTime &dateTime) const
-    {
-        return Utility::timeAgoInWords(dateTime.toLocalTime());
-    }
-
-    QRect timestampBox(const QStyleOptionViewItem &option, const FileActivity &fileActivity) const
+    QRect timestampBox(const QStyleOptionViewItem &option, const FileActivityListModel::DisplayableFileActivity &fileActivity) const
     {
         auto timestampFont = option.font;
 
         timestampFont.setPointSizeF(timestampFontPointSize(option.font));
 
         return QFontMetrics(timestampFont)
-            .boundingRect(timestampReadable(fileActivity.timestamp()))
+            .boundingRect(fileActivity._timeAgo)
             .adjusted(0, 0, 1, 1);
     }
 
     QRect timestampBox(const QStyleOptionViewItem &option, const QModelIndex &index) const
     {
-        return timestampBox(option, qvariant_cast<FileActivity>(index.data()));
+        return timestampBox(option, qvariant_cast<FileActivityListModel::DisplayableFileActivity>(index.data()));
     }
 
     int timestampFontPointSize(const QFont &font) const
@@ -114,7 +109,8 @@ private:
         return option.fontMetrics.boundingRect(message).adjusted(0, 0, 1, 1);
     }
 
-    QRect drawTimestamp(const QStyleOptionViewItem &opt, const QRect &contentRectangle, const OCC::FileActivity &item, QPainter *painter) const
+    QRect drawTimestamp(const QStyleOptionViewItem &opt, const QRect &contentRectangle,
+        const FileActivityListModel::DisplayableFileActivity &item, QPainter *painter) const
     {
         QFont font(opt.font);
         font.setPointSize(timestampFontPointSize(opt.font));
@@ -125,7 +121,7 @@ private:
 
         painter->setFont(font);
         painter->setPen(palette.text().color());
-        painter->drawText(timestampRect, Qt::TextSingleLine, timestampReadable(item.timestamp()));
+        painter->drawText(timestampRect, Qt::TextSingleLine, item._timeAgo);
 
         return timestampRect;
     }
@@ -138,22 +134,23 @@ private:
             opt.rect.bottom(), lastIndex ? opt.rect.right() : opt.rect.right() - _margins.right(), opt.rect.bottom());
     }
 
-    void drawMessageIcon(const QRect &contentRect, const FileActivity &item, QPainter *painter) const
+    void drawMessageIcon(const QRect &contentRect, const FileActivityListModel::DisplayableFileActivity &item, QPainter *painter) const
     {
-        const auto pixmap = FileActivityListModel::pixmapForActivityType(item.type(), _iconSize);
+        const auto pixmap = FileActivityListModel::pixmapForActivityType(item._type, _iconSize);
         Q_ASSERT(pixmap);
         painter->drawPixmap(contentRect.left(), contentRect.top(), *pixmap);
     }
 
-    void drawMessage(const QStyleOptionViewItem &opt, const QRect &timestampRect, const OCC::FileActivity &item, QPainter *painter) const
+    void drawMessage(const QStyleOptionViewItem &opt, const QRect &timestampRect,
+        const FileActivityListModel::DisplayableFileActivity &item, QPainter *painter) const
     {
-        QRect messageRect(messageBox(opt, item.message()));
+        QRect messageRect(messageBox(opt, item._message));
 
         messageRect.moveTo(timestampRect.left(), timestampRect.bottom() + _spacingVertical);
 
         painter->setFont(opt.font);
         painter->setPen(opt.palette.windowText().color());
-        painter->drawText(messageRect, Qt::TextSingleLine, item.message());
+        painter->drawText(messageRect, Qt::TextSingleLine, item._message);
     }
 
     void drawBackground(const QStyleOptionViewItem &opt, QPainter *painter) const

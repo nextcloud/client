@@ -47,7 +47,7 @@ public:
 
     void setMessage(const QString &message);
 
-    QDateTime timestamp() const;
+    QDateTime dateTime() const;
 
     void setTimestamp(const QDateTime &dateTime);
 
@@ -65,6 +65,15 @@ private:
 class FileActivityListModel : public QAbstractListModel
 {
 public:
+    struct DisplayableFileActivity
+    {
+        int _id;
+        QString _message;
+        QDateTime _dateTime;
+        QString _timeAgo;
+        FileActivity::Type _type;
+    };
+
     explicit FileActivityListModel(QObject *parent = nullptr);
 
     void addFileActivity(const FileActivity &fileActivity);
@@ -82,9 +91,10 @@ public:
 private:
     static std::shared_ptr<QPixmap> getIconPixmap(const QString &iconName, int size);
 
-    std::unordered_map<int, std::tuple<int, FileActivity *>> _fileActivityMap;
-    std::vector<std::unique_ptr<FileActivity>> _fileActivities;
+    std::unordered_map<int, std::tuple<int, DisplayableFileActivity *>> _fileActivityMap;
+    std::vector<std::unique_ptr<DisplayableFileActivity>> _fileActivities;
     static std::unordered_map<int, std::unordered_map<QString, std::shared_ptr<QPixmap>>> iconCache;
+    QTimer _updateTimeAgoTimer;
 };
 
 class FileActivityDialogModel : public QObject
@@ -122,3 +132,4 @@ private:
 }
 
 Q_DECLARE_METATYPE(OCC::FileActivity)
+Q_DECLARE_METATYPE(OCC::FileActivityListModel::DisplayableFileActivity)
