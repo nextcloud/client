@@ -181,24 +181,18 @@ std::shared_ptr<QPixmap> FileActivityListModel::pixmapForActivityType(FileActivi
 
 constexpr auto defaultActivityPollInterval = 30 * 1000;
 
-FileActivityDialogModel::FileActivityDialogModel(std::unique_ptr<ActivityJob> activityJob, PushNotifications *pushNotifications, QObject *parent)
+FileActivityDialogModel::FileActivityDialogModel(std::unique_ptr<ActivityJob> activityJob, QObject *parent)
     : QObject(parent)
     , _activityJob(std::move(activityJob))
 {
     connect(_activityJob.get(), &OcsActivityJob::finished, this, &FileActivityDialogModel::activitiesReceived);
     connect(_activityJob.get(), &OcsActivityJob::error, this, &FileActivityDialogModel::onErrorFetchingActivities);
 
-    if (pushNotifications) {
-        connect(pushNotifications, &PushNotifications::activitiesChanged, this, [this](Account *) {
-            queryActivities();
-        });
-    } else {
-        _activitiesPollTimer.setInterval(defaultActivityPollInterval);
-        _activitiesPollTimer.start();
-        connect(&_activitiesPollTimer, &QTimer::timeout, this, [this] {
-            queryActivities();
-        });
-    }
+    _activitiesPollTimer.setInterval(defaultActivityPollInterval);
+    _activitiesPollTimer.start();
+    connect(&_activitiesPollTimer, &QTimer::timeout, this, [this] {
+        queryActivities();
+    });
 }
 
 void FileActivityDialogModel::start(const QString &fileId)

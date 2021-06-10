@@ -92,7 +92,7 @@ class FileActivityDialogModel : public QObject
     Q_OBJECT
 
 public:
-    explicit FileActivityDialogModel(std::unique_ptr<ActivityJob> activityJob, PushNotifications *pushNotifications = nullptr, QObject *parent = nullptr);
+    explicit FileActivityDialogModel(std::unique_ptr<ActivityJob> activityJob, QObject *parent = nullptr);
 
     void start(const QString &fileId);
 

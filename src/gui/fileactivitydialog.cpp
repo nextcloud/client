@@ -40,7 +40,7 @@ public:
     FileActivityDelegate(QObject *parent = nullptr)
         : QStyledItemDelegate(parent)
     {
-        _iconSize *= Theme::pixelRatio();
+        _iconSize = static_cast<int>(static_cast<double>(_iconSize) * Theme::pixelRatio());
     }
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
@@ -171,7 +171,7 @@ private:
 FileActivityDialog::FileActivityDialog(AccountPtr account, const QString &fileId, QWidget *parent)
     : QDialog(parent)
     , _ui(new Ui::FileActivityDialog)
-    , _model(std::make_unique<OcsActivityJob>(account), account->pushNotifications())
+    , _model(std::make_unique<OcsActivityJob>(account))
 {
     _ui->setupUi(this);
     _ui->activityListView->setModel(_model.getActivityListModel());
