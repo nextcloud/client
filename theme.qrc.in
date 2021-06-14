@@ -182,6 +182,8 @@
         <file>theme/copy.svg</file>
         <file>theme/more.svg</file>
         <file>theme/change.svg</file>
+        <file>theme/black/change.svg</file>
+        <file>theme/white/change.svg</file>
         <file>theme/lock-http.svg</file>
         <file>theme/lock-https.svg</file>
         <file>theme/lock-broken.svg</file>
@@ -192,6 +194,8 @@
         <file>theme/colored/@APPLICATION_ICON_NAME@-icon.svg</file>
         <file>theme/add.svg</file>
         <file>theme/share.svg</file>
+        <file>theme/black/share.svg</file>
+        <file>theme/white/share.svg</file>
         <file>theme/reply.svg</file>
         <file>theme/magnifying-glass.svg</file>
         <file>theme/colored/user-status-online.svg</file>
