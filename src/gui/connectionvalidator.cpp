@@ -192,7 +192,8 @@ void ConnectionValidator::slotAuthFailed(QNetworkReply *reply)
 
     } else if (reply->error() == QNetworkReply::AuthenticationRequiredError
         || !_account->credentials()->stillValid(reply)) {
-        qCWarning(lcConnectionValidator) << "******** Password is wrong!" << reply->error() << job->errorString();
+        auto authChallenge = reply->rawHeader("WWW-Authenticate").toLower();
+        qCWarning(lcConnectionValidator) << "******** Password is wrong!" << reply->error() << job->errorString() << authChallenge;
         _errors << tr("The provided credentials are not correct");
         stat = CredentialsWrong;
 
