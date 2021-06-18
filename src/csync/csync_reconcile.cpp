@@ -29,6 +29,7 @@
 #include "common/asserts.h"
 #include "common/syncjournalfilerecord.h"
 
+#include <QFileInfo>
 #include <QLoggingCategory>
 Q_LOGGING_CATEGORY(lcReconcile, "nextcloud.sync.csync.reconciler", QtInfoMsg)
 
@@ -150,6 +151,16 @@ static void _csync_merge_algorithm_visitor(csync_file_stat_t *cur, CSYNC * ctx) 
                 cur->instruction = CSYNC_INSTRUCTION_NEW;
                 break;
             }
+
+            if (ctx->current == REMOTE_REPLICA) {
+                auto localFileExists = QFileInfo{QString{ctx->local.uri} + "/" + cur->path};
+                if (localFileExists.exists()) {
+                    cur->instruction = CSYNC_INSTRUCTION_NONE;
+                    qCWarning(lcReconcile()) << "preventing delete of remote file when local one was missing but not really" << cur->path;
+                    break;
+                }
+            }
+
             cur->instruction = CSYNC_INSTRUCTION_REMOVE;
             break;
         case CSYNC_INSTRUCTION_EVAL_RENAME: {
