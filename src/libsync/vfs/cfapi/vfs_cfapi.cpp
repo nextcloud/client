@@ -109,9 +109,8 @@ bool VfsCfApi::isHydrating() const
 Result<void, QString> VfsCfApi::updateMetadata(const QString &filePath, time_t modtime, qint64 size, const QByteArray &fileId)
 {
     const auto localPath = QDir::toNativeSeparators(filePath);
-    const auto handle = cfapi::handleForPath(localPath);
-    if (handle) {
-        auto result = cfapi::updatePlaceholderInfo(handle, modtime, size, fileId);
+    if (cfapi::handleForPath(localPath)) {
+        auto result = cfapi::updatePlaceholderInfo(localPath, modtime, size, fileId);
         if (result) {
             return {};
         } else {
@@ -162,9 +161,9 @@ Result<Vfs::ConvertToPlaceholderResult, QString> VfsCfApi::convertToPlaceholder(
 
     const auto handle = cfapi::handleForPath(localPath);
     if (cfapi::findPlaceholderInfo(handle)) {
-        return cfapi::updatePlaceholderInfo(handle, item._modtime, item._size, item._fileId, replacesPath);
+        return cfapi::updatePlaceholderInfo(localPath, item._modtime, item._size, item._fileId, replacesPath);
     } else {
-        return cfapi::convertToPlaceholder(handle, item._modtime, item._size, item._fileId, replacesPath);
+        return cfapi::convertToPlaceholder(localPath, item._modtime, item._size, item._fileId, replacesPath);
     }
 }
 

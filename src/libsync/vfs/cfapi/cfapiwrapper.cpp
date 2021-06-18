@@ -682,11 +682,9 @@ OCC::Result<void, QString> OCC::CfApiWrapper::createPlaceholderInfo(const QStrin
     return {};
 }
 
-OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::updatePlaceholderInfo(const FileHandle &handle, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath)
+OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::updatePlaceholderInfo(const QString &filePath, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath)
 {
-    Q_ASSERT(handle);
-
-    const auto info = replacesPath.isEmpty() ? findPlaceholderInfo(handle)
+    const auto info = replacesPath.isEmpty() ? findPlaceholderInfo(handleForPath(filePath))
                                              : findPlaceholderInfo(handleForPath(replacesPath));
     if (!info) {
         return { "Can't update non existing placeholder info" };
@@ -703,48 +701,46 @@ OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::up
     OCC::Utility::UnixTimeToLargeIntegerFiletime(modtime, &metadata.BasicInfo.LastAccessTime);
     OCC::Utility::UnixTimeToLargeIntegerFiletime(modtime, &metadata.BasicInfo.ChangeTime);
 
-    const qint64 result = CfUpdatePlaceholder(handle.get(), &metadata,
+    const qint64 result = CfUpdatePlaceholder(handleForPath(filePath).get(), &metadata,
                                               fileIdentity.data(), sizeToDWORD(fileIdentitySize),
                                               nullptr, 0, CF_UPDATE_FLAG_MARK_IN_SYNC, nullptr, nullptr);
 
     if (result != S_OK) {
-        qCWarning(lcCfApiWrapper) << "Couldn't update placeholder info for" << pathForHandle(handle) << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
+        qCWarning(lcCfApiWrapper) << "Couldn't update placeholder info for" << filePath << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
         return { "Couldn't update placeholder info" };
     }
 
     // Pin state tends to be lost on updates, so restore it every time
-    if (!setPinState(handle, previousPinState, NoRecurse)) {
+    if (!setPinState(handleForPath(filePath), previousPinState, NoRecurse)) {
         return { "Couldn't restore pin state" };
     }
 
     return OCC::Vfs::ConvertToPlaceholderResult::Ok;
 }
 
-OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::convertToPlaceholder(const FileHandle &handle, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath)
+OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::convertToPlaceholder(const QString &filePath, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath)
 {
     Q_UNUSED(modtime);
     Q_UNUSED(size);
 
-    Q_ASSERT(handle);
-
     const auto fileIdentity = QString::fromUtf8(fileId).toStdWString();
     const auto fileIdentitySize = (fileIdentity.length() + 1) * sizeof(wchar_t);
-    const qint64 result = CfConvertToPlaceholder(handle.get(), fileIdentity.data(), sizeToDWORD(fileIdentitySize), CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr);
+    const qint64 result = CfConvertToPlaceholder(handleForPath(filePath).get(), fileIdentity.data(), sizeToDWORD(fileIdentitySize), CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr);
     Q_ASSERT(result == S_OK);
     if (result != S_OK) {
-        qCCritical(lcCfApiWrapper) << "Couldn't convert to placeholder" << pathForHandle(handle) << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
+        qCCritical(lcCfApiWrapper) << "Couldn't convert to placeholder" << filePath << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
         return { "Couldn't convert to placeholder" };
     }
 
     const auto originalHandle = handleForPath(replacesPath);
     const auto originalInfo = originalHandle ? findPlaceholderInfo(originalHandle) : PlaceHolderInfo(nullptr, deletePlaceholderInfo);
     if (!originalInfo) {
-        const auto stateResult = setPinState(handle, PinState::Inherited, NoRecurse);
+        const auto stateResult = setPinState(handleForPath(filePath), PinState::Inherited, NoRecurse);
         Q_ASSERT(stateResult);
         return stateResult;
     } else {
         const auto state = cfPinStateToPinState(originalInfo->PinState);
-        const auto stateResult = setPinState(handle, state, NoRecurse);
+        const auto stateResult = setPinState(handleForPath(filePath), state, NoRecurse);
         Q_ASSERT(stateResult);
         return stateResult;
     }
