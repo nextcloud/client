@@ -11,7 +11,7 @@ Item {
     property string text: ""
     
     // font value
-    property string font: label.font
+    property var font: label.font
 
     // icon value
     property string imageSource: ""
