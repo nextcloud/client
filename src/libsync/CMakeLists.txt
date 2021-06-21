@@ -69,6 +69,9 @@ if (WIN32)
     )
     add_definitions(-D_WIN32_WINNT=_WIN32_WINNT_WIN10)
     list(APPEND OS_SPECIFIC_LINK_LIBRARIES cldapi)
+
+    # to fix warnings from ntstatus.h
+    add_definitions(-DUMDF_USING_NTSTATUS)
 elseif(LINUX) # elseif(LINUX OR APPLE)
     set(libsync_SRCS ${libsync_SRCS} vfs/xattr/vfs_xattr.cpp)
     if (APPLE)

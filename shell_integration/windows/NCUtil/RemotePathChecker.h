@@ -26,7 +26,7 @@
 
 #pragma once    
 
-class __declspec(dllexport) RemotePathChecker {
+class RemotePathChecker {
 public:
     enum FileState {
         // Order synced with NCOverlay

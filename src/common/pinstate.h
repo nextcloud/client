@@ -77,7 +77,7 @@ enum class PinState {
      */
     Unspecified = 3,
 };
-Q_ENUM_NS(PinState);
+Q_ENUM_NS(PinState)
 
 /** A user-facing version of PinState.
  *
