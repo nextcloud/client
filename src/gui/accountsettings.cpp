@@ -86,11 +86,11 @@ void showEnableE2eeWithVirtualFilesWarningDialog(std::function<void(void)> onAcc
     const auto messageBox = new QMessageBox;
     messageBox->setAttribute(Qt::WA_DeleteOnClose);
     messageBox->setText(AccountSettings::tr("End-to-End Encryption with Virtual Files"));
-    messageBox->setInformativeText(AccountSettings::tr("You seem to have the Virtual Files feature enabled on this folder. At "
-                                                       " the moment, it is not possible to implicitly download virtual files that are "
-                                                       "End-to-End encrypted. To get the best experience with Virtual Files and"
-                                                       " End-to-End Encryption, make sure the encrypted folder is marked with"
-                                                       " \"Make always available locally\"."));
+    messageBox->setInformativeText(AccountSettings::tr("You seem to have the Virtual Files feature enabled on this folder. "
+                                                       "At the moment, it is not possible to implicitly download virtual files that are "
+                                                       "End-to-End encrypted. To get the best experience with Virtual Files and "
+                                                       "End-to-End Encryption, make sure the encrypted folder is marked with "
+                                                       "\"Make always available locally\"."));
     messageBox->setIcon(QMessageBox::Warning);
     const auto dontEncryptButton = messageBox->addButton(QMessageBox::StandardButton::Cancel);
     Q_ASSERT(dontEncryptButton);
