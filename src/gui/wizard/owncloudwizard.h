@@ -128,7 +128,7 @@ private:
     OwncloudAdvancedSetupPage *_advancedSetupPage;
     OwncloudWizardResultPage *_resultPage;
     AbstractCredentialsWizardPage *_credentialsPage = nullptr;
-    WebViewPage *_webViewPage;
+    WebViewPage *_webViewPage = nullptr;
 
     QStringList _setupLog;
 

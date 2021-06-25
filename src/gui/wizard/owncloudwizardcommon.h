@@ -46,7 +46,9 @@ namespace WizardCommon {
         Page_HttpCreds,
         Page_OAuthCreds,
         Page_Flow2AuthCreds,
+#ifdef WITH_WEBENGINE
         Page_WebView,
+#endif // WITH_WEBENGINE
         Page_AdvancedSetup,
         Page_Result
     };

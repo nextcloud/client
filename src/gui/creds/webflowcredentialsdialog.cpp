@@ -8,16 +8,20 @@
 #include "owncloudgui.h"
 #include "headerbanner.h"
 #include "wizard/owncloudwizardcommon.h"
+#ifdef WITH_WEBENGINE
 #include "wizard/webview.h"
+#endif // WITH_WEBENGINE
 #include "wizard/flow2authwidget.h"
 
 namespace OCC {
 
 WebFlowCredentialsDialog::WebFlowCredentialsDialog(Account *account, bool useFlow2, QWidget *parent)
-    : QDialog(parent),
-      _useFlow2(useFlow2),
-      _flow2AuthWidget(nullptr),
-      _webView(nullptr)
+    : QDialog(parent)
+    , _useFlow2(useFlow2)
+    , _flow2AuthWidget(nullptr)
+#ifdef WITH_WEBENGINE
+    , _webView(nullptr)
+#endif // WITH_WEBENGINE
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -49,10 +53,12 @@ WebFlowCredentialsDialog::WebFlowCredentialsDialog(Account *account, bool useFlo
 
         _flow2AuthWidget->startAuth(account);
     } else {
+#ifdef WITH_WEBENGINE
         _webView = new WebView();
         _containerLayout->addWidget(_webView);
 
         connect(_webView, &WebView::urlCatched, this, &WebFlowCredentialsDialog::urlCatched);
+#endif // WITH_WEBENGINE
     }
 
     auto app = static_cast<Application *>(qApp);
@@ -73,12 +79,14 @@ WebFlowCredentialsDialog::WebFlowCredentialsDialog(Account *account, bool useFlo
 void WebFlowCredentialsDialog::closeEvent(QCloseEvent* e) {
     Q_UNUSED(e)
 
+#ifdef WITH_WEBENGINE
     if (_webView) {
         // Force calling WebView::~WebView() earlier so that _profile and _page are
         // deleted in the correct order.
         _webView->deleteLater();
         _webView = nullptr;
     }
+#endif // WITH_WEBENGINE
 
     if (_flow2AuthWidget) {
         _flow2AuthWidget->resetAuth();
@@ -89,9 +97,14 @@ void WebFlowCredentialsDialog::closeEvent(QCloseEvent* e) {
     emit onClose();
 }
 
-void WebFlowCredentialsDialog::setUrl(const QUrl &url) {
+void WebFlowCredentialsDialog::setUrl(const QUrl &url)
+{
+#ifdef WITH_WEBENGINE
     if (_webView)
         _webView->setUrl(url);
+#else // WITH_WEBENGINE
+    Q_UNUSED(url);
+#endif // WITH_WEBENGINE
 }
 
 void WebFlowCredentialsDialog::setInfo(const QString &msg) {

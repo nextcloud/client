@@ -13,7 +13,9 @@ class QVBoxLayout;
 namespace OCC {
 
 class HeaderBanner;
+#ifdef WITH_WEBENGINE
 class WebView;
+#endif // WITH_WEBENGINE
 class Flow2AuthWidget;
 
 class WebFlowCredentialsDialog : public QDialog
@@ -50,7 +52,9 @@ private:
     bool _useFlow2;
 
     Flow2AuthWidget *_flow2AuthWidget;
+#ifdef WITH_WEBENGINE
     WebView *_webView;
+#endif // WITH_WEBENGINE
 
     QLabel *_errorLabel;
     QLabel *_infoLabel;

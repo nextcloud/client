@@ -67,10 +67,6 @@ public slots:
 protected slots:
     void slotUrlChanged(const QString &);
     void slotUrlEditFinished();
-#ifdef WITH_PROVIDERS
-    void slotLogin();
-    void slotGotoProviderList();
-#endif
 
     void setupCustomization();
 

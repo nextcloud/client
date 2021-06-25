@@ -16,7 +16,9 @@
 #include "account.h"
 #include "configfile.h"
 #include "theme.h"
+#ifdef WITH_WEBENGINE
 #include "wizard/webview.h"
+#endif // WITH_WEBENGINE
 #include "webflowcredentialsdialog.h"
 
 using namespace QKeychain;
@@ -144,8 +146,12 @@ void WebFlowCredentials::askFromUser() {
     // Do a DetermineAuthTypeJob to make sure that the server is still using Flow2
     auto job = new DetermineAuthTypeJob(_account->sharedFromThis(), this);
     connect(job, &DetermineAuthTypeJob::authType, [this](DetermineAuthTypeJob::AuthType type) {
-        // LoginFlowV2 > WebViewFlow > OAuth > Shib > Basic
+    // LoginFlowV2 > WebViewFlow > OAuth > Shib > Basic
+#ifdef WITH_WEBENGINE
         bool useFlow2 = (type != DetermineAuthTypeJob::WebViewFlow);
+#else // WITH_WEBENGINE
+        bool useFlow2 = true;
+#endif // WITH_WEBENGINE
 
         _askDialog = new WebFlowCredentialsDialog(_account, useFlow2);
 

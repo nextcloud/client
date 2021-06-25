@@ -444,9 +444,11 @@ class OWNCLOUDSYNC_EXPORT DetermineAuthTypeJob : public QObject
 public:
     enum AuthType {
         NoAuthType, // used only before we got a chance to probe the server
+#ifdef WITH_WEBENGINE
+        WebViewFlow,
+#endif // WITH_WEBENGINE
         Basic, // also the catch-all fallback for backwards compatibility reasons
         OAuth,
-        WebViewFlow,
         LoginFlowV2
     };
     Q_ENUM(AuthType)

@@ -365,7 +365,7 @@ Itxaron berriro sinkronizatu arte, ondoren enkriptatu.</translation>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="354"/>
         <source>Encryption failed</source>
-        <translation type="unfinished"/>
+        <translation>Zifratzeak huts egin du</translation>
     </message>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="354"/>
@@ -2966,6 +2966,11 @@ Ez da gomendagarria erabiltzea.</translation>
 <context>
     <name>OCC::OwncloudWizard</name>
     <message>
+        <location filename="../src/gui/wizard/owncloudwizard.cpp" line="91"/>
+        <source>%1 Connection Wizard</source>
+        <translation>%1 Konexio Morroia</translation>
+    </message>
+    <message>
         <location filename="../src/gui/wizard/owncloudwizard.cpp" line="88"/>
         <source>Add %1 account</source>
         <translation>Gehitu %1 kontua</translation>
@@ -2974,11 +2979,6 @@ Ez da gomendagarria erabiltzea.</translation>
         <location filename="../src/gui/wizard/owncloudwizard.cpp" line="93"/>
         <source>Skip folders configuration</source>
         <translation>Saltatu karpeten ezarpenak</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/wizard/owncloudwizard.cpp" line="91"/>
-        <source>%1 Connection Wizard</source>
-        <translation>%1 Konexio Morroia</translation>
     </message>
     <message>
         <location filename="../src/gui/wizard/owncloudwizard.cpp" line="404"/>
@@ -4699,13 +4699,13 @@ Modu hau berria eta experimentala da. Erabiltzea erabakitzen baduzu, agertzen di
     <name>OCC::WebFlowCredentials</name>
     <message>
         <location filename="../src/gui/creds/webflowcredentials.cpp" line="159"/>
-        <source>You have been logged out of %1 as user %2. Please login again.</source>
-        <translation>%1 saioa itxita daukazu %2 erabiltzaile gisa. Hasi saioa berriro.</translation>
+        <source>You have been logged out of %1 as user %2. Please login again</source>
+        <translation>%1 saiotik atera zara %2 gisa. Sar zaitez berriro</translation>
     </message>
     <message>
         <location filename="../src/gui/creds/webflowcredentials.cpp" line="159"/>
-        <source>You have been logged out of %1 as user %2. Please login again</source>
-        <translation>%1 saiotik atera zara %2 gisa. Sar zaitez berriro</translation>
+        <source>You have been logged out of %1 as user %2. Please login again.</source>
+        <translation>%1 saioa itxita daukazu %2 erabiltzaile gisa. Hasi saioa berriro.</translation>
     </message>
     <message>
         <location filename="../src/gui/creds/webflowcredentials.cpp" line="183"/>

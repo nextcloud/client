@@ -30,6 +30,7 @@
 #include <QCoreApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <qloggingcategory.h>
 #ifndef TOKEN_AUTH_ONLY
 #include <QPainter>
 #include <QPainterPath>
@@ -958,7 +959,11 @@ void DetermineAuthTypeJob::start()
                 auto flow = gs.toObject().value("desktoplogin");
                 if (flow != QJsonValue::Undefined) {
                     if (flow.toInt() == 1) {
+#ifdef WITH_WEBENGINE
                         _resultOldFlow = WebViewFlow;
+#else // WITH_WEBENGINE
+                        qCWarning(lcDetermineAuthTypeJob) << "Server does only support flow1, but this client was compiled without support for flow1";
+#endif // WITH_WEBENGINE
                     }
                 }
             }
@@ -985,20 +990,24 @@ void DetermineAuthTypeJob::checkAllDone()
 
     auto result = _resultPropfind;
 
+#ifdef WITH_WEBENGINE
     // WebViewFlow > OAuth > Basic
     if (_account->serverVersionInt() >= Account::makeServerVersion(12, 0, 0)) {
         result = WebViewFlow;
     }
+#endif // WITH_WEBENGINE
 
     // LoginFlowV2 > WebViewFlow > OAuth > Basic
     if (_account->serverVersionInt() >= Account::makeServerVersion(16, 0, 0)) {
         result = LoginFlowV2;
     }
 
+#ifdef WITH_WEBENGINE
     // If we determined that we need the webview flow (GS for example) then we switch to that
     if (_resultOldFlow == WebViewFlow) {
         result = WebViewFlow;
     }
+#endif // WITH_WEBENGINE
 
     // If we determined that a simple get gave us an authentication required error
     // then the server enforces basic auth and we got no choice but to use this

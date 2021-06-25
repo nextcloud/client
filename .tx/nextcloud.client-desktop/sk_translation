@@ -22,5 +22,6 @@ Icon=@APPLICATION_EXECUTABLE@
 
 # Translations
 Icon[sk_SK]=@APPLICATION_ICON_NAME@
+Name[sk_SK]=@APPLICATION_NAME@ Desktop
 Comment[sk_SK]=@APPLICATION_NAME@ synchronizačný klient pre PC
 GenericName[sk_SK]=Synchronizácia priečinkov

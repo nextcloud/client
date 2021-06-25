@@ -2965,6 +2965,11 @@ Si cunsìgiat de non ddu impreare.</translation>
 <context>
     <name>OCC::OwncloudWizard</name>
     <message>
+        <location filename="../src/gui/wizard/owncloudwizard.cpp" line="91"/>
+        <source>%1 Connection Wizard</source>
+        <translation>Protzedura ghiada de connessione de %1 </translation>
+    </message>
+    <message>
         <location filename="../src/gui/wizard/owncloudwizard.cpp" line="88"/>
         <source>Add %1 account</source>
         <translation>Agiunghe contu %1 </translation>
@@ -2973,11 +2978,6 @@ Si cunsìgiat de non ddu impreare.</translation>
         <location filename="../src/gui/wizard/owncloudwizard.cpp" line="93"/>
         <source>Skip folders configuration</source>
         <translation>Brinca cunfiguratzione de is cartellas</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/wizard/owncloudwizard.cpp" line="91"/>
-        <source>%1 Connection Wizard</source>
-        <translation>Protzedura ghiada de connessione de %1 </translation>
     </message>
     <message>
         <location filename="../src/gui/wizard/owncloudwizard.cpp" line="404"/>
@@ -4697,13 +4697,13 @@ Custa est una modalidade noa, isperimentale. Si detzides de dda impreare, sinnal
     <name>OCC::WebFlowCredentials</name>
     <message>
         <location filename="../src/gui/creds/webflowcredentials.cpp" line="159"/>
-        <source>You have been logged out of %1 as user %2. Please login again.</source>
-        <translation>Ses istadu disconnètidu dae %1 comente utente %2. Torra a intrare.</translation>
+        <source>You have been logged out of %1 as user %2. Please login again</source>
+        <translation> Ses istadu disconnètidu dae %1 comente utente %2. Torra a intrare</translation>
     </message>
     <message>
         <location filename="../src/gui/creds/webflowcredentials.cpp" line="159"/>
-        <source>You have been logged out of %1 as user %2. Please login again</source>
-        <translation> Ses istadu disconnètidu dae %1 comente utente %2. Torra a intrare</translation>
+        <source>You have been logged out of %1 as user %2. Please login again.</source>
+        <translation>Ses istadu disconnètidu dae %1 comente utente %2. Torra a intrare.</translation>
     </message>
     <message>
         <location filename="../src/gui/creds/webflowcredentials.cpp" line="183"/>
