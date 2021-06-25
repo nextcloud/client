@@ -851,7 +851,6 @@ void FolderMan::slotEtagPollTimerTimeout()
     std::copy_if(folderMapValues.begin(), folderMapValues.end(), std::back_inserter(foldersToRun), [this](Folder *folder) -> bool {
         const auto account = folder->accountState()->account();
         const auto capabilities = account->capabilities();
-        const auto pushNotifications = account->pushNotifications();
 
         return !pushNotificationsFilesReady(account.data());
     });
