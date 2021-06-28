@@ -159,8 +159,7 @@ Result<Vfs::ConvertToPlaceholderResult, QString> VfsCfApi::convertToPlaceholder(
     const auto localPath = QDir::toNativeSeparators(filename);
     const auto replacesPath = QDir::toNativeSeparators(replacesFile);
 
-    const auto handle = cfapi::handleForPath(localPath);
-    if (cfapi::findPlaceholderInfo(handle)) {
+    if (cfapi::findPlaceholderInfo(localPath)) {
         return cfapi::updatePlaceholderInfo(localPath, item._modtime, item._size, item._fileId, replacesPath);
     } else {
         return cfapi::convertToPlaceholder(localPath, item._modtime, item._size, item._fileId, replacesPath);
@@ -218,15 +217,10 @@ bool VfsCfApi::statTypeVirtualFile(csync_file_stat_t *stat, void *statData)
 bool VfsCfApi::setPinState(const QString &folderPath, PinState state)
 {
     const auto localPath = QDir::toNativeSeparators(params().filesystemPath + folderPath);
-    const auto handle = cfapi::handleForPath(localPath);
-    if (handle) {
-        if (cfapi::setPinState(handle, state, cfapi::Recurse)) {
-            return true;
-        } else {
-            return false;
-        }
+
+    if (cfapi::setPinState(localPath, state, cfapi::Recurse)) {
+        return true;
     } else {
-        qCWarning(lcCfApi) << "Couldn't update pin state for non existing file" << localPath;
         return false;
     }
 }
@@ -234,13 +228,8 @@ bool VfsCfApi::setPinState(const QString &folderPath, PinState state)
 Optional<PinState> VfsCfApi::pinState(const QString &folderPath)
 {
     const auto localPath = QDir::toNativeSeparators(params().filesystemPath + folderPath);
-    const auto handle = cfapi::handleForPath(localPath);
-    if (!handle) {
-        qCWarning(lcCfApi) << "Couldn't find pin state for non existing file" << localPath;
-        return {};
-    }
 
-    const auto info = cfapi::findPlaceholderInfo(handle);
+    const auto info = cfapi::findPlaceholderInfo(localPath);
     if (!info) {
         qCWarning(lcCfApi) << "Couldn't find pin state for regular non-placeholder file" << localPath;
         return {};
