@@ -57,7 +57,7 @@ struct OWNCLOUDSYNC_EXPORT SyncOptions
     qint64 _minChunkSize = 1 * 1000 * 1000; // 1MB
 
     /** The maximum chunk size in bytes for chunked uploads */
-    qint64 _maxChunkSize = 100 * 1000 * 1000; // 100MB
+    qint64 _maxChunkSize = 1000 * 1000 * 1000; // 1000MB
 
     /** The target duration of chunk uploads for dynamic chunk sizing.
      *
