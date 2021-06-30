@@ -66,9 +66,6 @@ public:
     QString encryptedFileName() const;
     void setEncryptedFileName(const QString &encryptedName);
 
-    QString encryptedFileName() const;
-    void setEncryptedFileName(const QString &encryptedName);
-
     qint64 fileTotalSize() const;
     void setFileTotalSize(qint64 totalSize);
 

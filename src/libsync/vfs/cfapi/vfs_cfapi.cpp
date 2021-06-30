@@ -357,7 +357,6 @@ void VfsCfApi::scheduleHydrationJob(const QString &requestId, const QString &fol
     job->setFolderPath(folderPath);
     job->setIsEncryptedFile(!record._e2eMangledName.isEmpty());
     job->setEncryptedFileName(record._e2eMangledName);
-    job->setFileTotalSize(record._fileSize);
     connect(job, &HydrationJob::finished, this, &VfsCfApi::onHydrationJobFinished);
     d->hydrationJobs << job;
     job->start();

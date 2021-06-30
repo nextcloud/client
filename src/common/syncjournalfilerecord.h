@@ -65,7 +65,6 @@ public:
     QByteArray _etag;
     QByteArray _fileId;
     qint64 _fileSize = 0;
-    qint64 _fileSizeNonE2EE = 0;
     RemotePermissions _remotePerm;
     bool _serverHasIgnoredFiles = false;
     QByteArray _checksumHeader;

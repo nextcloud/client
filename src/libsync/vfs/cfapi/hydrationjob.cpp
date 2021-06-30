@@ -111,15 +111,6 @@ void OCC::HydrationJob::setEncryptedFileName(const QString &encryptedName)
     _encryptedFileName = encryptedName;
 }
 
-qint64 OCC::HydrationJob::fileTotalSize() const
-{
-    return _fileTotalSize;
-}
-void OCC::HydrationJob::setFileTotalSize(qint64 totalSize)
-{
-    _fileTotalSize = totalSize;
-}
-
 OCC::HydrationJob::Status OCC::HydrationJob::status() const
 {
     return _status;
@@ -171,12 +162,14 @@ void OCC::HydrationJob::start()
 
 void OCC::HydrationJob::slotFolderIdError()
 {
+    // TODO: the following code is borrowed from PropagateDownloadEncrypted (see HydrationJob::onNewConnection() for explanation of next steps)
     qCCritical(lcHydration) << "Failed to get encrypted metadata of folder" << _requestId << _localPath << _folderPath;
     emitFinished(Error);
 }
 
 void OCC::HydrationJob::slotCheckFolderId(const QStringList &list)
 {
+    // TODO: the following code is borrowed from PropagateDownloadEncrypted (see HydrationJob::onNewConnection() for explanation of next steps)
     auto job = qobject_cast<LsColJob *>(sender());
     const QString folderId = list.first();
     qCDebug(lcHydration) << "Received id of folder" << folderId;
@@ -195,6 +188,7 @@ void OCC::HydrationJob::slotCheckFolderId(const QStringList &list)
 
 void OCC::HydrationJob::slotFolderEncryptedMetadataError(const QByteArray & /*fileId*/, int /*httpReturnCode*/)
 {
+    // TODO: the following code is borrowed from PropagateDownloadEncrypted (see HydrationJob::onNewConnection() for explanation of next steps)
     qCCritical(lcHydration) << "Failed to find encrypted metadata information of remote file" << encryptedFileName();
     emitFinished(Error);
     return;
@@ -202,6 +196,7 @@ void OCC::HydrationJob::slotFolderEncryptedMetadataError(const QByteArray & /*fi
 
 void OCC::HydrationJob::slotCheckFolderEncryptedMetadata(const QJsonDocument &json)
 {
+    // TODO: the following code is borrowed from PropagateDownloadEncrypted (see HydrationJob::onNewConnection() for explanation of next steps)
     qCDebug(lcHydration) << "Metadata Received reading" << encryptedFileName();
     const QString filename = encryptedFileName();
     auto meta = new FolderMetadata(_account, json.toJson(QJsonDocument::Compact));
@@ -217,7 +212,7 @@ void OCC::HydrationJob::slotCheckFolderEncryptedMetadata(const QJsonDocument &js
 
             qCDebug(lcHydration) << "Found matching encrypted metadata for file, starting download" << _requestId << _folderPath;
             _transferDataSocket = _transferDataServer->nextPendingConnection();
-            _job = new GETEncryptedFileJob(_account, _remotePath + encryptedFileName(), _transferDataSocket, {}, {}, 0, encryptedInfo, fileTotalSize(), this);
+            _job = new GETEncryptedFileJob(_account, _remotePath + encryptedFileName(), _transferDataSocket, {}, {}, 0, encryptedInfo, this);
 
             connect(qobject_cast<GETEncryptedFileJob *>(_job), &GETEncryptedFileJob::finishedSignal, this, &HydrationJob::onGetFinished);
             _job->start();
@@ -277,6 +272,7 @@ void OCC::HydrationJob::onNewConnection()
     Q_ASSERT(!_job);
 
     if (isEncryptedFile()) {
+        // TODO: the following code is borrowed from PropagateDownloadEncrypted (should we factor it out and reuse? YES! Should we do it now? Probably not, as, this would imply modifying PropagateDownloadEncrypted, so we need a separate PR)
         qCInfo(lcHydration) << "Got new connection for encrypted file. Getting required info for decryption...";
         const auto rootPath = [=]() {
             const auto result = _remotePath;
@@ -330,14 +326,8 @@ void OCC::HydrationJob::finalize(OCC::VfsCfApi *vfs)
     }
 
     record._type = ItemTypeFile;
-
-    const auto fileSizeOnDisk = FileSystem::getSize(localPath() + folderPath());
-    if (!record._e2eMangledName.isEmpty()) {
-        record._fileSizeNonE2EE = fileSizeOnDisk;
-        record._fileSize = fileSizeOnDisk;
-    } else {
-        record._fileSize = fileSizeOnDisk;
-    }
+    // store the actual size of a file that has been decrypted as we will need its actual size when dehydrating it if requested
+    record._fileSize = FileSystem::getSize(localPath() + folderPath());
 
     _journal->setFileRecord(record);
 }

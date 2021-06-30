@@ -129,9 +129,4 @@ QString PropagateDownloadEncrypted::errorString() const
   return _errorString;
 }
 
-int PropagateDownloadEncrypted::authenticationTagSize() const
-{
-    return _encryptedInfo.authenticationTag.size();
-}
-
 }

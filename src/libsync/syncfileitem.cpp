@@ -13,9 +13,9 @@
  */
 
 #include "syncfileitem.h"
-#include <common/constants.h>
-#include <common/syncjournalfilerecord.h>
-#include <common/utility.h>
+#include "common/syncjournalfilerecord.h"
+#include "common/utility.h"
+
 #include "filesystem.h"
 
 #include <QLoggingCategory>
@@ -41,15 +41,6 @@ SyncJournalFileRecord SyncFileItem::toSyncJournalFileRecordWithInode(const QStri
     rec._etag = _etag;
     rec._fileId = _fileId;
     rec._fileSize = _size;
-    Q_ASSERT(!_encryptedFileName.isEmpty() || _sizeNonE2EE == 0);
-    if (_encryptedFileName.isEmpty() && _sizeNonE2EE != 0) {
-        qCWarning(lcFileItem) << "_sizeNonE2EE is non-zero for a non-encrypted item.";
-    }
-    Q_ASSERT(_encryptedFileName.isEmpty() || _sizeNonE2EE != 0);
-    if (!_encryptedFileName.isEmpty() && _sizeNonE2EE == 0) {
-        qCWarning(lcFileItem) << "_sizeNonE2EE is zero for an encrypted item.";
-    }
-    rec._fileSizeNonE2EE = _sizeNonE2EE;
     rec._remotePerm = _remotePerm;
     rec._serverHasIgnoredFiles = _serverHasIgnoredFiles;
     rec._checksumHeader = _checksumHeader;
@@ -80,47 +71,12 @@ SyncFileItemPtr SyncFileItem::fromSyncJournalFileRecord(const SyncJournalFileRec
     item->_etag = rec._etag;
     item->_fileId = rec._fileId;
     item->_size = rec._fileSize;
-    Q_ASSERT(!rec.e2eMangledName().isEmpty() || rec._fileSizeNonE2EE == 0);
-    if (rec.e2eMangledName().isEmpty() && rec._fileSizeNonE2EE != 0) {
-        qCWarning(lcFileItem) << "rec._fileSizeNonE2EE is non-zero for non-encrypted item.";
-    }
-    item->_sizeNonE2EE = rec._fileSizeNonE2EE;
     item->_remotePerm = rec._remotePerm;
     item->_serverHasIgnoredFiles = rec._serverHasIgnoredFiles;
     item->_checksumHeader = rec._checksumHeader;
     item->_encryptedFileName = rec.e2eMangledName();
     item->_isEncrypted = rec._isE2eEncrypted;
     return item;
-}
-
-qint64 SyncFileItem::sizeForVfsPlaceholder() const
-{
-    if (isDirectory() || _type == ItemTypeVirtualFileDownload) {
-        // size is always the same for directories and the placeholders that are currently bying hydrated
-        return _size;
-    }
-
-    if (_sizeNonE2EE != 0) {
-        Q_ASSERT(!_encryptedFileName.isEmpty());
-        if (_encryptedFileName.isEmpty()) {
-            qCWarning(lcFileItem) << "VFS placeholder size is set for an non-encrypted file!";
-        } else {
-            // encrypted and nonencrypted sizes are either same(for the file that's been hydrated already), or differ in OCC::CommonConstants::e2EeTagSize bytes
-            Q_ASSERT(_size - _sizeNonE2EE == OCC::CommonConstants::e2EeTagSize || _size == _sizeNonE2EE);
-            if (_size - _sizeNonE2EE != OCC::CommonConstants::e2EeTagSize && _size != _sizeNonE2EE) {
-                qCWarning(lcFileItem) << "VFS placeholder size is set, but, it's incorrect! _size" << _size << "_sizeNonE2EE" << _sizeNonE2EE << " OCC::CommonConstants::e2EeTagSize" << OCC::CommonConstants::e2EeTagSize;
-            }
-        }
-
-        return _sizeNonE2EE;
-    }
-
-    Q_ASSERT(_encryptedFileName.isEmpty());
-    if (!_encryptedFileName.isEmpty()) {
-        qCWarning(lcFileItem) << "Requested VFS placeholder size for an encrypted file, but it is not set!";
-    }
-
-    return _size;
 }
 
 }

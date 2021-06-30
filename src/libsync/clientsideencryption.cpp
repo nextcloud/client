@@ -1848,9 +1848,9 @@ qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
     // last OCC::CommonConstants::e2EeTagSize bytes is ALWAYS a tag!!!
     const qint32 size = isLastChunk ? static_cast<qint32>(chunkSize) - OCC::CommonConstants::e2EeTagSize : static_cast<qint32>(chunkSize);
 
-    Q_ASSERT(size >= 0);
-    if (size < 0) {
-        qCritical(lcCse()) << "Decryption failed. Invalid input!";
+    Q_ASSERT(size > 0);
+    if (size <= 0) {
+        qCritical(lcCse()) << "Decryption failed. Invalid input size: " << size << " !";
         return -1;
     }
 
@@ -1861,7 +1861,7 @@ qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
 
     while(inputPos < size) {
         // read blockSize or less bytes
-        QByteArray encryptedBlock = QByteArray(input + inputPos, qMin(size - inputPos, blockSize));
+        const QByteArray encryptedBlock = QByteArray(input + inputPos, qMin(size - inputPos, blockSize));
 
         if (encryptedBlock.size() == 0) {
             qCritical(lcCse()) << "Could not read data from the input buffer.";
@@ -1870,7 +1870,7 @@ qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
 
         int outLen = 0;
 
-        if(!EVP_DecryptUpdate(_ctx, unsignedData(decryptedBlock), &outLen, reinterpret_cast<unsigned char*>(encryptedBlock.data()), encryptedBlock.size())) {
+        if(!EVP_DecryptUpdate(_ctx, unsignedData(decryptedBlock), &outLen, reinterpret_cast<const unsigned char*>(encryptedBlock.data()), encryptedBlock.size())) {
             qCritical(lcCse()) << "Could not decrypt";
             return -1;
         }
@@ -1930,7 +1930,7 @@ qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
         _isFinished = true;
     }
 
-    qCDebug(lcCse()) <<"Decrypting:" << _decryptedSoFar << "/" << _totalSize;
+    // qCDebug(lcCse()) <<"Decrypting:" << _decryptedSoFar << "/" << _totalSize;
 
     if (isFinished()) {
         qCDebug(lcCse()) << "Decryption complete";

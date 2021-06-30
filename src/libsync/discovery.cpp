@@ -178,7 +178,7 @@ void ProcessDirectoryJob::process()
         // For windows, the hidden state is also discovered within the vio
         // local stat function.
         // Recall file shall not be ignored (#4420)
-        bool isHidden = e.localEntry.isHidden || (f.first[0] == '.' && f.first != QLatin1String(".sys.admin#recall#"));
+        bool isHidden = e.localEntry.isHidden || (!f.first.isEmpty() && f.first[0] == '.' && f.first != QLatin1String(".sys.admin#recall#"));
 #ifdef Q_OS_WIN
         // exclude ".lnk" files as they are not essential, but, causing troubles when enabling the VFS due to QFileInfo::isDir() and other methods are freezing, which causes the ".lnk" files to start hydrating and freezing the app eventually.
         const bool isServerEntryWindowsShortcut = !e.localEntry.isValid() && e.serverEntry.isValid() && !e.serverEntry.isDirectory && FileSystem::isLnkFile(e.serverEntry.name);
@@ -348,7 +348,6 @@ void ProcessDirectoryJob::processFile(PathTuple path,
     item->_file = path._target;
     item->_originalFile = path._original;
     item->_previousSize = dbEntry._fileSize;
-    item->_previousSizeNonE2EE = dbEntry._fileSizeNonE2EE;
     item->_previousModtime = dbEntry._modtime;
 
     if (dbEntry._modtime == localEntry.modtime && dbEntry._type == ItemTypeVirtualFile && localEntry.type == ItemTypeFile) {
@@ -463,13 +462,22 @@ void ProcessDirectoryJob::processFileAnalyzeRemoteInfo(
 
     // The file is known in the db already
     if (dbEntry.isValid()) {
+        qint64 size = serverEntry.size;
+
+        if (dbEntry.isVirtualFile() && (!item->_encryptedFileName.isEmpty()) && size > 0) {
+            // make sure we set correct size when file was downloaded previously and has now been changed on the server
+            // serverEntry always includes extra CommonConstants::e2EeTagSize bytes for e2e encrypted files
+            // we don't need those neither when creating a placeholder nor when storing hydrated file on disk
+            size = serverEntry.size - CommonConstants::e2EeTagSize;
+        }
+
         if (serverEntry.isDirectory != dbEntry.isDirectory()) {
             // If the type of the entity changed, it's like NEW, but
             // needs to delete the other entity first.
             item->_instruction = CSYNC_INSTRUCTION_TYPE_CHANGE;
             item->_direction = SyncFileItem::Down;
             item->_modtime = serverEntry.modtime;
-            item->_size = serverEntry.size;
+            item->_size = size;
         } else if ((dbEntry._type == ItemTypeVirtualFileDownload || localEntry.type == ItemTypeVirtualFileDownload)
             && (localEntry.isValid() || _queryLocal == ParentNotChanged)) {
             // The above check for the localEntry existing is important. Otherwise it breaks
@@ -480,7 +488,7 @@ void ProcessDirectoryJob::processFileAnalyzeRemoteInfo(
         } else if (dbEntry._etag != serverEntry.etag) {
             item->_direction = SyncFileItem::Down;
             item->_modtime = serverEntry.modtime;
-            item->_size = serverEntry.size;
+            item->_size = size;
             if (serverEntry.isDirectory) {
                 ENFORCE(dbEntry.isDirectory());
                 item->_instruction = CSYNC_INSTRUCTION_UPDATE_METADATA;
@@ -510,11 +518,6 @@ void ProcessDirectoryJob::processFileAnalyzeRemoteInfo(
     item->_modtime = serverEntry.modtime;
     item->_size = serverEntry.size;
 
-    if (!serverEntry.e2eMangledName.isEmpty()) {
-        // we've received an encrypted server entry, so, we must store it's actual size (without the E2EE tag at the end)
-        item->_sizeNonE2EE = serverEntry.size - OCC::CommonConstants::e2EeTagSize;
-    }
-
     auto postProcessServerNew = [=] () {
         auto tmp_path = path;
         if (item->isDirectory()) {
@@ -537,6 +540,13 @@ void ProcessDirectoryJob::processFileAnalyzeRemoteInfo(
             && _pinState != PinState::AlwaysLocal
             && !FileSystem::isExcludeFile(item->_file)) {
             item->_type = ItemTypeVirtualFile;
+            if (!item->_encryptedFileName.isEmpty()) {
+                // We are syncing a file for the first time (local entry is invalid) and it is encrypted file that will be virtual once synced
+                // to avoid having error of "file has changed during sync" when trying to hydrate it excplicitly - we must remove CommonConstants::e2EeTagSize bytes from the end
+                // as explicit hydration does not care if these bytes are present in the placeholder or not, but, the size must not change in the middle of the sync
+                // this way it works for both implicit and explicit hydration by making a placeholder size that does not includes encryption tag CommonConstants::e2EeTagSize bytes
+                item->_size = serverEntry.size - CommonConstants::e2EeTagSize;
+            }
             if (isVfsWithSuffix())
                 addVirtualFileSuffix(tmp_path._original);
         }
@@ -837,7 +847,6 @@ void ProcessDirectoryJob::processFileAnalyzeLocalInfo(
                 item->_instruction = CSYNC_INSTRUCTION_SYNC;
                 item->_type = ItemTypeVirtualFileDownload;
                 item->_previousSize = 1;
-                item->_previousSizeNonE2EE = 1;
             }
         } else if (serverModified
             || (isVfsWithSuffix() && dbEntry.isVirtualFile())) {
@@ -1205,9 +1214,6 @@ void ProcessDirectoryJob::processFileConflict(const SyncFileItemPtr &item, Proce
             rec._modtime = serverEntry.modtime;
             rec._type = item->_type;
             rec._fileSize = serverEntry.size;
-            if (!serverEntry.e2eMangledName.isEmpty()) {
-                rec._fileSizeNonE2EE = serverEntry.size - OCC::CommonConstants::e2EeTagSize;
-            }
             rec._remotePerm = serverEntry.remotePerm;
             rec._checksumHeader = serverEntry.checksumHeader;
             _discoveryData->_statedb->setFileRecord(rec);

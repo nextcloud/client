@@ -35,7 +35,6 @@ class OWNCLOUDSYNC_EXPORT GETFileJob : public AbstractNetworkJob
     QString _errorString;
     QByteArray _expectedEtagForResume;
     qint64 _expectedContentLength;
-    qint64 _contentLength;
     qint64 _resumeStart;
     SyncFileItem::Status _errorStatus;
     QUrl _directDownloadUrl;
@@ -52,6 +51,7 @@ class OWNCLOUDSYNC_EXPORT GETFileJob : public AbstractNetworkJob
 
 protected:
     QIODevice *_device;
+    qint64 _contentLength;
 
 public:
     // DOES NOT take ownership of the device.
@@ -114,6 +114,7 @@ public:
 
 protected:
     virtual qint64 writeToDevice(const char *data, qint64 len);
+    virtual void processMetaData() {}
 
 signals:
     void finishedSignal();
@@ -127,7 +128,7 @@ private slots:
  * @brief The GETEncryptedFileJob class that provides file decryption on the fly while the download is running
  * @ingroup libsync
  */
-class GETEncryptedFileJob : public GETFileJob
+class OWNCLOUDSYNC_EXPORT GETEncryptedFileJob : public GETFileJob
 {
     Q_OBJECT
 
@@ -135,17 +136,19 @@ public:
     // DOES NOT take ownership of the device.
     explicit GETEncryptedFileJob(AccountPtr account, const QString &path, QIODevice *device,
         const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
-        qint64 resumeStart, EncryptedFile encryptedInfo, qint64 totalSize, QObject *parent = nullptr);
+        qint64 resumeStart, EncryptedFile encryptedInfo, QObject *parent = nullptr);
     explicit GETEncryptedFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
         const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
-        qint64 resumeStart, EncryptedFile encryptedInfo, qint64 totalSize, QObject *parent = nullptr);
+        qint64 resumeStart, EncryptedFile encryptedInfo, QObject *parent = nullptr);
     virtual ~GETEncryptedFileJob() = default;
 
 protected:
-    virtual qint64 writeToDevice(const char *data, qint64 len);
+    virtual qint64 writeToDevice(const char *data, qint64 len) override;
+    virtual void processMetaData() override;
 
 private:
     QSharedPointer<EncryptionHelper::StreamingDecryptor> _decryptor;
+    EncryptedFile _encryptedFileInfo = {};
 };
 
 /**
@@ -226,7 +229,7 @@ private slots:
     void transmissionChecksumValidated(const QByteArray &checksumType, const QByteArray &checksum);
     /// Called when the download's checksum computation is done
     void contentChecksumComputed(const QByteArray &checksumType, const QByteArray &checksum);
-    void downloadFinished(qint64 encryptedFileSize = -1);
+    void downloadFinished();
     /// Called when it's time to update the db metadata
     void updateMetadata(bool isConflict);
 
