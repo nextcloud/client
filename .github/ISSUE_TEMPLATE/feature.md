@@ -24,12 +24,11 @@ Guidelines for submitting features:
 
 <!--- Please keep the note below for others who read your bug report -->
 
-### How to use GitHub
+## How to use GitHub
 
 * Please use the 👍 [reaction](https://blog.github.com/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/) to show that you want to have the same feature implemented.
 * Please don't comment if you have no relevant information to add. It's just extra noise for everyone subscribed to this issue.
-* Subscribe to receive notifications on status change and new comments. 
+* Subscribe to receive notifications on status change and new comments.
 
-
-### Feature description
+## Feature description
 Tell us how the feature should work

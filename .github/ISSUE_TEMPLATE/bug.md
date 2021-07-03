@@ -24,26 +24,24 @@ Guidelines for submitting issues:
 
 <!--- Please keep the note below for others who read your bug report -->
 
-### How to use GitHub
+## How to use GitHub
 
 * Please use the 👍 [reaction](https://blog.github.com/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/) to show that you are affected by the same issue.
 * Please don't comment if you have no relevant information to add. It's just extra noise for everyone subscribed to this issue.
 * Subscribe to receive notifications on status change and new comments. 
 
-
-### Expected behaviour
+## Expected behaviour
 Tell us what should happen
 
-### Actual behaviour
+## Actual behaviour
 Tell us what happens instead
 
-
-### Steps to reproduce
+## Steps to reproduce
 1.
 2.
 3.
 
-### Client configuration
+## Client configuration
 Client version:
 <!---
 Please try to only report a bug if it happens with the latest version
@@ -60,8 +58,7 @@ Client package (From Nextcloud or distro) (Linux only):
 
 Installation path of client:
 
-
-### Server configuration
+## Server configuration
 <!---
 Optional section. It depends on the issue.
 --->
@@ -69,7 +66,7 @@ Nextcloud version:
 
 Storage backend (external storage):
 
-### Logs
+## Logs
 <!-- desktop client logs are a hard requirement for bug reports because we don't know how to do magic here :) -->
 
 Please use Gist (https://gist.github.com/) or a similar code paster for longer
@@ -83,4 +80,3 @@ On previous releases: Via the command line: `nextcloud --logdebug --logwindow` o
 2. Web server error log:
 
 3. Server logfile: nextcloud log (data/nextcloud.log):
-
