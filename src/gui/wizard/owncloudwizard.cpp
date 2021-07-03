@@ -19,6 +19,10 @@
 #include "theme.h"
 #include "owncloudgui.h"
 
+#ifdef Q_OS_MAC
+#include "foregroundbackground_interface.h"
+#endif
+
 #include "wizard/owncloudwizard.h"
 #include "wizard/welcomepage.h"
 #include "wizard/owncloudsetuppage.h"
@@ -60,6 +64,10 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
     , _webViewPage(nullptr)
 #endif // WITH_WEBENGINE
 {
+#ifdef Q_OS_MAC
+    auto *fgbg = new ForegroundBackground();
+    this->installEventFilter(fgbg);
+#endif
     setObjectName("owncloudWizard");
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
