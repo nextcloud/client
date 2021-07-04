@@ -15,10 +15,14 @@
 #include "folderstatusview.h"
 #include "folderstatusdelegate.h"
 
+#include <QScrollBar>
+
 namespace OCC {
 
 FolderStatusView::FolderStatusView(QWidget *parent) : QTreeView(parent)
 {
+    this->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    this->verticalScrollBar()->setSingleStep(5);
 }
 
 QModelIndex FolderStatusView::indexAt(const QPoint &point) const
