@@ -22,7 +22,7 @@ include(DefineInstallationPaths)
 if (APPLE OR WIN32)
     set(USE_OUR_OWN_SQLITE3 TRUE)
 else()
-    find_package(SQLite3 3.8.0 REQUIRED)
+    pkg_check_modules(SQLITE3 sqlite3>=3.8.0 REQUIRED IMPORTED_TARGET)
 endif()
 
 include(ConfigureChecks.cmake)
@@ -71,8 +71,7 @@ if(USE_OUR_OWN_SQLITE3)
   target_include_directories(sqlite3 PUBLIC "${CMAKE_SOURCE_DIR}/src/3rdparty/sqlite3")
   target_link_libraries("${csync_NAME}" PUBLIC sqlite3)
 else()
-  target_include_directories("${csync_NAME}" PUBLIC ${SQLITE3_INCLUDE_DIR})
-  target_link_libraries("${csync_NAME}" PUBLIC ${SQLITE3_LIBRARIES})
+  target_link_libraries("${csync_NAME}" PUBLIC PkgConfig::SQLITE3)
 endif()
 
 
