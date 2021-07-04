@@ -61,10 +61,6 @@ elseif(UNIX AND NOT APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,relro -Wl,-z,now")
 endif()
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/src/3rdparty
-)
-
 set(QML_IMPORT_PATH ${CMAKE_SOURCE_DIR}/theme CACHE STRING "" FORCE)
 
 add_subdirectory(csync)

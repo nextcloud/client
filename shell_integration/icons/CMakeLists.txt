@@ -1,6 +1,6 @@
 if( UNIX AND NOT APPLE )
 
-    SET(ICON_DIR ${DATADIR}/icons/hicolor)
+    SET(ICON_DIR ${CMAKE_INSTALL_DATADIR}/icons/hicolor)
     
     FOREACH(size 128x128 16x16 256x256 32x32 48x48 64x64 72x72)
 	file(GLOB files  "${size}/*.png")
