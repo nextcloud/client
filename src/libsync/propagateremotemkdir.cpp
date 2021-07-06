@@ -259,8 +259,12 @@ void PropagateRemoteMkdir::success()
     itemCopy._etag.clear();
 
     // save the file id already so we can detect rename or remove
-    if (!propagator()->updateMetadata(itemCopy)) {
-        done(SyncFileItem::FatalError, tr("Error writing metadata to the database"));
+    const auto result = propagator()->updateMetadata(itemCopy);
+    if (!result) {
+        done(SyncFileItem::FatalError, tr("Error writing metadata to the database: %1").arg(result.error()));
+        return;
+    } else if (*result == Vfs::ConvertToPlaceholderResult::Locked) {
+        done(SyncFileItem::FatalError, tr("The file %1 is currently in use").arg(_item->_file));
         return;
     }
 

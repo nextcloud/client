@@ -1135,10 +1135,13 @@ void PropagateDownloadFile::downloadFinished()
 
 void PropagateDownloadFile::updateMetadata(bool isConflict)
 {
-    QString fn = propagator()->fullLocalPath(_item->_file);
-
-    if (!propagator()->updateMetadata(*_item)) {
-        done(SyncFileItem::FatalError, tr("Error writing metadata to the database"));
+    const QString fn = propagator()->fullLocalPath(_item->_file);
+    const auto result = propagator()->updateMetadata(*_item);
+    if (!result) {
+        done(SyncFileItem::FatalError, tr("Error updating metadata: %1").arg(result.error()));
+        return;
+    } else if (*result == Vfs::ConvertToPlaceholderResult::Locked) {
+        done(SyncFileItem::SoftError, tr("The file %1 is currently in use").arg(_item->_file));
         return;
     }
 

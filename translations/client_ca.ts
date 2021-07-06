@@ -140,7 +140,7 @@
     <message>
         <location filename="../src/gui/wizard/flow2authwidget.ui" line="56"/>
         <source>Logo</source>
-        <translation type="unfinished"/>
+        <translation>Logotip</translation>
     </message>
     <message>
         <location filename="../src/gui/wizard/flow2authwidget.ui" line="65"/>
@@ -296,12 +296,12 @@
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="97"/>
         <source>Don&apos;t encrypt folder</source>
-        <translation type="unfinished"/>
+        <translation>No xifris la carpeta</translation>
     </message>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="100"/>
         <source>Encrypt folder</source>
-        <translation type="unfinished"/>
+        <translation>Xifra la carpeta</translation>
     </message>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="208"/>
@@ -392,7 +392,7 @@ Wait for the new sync, then encrypt it.</source>
         <location filename="../src/gui/accountsettings.cpp" line="446"/>
         <location filename="../src/gui/accountsettings.cpp" line="522"/>
         <source>Create new folder</source>
-        <translation type="unfinished"/>
+        <translation>Crea una carpeta nova</translation>
     </message>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="452"/>
@@ -443,7 +443,7 @@ Wait for the new sync, then encrypt it.</source>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="573"/>
         <source>(experimental)</source>
-        <translation type="unfinished"/>
+        <translation>(experimental)</translation>
     </message>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="666"/>
@@ -1094,7 +1094,7 @@ This can be an issue with your OpenSSL libraries.</source>
     <message>
         <location filename="../src/gui/wizard/flow2authwidget.cpp" line="218"/>
         <source>Copy Link</source>
-        <translation type="unfinished"/>
+        <translation>Copia l&apos;enllaç</translation>
     </message>
 </context>
 <context>
@@ -1350,22 +1350,22 @@ Si es tracta d&apos;un accident i decidiu mantenir els fitxers, es tornaran a si
     <message>
         <location filename="../src/gui/foldercreationdialog.ui" line="14"/>
         <source>Create new folder</source>
-        <translation type="unfinished"/>
+        <translation>Crea una carpeta nova</translation>
     </message>
     <message>
         <location filename="../src/gui/foldercreationdialog.ui" line="42"/>
         <source>Enter folder name</source>
-        <translation type="unfinished"/>
+        <translation>Introduïu el nom de la carpeta</translation>
     </message>
     <message>
         <location filename="../src/gui/foldercreationdialog.ui" line="61"/>
         <source>Folder already exists</source>
-        <translation type="unfinished"/>
+        <translation>La carpeta ja existeix</translation>
     </message>
     <message>
         <location filename="../src/gui/foldercreationdialog.cpp" line="76"/>
         <source>Error</source>
-        <translation type="unfinished"/>
+        <translation>Error</translation>
     </message>
     <message>
         <location filename="../src/gui/foldercreationdialog.cpp" line="76"/>
@@ -1776,7 +1776,7 @@ Si es tracta d&apos;un accident i decidiu mantenir els fitxers, es tornaran a si
         <location filename="../src/gui/folderwizard.cpp" line="512"/>
         <location filename="../src/gui/folderwizard.cpp" line="549"/>
         <source>(experimental)</source>
-        <translation type="unfinished"/>
+        <translation>(experimental)</translation>
     </message>
     <message>
         <location filename="../src/gui/folderwizard.cpp" line="545"/>
@@ -2581,7 +2581,7 @@ for additional privileges during the process.</source>
         <location filename="../src/gui/wizard/owncloudadvancedsetuppage.cpp" line="88"/>
         <location filename="../src/gui/wizard/owncloudadvancedsetuppage.cpp" line="236"/>
         <source>(experimental)</source>
-        <translation type="unfinished"/>
+        <translation>(experimental)</translation>
     </message>
     <message>
         <location filename="../src/gui/wizard/owncloudadvancedsetuppage.cpp" line="232"/>
@@ -3847,17 +3847,17 @@ This is a new, experimental mode. If you decide to use it, please report any iss
     <message>
         <location filename="../src/gui/shareuserline.ui" line="131"/>
         <source>Note:</source>
-        <translation type="unfinished"/>
+        <translation>Nota:</translation>
     </message>
     <message>
         <location filename="../src/gui/shareuserline.ui" line="187"/>
         <source>Password:</source>
-        <translation type="unfinished"/>
+        <translation>Contrasenya:</translation>
     </message>
     <message>
         <location filename="../src/gui/shareuserline.ui" line="259"/>
         <source>Expires:</source>
-        <translation type="unfinished"/>
+        <translation>Venciment:</translation>
     </message>
     <message>
         <location filename="../src/gui/shareusergroupwidget.cpp" line="440"/>
@@ -3867,7 +3867,7 @@ This is a new, experimental mode. If you decide to use it, please report any iss
     <message>
         <location filename="../src/gui/shareusergroupwidget.cpp" line="528"/>
         <source>Note to recipient</source>
-        <translation type="unfinished"/>
+        <translation>Nota per al destinatari</translation>
     </message>
     <message>
         <location filename="../src/gui/shareusergroupwidget.cpp" line="542"/>
@@ -3897,7 +3897,7 @@ This is a new, experimental mode. If you decide to use it, please report any iss
     <message>
         <location filename="../src/gui/shareusergroupwidget.cpp" line="588"/>
         <source>Password protect</source>
-        <translation type="unfinished"/>
+        <translation>Protecció amb contrasenya</translation>
     </message>
 </context>
 <context>
@@ -4988,7 +4988,7 @@ This is a new, experimental mode. If you decide to use it, please report any iss
     <message>
         <location filename="../src/gui/wizard/owncloudadvancedsetuppage.ui" line="131"/>
         <source>Server address</source>
-        <translation type="unfinished"/>
+        <translation>Adreça del servidor</translation>
     </message>
     <message>
         <location filename="../src/gui/wizard/owncloudadvancedsetuppage.ui" line="148"/>
@@ -5119,7 +5119,7 @@ This is a new, experimental mode. If you decide to use it, please report any iss
     <message>
         <location filename="../src/gui/wizard/owncloudsetupnocredspage.ui" line="73"/>
         <source>Logo</source>
-        <translation type="unfinished"/>
+        <translation>Logotip</translation>
     </message>
     <message>
         <location filename="../src/gui/wizard/owncloudsetupnocredspage.ui" line="183"/>

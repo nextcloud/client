@@ -3148,7 +3148,7 @@ Toto je nový, experimentální režim. Pokud se jej rozhodnete používat, pros
     <message>
         <location filename="../src/libsync/discovery.cpp" line="957"/>
         <source>Conflict when uploading a file. It&apos;s going to get removed!</source>
-        <translation type="unfinished"/>
+        <translation>Konflikt při nahrávání souboru. Bude odebrán!</translation>
     </message>
     <message>
         <location filename="../src/libsync/discovery.cpp" line="1225"/>

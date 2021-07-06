@@ -252,8 +252,12 @@ void PropagateRemoteMove::finalize()
             newItem._size = oldRecord._fileSize;
         }
     }
-    if (!propagator()->updateMetadata(newItem)) {
-        done(SyncFileItem::FatalError, tr("Error writing metadata to the database"));
+    const auto result = propagator()->updateMetadata(newItem);
+    if (!result) {
+        done(SyncFileItem::FatalError, tr("Error updating metadata: %1").arg(result.error()));
+        return;
+    } else if (*result == Vfs::ConvertToPlaceholderResult::Locked) {
+        done(SyncFileItem::SoftError, tr("The file %1 is currently in use").arg(newItem._file));
         return;
     }
     if (pinState && *pinState != PinState::Inherited

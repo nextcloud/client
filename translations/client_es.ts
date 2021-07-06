@@ -291,7 +291,7 @@
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="89"/>
         <source>You seem to have the Virtual Files feature enabled on this folder. At  the moment, it is not possible to implicitly download virtual files that are End-to-End encrypted. To get the best experience with Virtual Files and End-to-End Encryption, make sure the encrypted folder is marked with &quot;Make always available locally&quot;.</source>
-        <translation type="unfinished"/>
+        <translation>Parece que usted tiene habilitada la característica de archivos virtuales en esta carpeta. Por el momento, no es posible descargar implícitamente archivos virtuales  que están cifrados de extremo a extremo. Para tener la mejor experiencia con archivos virtuales y el cifrado de extremo a extremo, asegúrese de que la carpeta cifrada está marcada con &quot;Hacer que esté siempre localmente disponible&quot;.</translation>
     </message>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="97"/>
@@ -370,7 +370,7 @@ Espere a una nueva sincronización, luego cifrala.</translation>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="354"/>
         <source>Could not encrypt folder because the folder does not exist anymore</source>
-        <translation type="unfinished"/>
+        <translation>No es posible cifrar la carpeta porque ya no existe</translation>
     </message>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="418"/>
@@ -3139,17 +3139,17 @@ Esta es un modo nuevo y experimental. Si decides usarlo, por favor, informa de c
     <message>
         <location filename="../src/libsync/discovery.cpp" line="941"/>
         <source>Conflict when uploading some files to a folder. Those, conflicted, are going to get cleared!</source>
-        <translation type="unfinished"/>
+        <translation>Se ha producido un conflicto al subir algunos archivos a una carpeta. ¡Se eliminarán los conflictivos!</translation>
     </message>
     <message>
         <location filename="../src/libsync/discovery.cpp" line="954"/>
         <source>Conflict when uploading a folder. It&apos;s going to get cleared!</source>
-        <translation type="unfinished"/>
+        <translation>Se ha producido un conflicto al subir una carpeta. ¡Se eliminará!</translation>
     </message>
     <message>
         <location filename="../src/libsync/discovery.cpp" line="957"/>
         <source>Conflict when uploading a file. It&apos;s going to get removed!</source>
-        <translation type="unfinished"/>
+        <translation>Se ha producido un conflicto al subir un archivo. ¡Se eliminará!</translation>
     </message>
     <message>
         <location filename="../src/libsync/discovery.cpp" line="1225"/>
@@ -4689,7 +4689,7 @@ Esta es un modo nuevo y experimental. Si decides usarlo, por favor, informa de c
     <message>
         <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="329"/>
         <source>It seems that you are trying to download a virtual file that is end-to-end encrypted. Implicitly downloading such files is not supported at the moment. To workaround this issue, go to the settings and mark the encrypted folder with &quot;Make always available locally&quot;.</source>
-        <translation type="unfinished"/>
+        <translation>Parece que está intentando descargar un archivo virtual que está cifrado de extremo a extremo. Por el momento, no está soportada la descarga implícita de estos archivos. Para solucionar este problema, vaya a ajustes y marque la carpeta cifrada con &quot;Hacer que esté siempre localmente disponible&quot;.</translation>
     </message>
 </context>
 <context>

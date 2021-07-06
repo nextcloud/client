@@ -898,7 +898,7 @@ qint64 SyncJournalDb::getPHash(const QByteArray &file)
     return h;
 }
 
-bool SyncJournalDb::setFileRecord(const SyncJournalFileRecord &_record)
+Result<void, QString> SyncJournalDb::setFileRecord(const SyncJournalFileRecord &_record)
 {
     SyncJournalFileRecord record = _record;
     QMutexLocker locker(&_mutex);
@@ -940,7 +940,7 @@ bool SyncJournalDb::setFileRecord(const SyncJournalFileRecord &_record)
             "INSERT OR REPLACE INTO metadata "
             "(phash, pathlen, path, inode, uid, gid, mode, modtime, type, md5, fileid, remotePerm, filesize, ignoredChildrenRemote, contentChecksum, contentChecksumTypeId, e2eMangledName, isE2eEncrypted) "
             "VALUES (?1 , ?2, ?3 , ?4 , ?5 , ?6 , ?7,  ?8 , ?9 , ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18);"), _db)) {
-            return false;
+            return _setFileRecordQuery.error();
         }
 
         _setFileRecordQuery.bindValue(1, phash);
@@ -963,16 +963,16 @@ bool SyncJournalDb::setFileRecord(const SyncJournalFileRecord &_record)
         _setFileRecordQuery.bindValue(18, record._isE2eEncrypted);
 
         if (!_setFileRecordQuery.exec()) {
-            return false;
+            return _setFileRecordQuery.error();
         }
 
         // Can't be true anymore.
         _metadataTableIsEmpty = false;
 
-        return true;
+        return {};
     } else {
         qCWarning(lcDb) << "Failed to connect database.";
-        return false; // checkConnect failed.
+        return tr("Failed to connect database."); // checkConnect failed.
     }
 }
 

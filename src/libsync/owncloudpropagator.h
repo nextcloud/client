@@ -560,8 +560,17 @@ public:
      *
      * Will also trigger a Vfs::convertToPlaceholder.
      */
-    static bool updateMetadata(const SyncFileItem &item, const QString &localFolderPath, SyncJournalDb &journal, Vfs &vfs);
-    bool updateMetadata(const SyncFileItem &item); // convenience for the above
+    Result<Vfs::ConvertToPlaceholderResult, QString> updateMetadata(const SyncFileItem &item);
+
+    /** Update the database for an item.
+     *
+     * Typically after a sync operation succeeded. Updates the inode from
+     * the filesystem.
+     *
+     * Will also trigger a Vfs::convertToPlaceholder.
+     */
+    static Result<Vfs::ConvertToPlaceholderResult, QString> staticUpdateMetadata(const SyncFileItem &item, const QString localDir,
+                                                                                 Vfs *vfs, SyncJournalDb * const journal);
 
 private slots:
 
@@ -626,8 +635,8 @@ class CleanupPollsJob : public QObject
     QSharedPointer<Vfs> _vfs;
 
 public:
-    explicit CleanupPollsJob(const QVector<SyncJournalDb::PollInfo> &pollInfos, AccountPtr account,
-        SyncJournalDb *journal, const QString &localPath, const QSharedPointer<Vfs> &vfs, QObject *parent = nullptr)
+    explicit CleanupPollsJob(const QVector<SyncJournalDb::PollInfo> &pollInfos, AccountPtr account, SyncJournalDb *journal, const QString &localPath,
+                             const QSharedPointer<Vfs> &vfs, QObject *parent = nullptr)
         : QObject(parent)
         , _pollInfos(pollInfos)
         , _account(account)

@@ -147,6 +147,8 @@ void OCC::HydrationJob::cancel()
     }
 
     _signalSocket->write("cancelled");
+    _signalSocket->close();
+    _transferDataSocket->close();
 
     emitFinished(Cancelled);
 }

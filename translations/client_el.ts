@@ -393,7 +393,7 @@ Wait for the new sync, then encrypt it.</source>
         <location filename="../src/gui/accountsettings.cpp" line="446"/>
         <location filename="../src/gui/accountsettings.cpp" line="522"/>
         <source>Create new folder</source>
-        <translation type="unfinished"/>
+        <translation>Δημιουργία νέου φακέλου</translation>
     </message>
     <message>
         <location filename="../src/gui/accountsettings.cpp" line="452"/>
@@ -1356,22 +1356,22 @@ If this was an accident and you decide to keep your files, they will be re-synce
     <message>
         <location filename="../src/gui/foldercreationdialog.ui" line="14"/>
         <source>Create new folder</source>
-        <translation type="unfinished"/>
+        <translation>Δημιουργία νέου φακέλου</translation>
     </message>
     <message>
         <location filename="../src/gui/foldercreationdialog.ui" line="42"/>
         <source>Enter folder name</source>
-        <translation type="unfinished"/>
+        <translation>Εισαγωγή ονόματος φακέλου</translation>
     </message>
     <message>
         <location filename="../src/gui/foldercreationdialog.ui" line="61"/>
         <source>Folder already exists</source>
-        <translation type="unfinished"/>
+        <translation>Ο φάκελος υπάρχει ήδη</translation>
     </message>
     <message>
         <location filename="../src/gui/foldercreationdialog.cpp" line="76"/>
         <source>Error</source>
-        <translation type="unfinished"/>
+        <translation>Σφάλμα</translation>
     </message>
     <message>
         <location filename="../src/gui/foldercreationdialog.cpp" line="76"/>
@@ -5189,7 +5189,7 @@ This is a new, experimental mode. If you decide to use it, please report any iss
     <message>
         <location filename="../src/gui/foldercreationdialog.cpp" line="41"/>
         <source>New folder</source>
-        <translation type="unfinished"/>
+        <translation>Νέος φάκελος</translation>
     </message>
     <message>
         <location filename="../src/gui/userstatus.cpp" line="53"/>
