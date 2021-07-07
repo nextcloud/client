@@ -43,7 +43,7 @@ public:
 
     Result<void, QString> createPlaceholder(const SyncFileItem &item) override;
     Result<void, QString> dehydratePlaceholder(const SyncFileItem &item) override;
-    Result<void, QString> convertToPlaceholder(const QString &filename, const SyncFileItem &item, const QString &replacesFile) override;
+    Result<Vfs::ConvertToPlaceholderResult, QString> convertToPlaceholder(const QString &filename, const SyncFileItem &item, const QString &replacesFile) override;
 
     bool needsMetadataUpdate(const SyncFileItem &) override;
     bool isDehydratedPlaceholder(const QString &filePath) override;

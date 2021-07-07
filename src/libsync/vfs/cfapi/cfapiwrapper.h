@@ -18,6 +18,7 @@
 #include "owncloudlib.h"
 #include "common/pinstate.h"
 #include "common/result.h"
+#include "common/vfs.h"
 
 struct CF_PLACEHOLDER_BASIC_INFO;
 
@@ -89,10 +90,10 @@ enum SetPinRecurseMode {
     ChildrenOnly
 };
 
-OWNCLOUDSYNC_EXPORT Result<void, QString> setPinState(const FileHandle &handle, PinState state, SetPinRecurseMode mode);
+OWNCLOUDSYNC_EXPORT Result<OCC::Vfs::ConvertToPlaceholderResult, QString> setPinState(const FileHandle &handle, PinState state, SetPinRecurseMode mode);
 OWNCLOUDSYNC_EXPORT Result<void, QString> createPlaceholderInfo(const QString &path, time_t modtime, qint64 size, const QByteArray &fileId);
-OWNCLOUDSYNC_EXPORT Result<void, QString> updatePlaceholderInfo(const FileHandle &handle, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath = QString());
-OWNCLOUDSYNC_EXPORT Result<void, QString> convertToPlaceholder(const FileHandle &handle, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath);
+OWNCLOUDSYNC_EXPORT Result<OCC::Vfs::ConvertToPlaceholderResult, QString> updatePlaceholderInfo(const FileHandle &handle, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath = QString());
+OWNCLOUDSYNC_EXPORT Result<OCC::Vfs::ConvertToPlaceholderResult, QString> convertToPlaceholder(const FileHandle &handle, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath);
 
 }
 

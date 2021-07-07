@@ -3202,6 +3202,16 @@ Dit is een nieuwe, experimentele modus. Als je besluit het te gebruiken, vragen 
         <source>Error writing metadata to the database</source>
         <translation>Fout bij schrijven van Metadata naar de database</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/owncloudpropagator.cpp" line="1025"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/owncloudpropagator.cpp" line="1029"/>
+        <source>File is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateDownloadFile</name>
@@ -3271,6 +3281,16 @@ Dit is een nieuwe, experimentele modus. Als je besluit het te gebruiken, vragen 
         <source>Error writing metadata to the database</source>
         <translation>Fout bij schrijven van Metadata naar de database</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/propagatedownload.cpp" line="1141"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatedownload.cpp" line="1144"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateItemJob</name>
@@ -3308,6 +3328,16 @@ Dit is een nieuwe, experimentele modus. Als je besluit het te gebruiken, vragen 
         <translation>kon map %1 niet maken</translation>
     </message>
     <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="194"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="197"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
         <location filename="../src/libsync/propagatorjobs.cpp" line="193"/>
         <source>Error writing metadata to the database</source>
         <translation>Fout bij schrijven van Metadata naar de database</translation>
@@ -3334,7 +3364,7 @@ Dit is een nieuwe, experimentele modus. Als je besluit het te gebruiken, vragen 
 <context>
     <name>OCC::PropagateLocalRename</name>
     <message>
-        <location filename="../src/libsync/propagatorjobs.cpp" line="226"/>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="230"/>
         <source>File %1 cannot be renamed to %2 because of a local file name clash</source>
         <translation>Bestand %1 kan niet worden hernoemd naar %2, omdat de naam conflicteert met een lokaal bestand</translation>
     </message>
@@ -3342,6 +3372,21 @@ Dit is een nieuwe, experimentele modus. Als je besluit het te gebruiken, vragen 
         <location filename="../src/libsync/propagatorjobs.cpp" line="226"/>
         <source>File %1 can not be renamed to %2 because of a local file name clash</source>
         <translation>Bestand %1 kan niet worden hernoemd naar %2, omdat de naam conflicteert met een lokaal bestand</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="262"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="265"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="271"/>
+        <source>Failed to rename file</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../src/libsync/propagatorjobs.cpp" line="257"/>
@@ -3383,6 +3428,16 @@ Dit is een nieuwe, experimentele modus. Als je besluit het te gebruiken, vragen 
         <source>Error writing metadata to the database</source>
         <translation>Fout bij schrijven van Metadata naar de database</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemkdir.cpp" line="264"/>
+        <source>Error writing metadata to the database: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemkdir.cpp" line="267"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateRemoteMove</name>
@@ -3397,10 +3452,14 @@ Dit is een nieuwe, experimentele modus. Als je besluit het te gebruiken, vragen 
         <translation>Foutieve HTTP code ontvangen van de server. Verwacht werd 201, maar ontvangen &quot;%1 %2&quot;.</translation>
     </message>
     <message>
-        <location filename="../src/libsync/propagateremotemove.cpp" line="256"/>
-        <location filename="../src/libsync/propagateremotemove.cpp" line="268"/>
-        <source>Error writing metadata to the database</source>
-        <translation>Fout bij schrijven van Metadata naar de database</translation>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="257"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="260"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../src/libsync/propagateremotemove.cpp" line="261"/>
@@ -3409,6 +3468,12 @@ Dit is een nieuwe, experimentele modus. Als je besluit het te gebruiken, vragen 
 Fout bij instellen pin status
  
  </translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="256"/>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="268"/>
+        <source>Error writing metadata to the database</source>
+        <translation>Fout bij schrijven van Metadata naar de database</translation>
     </message>
 </context>
 <context>
@@ -3453,6 +3518,16 @@ Fout bij instellen pin status
         <location filename="../src/libsync/propagateupload.cpp" line="769"/>
         <source>Error writing metadata to the database</source>
         <translation>Fout bij schrijven van Metadata naar de database</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateupload.cpp" line="770"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateupload.cpp" line="773"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -4688,12 +4763,12 @@ Fout bij instellen pin status
 <context>
     <name>OCC::VfsCfApi</name>
     <message>
-        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="328"/>
+        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="333"/>
         <source>Download of end-to-end encrypted file failed</source>
         <translation>Downloaden begin-tot-eind versleuteld bestand mislukt</translation>
     </message>
     <message>
-        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="329"/>
+        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="334"/>
         <source>It seems that you are trying to download a virtual file that is end-to-end encrypted. Implicitly downloading such files is not supported at the moment. To workaround this issue, go to the settings and mark the encrypted folder with &quot;Make always available locally&quot;.</source>
         <translation>Het lijkt erop dat je een virtueel bestand probeert te downloaden dat end-to-end-versleuteld is. Het impliciet downloaden van dergelijke bestanden wordt momenteel niet ondersteund. Om dit probleem te omzeilen, ga je naar de instellingen en markeer je de versleutelde map met &quot;Altijd lokaal beschikbaar maken&quot;.</translation>
     </message>
@@ -5292,6 +5367,14 @@ Fout bij instellen pin status
         <source>%1: %2</source>
         <extracomment>this displays an error string (%2) for a file %1</extracomment>
         <translation>%1: %2</translation>
+    </message>
+</context>
+<context>
+    <name>SyncJournalDb</name>
+    <message>
+        <location filename="../src/common/syncjournaldb.cpp" line="975"/>
+        <source>Failed to connect database.</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>

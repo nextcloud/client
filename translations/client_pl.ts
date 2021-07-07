@@ -3199,6 +3199,16 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
         <source>Error writing metadata to the database</source>
         <translation>Błąd podczas zapisu metadanych do bazy danych</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/owncloudpropagator.cpp" line="1025"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/owncloudpropagator.cpp" line="1029"/>
+        <source>File is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateDownloadFile</name>
@@ -3268,6 +3278,16 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
         <source>Error writing metadata to the database</source>
         <translation>Błąd podczas zapisu metadanych do bazy danych</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/propagatedownload.cpp" line="1141"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatedownload.cpp" line="1144"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateItemJob</name>
@@ -3305,6 +3325,16 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
         <translation>nie można utworzyć katalogu %1</translation>
     </message>
     <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="194"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="197"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
         <location filename="../src/libsync/propagatorjobs.cpp" line="193"/>
         <source>Error writing metadata to the database</source>
         <translation>Błąd podczas zapisu metadanych do bazy danych</translation>
@@ -3331,7 +3361,7 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
 <context>
     <name>OCC::PropagateLocalRename</name>
     <message>
-        <location filename="../src/libsync/propagatorjobs.cpp" line="226"/>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="230"/>
         <source>File %1 cannot be renamed to %2 because of a local file name clash</source>
         <translation>Nie można zmienić nazwy pliku %1 na %2 z powodu konfliktu nazwy pliku lokalnego</translation>
     </message>
@@ -3339,6 +3369,21 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
         <location filename="../src/libsync/propagatorjobs.cpp" line="226"/>
         <source>File %1 can not be renamed to %2 because of a local file name clash</source>
         <translation>Nie można zmienić nazwy pliku %1 na %2 z powodu konfliktu lokalnej nazwy pliku</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="262"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="265"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="271"/>
+        <source>Failed to rename file</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../src/libsync/propagatorjobs.cpp" line="257"/>
@@ -3380,6 +3425,16 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
         <source>Error writing metadata to the database</source>
         <translation>Błąd zapisu metadanych do bazy danych</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemkdir.cpp" line="264"/>
+        <source>Error writing metadata to the database: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemkdir.cpp" line="267"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateRemoteMove</name>
@@ -3394,15 +3449,25 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
         <translation>Serwer zwrócił nieprawidłowy kod HTTP. Oczekiwano 201, a otrzymano &quot;%1 %2&quot;.</translation>
     </message>
     <message>
-        <location filename="../src/libsync/propagateremotemove.cpp" line="256"/>
-        <location filename="../src/libsync/propagateremotemove.cpp" line="268"/>
-        <source>Error writing metadata to the database</source>
-        <translation>Błąd zapisu metadanych do bazy danych</translation>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="257"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="260"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../src/libsync/propagateremotemove.cpp" line="261"/>
         <source>Error setting pin state</source>
         <translation>Błąd podczas ustawiania stanu przypięcia</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="256"/>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="268"/>
+        <source>Error writing metadata to the database</source>
+        <translation>Błąd zapisu metadanych do bazy danych</translation>
     </message>
 </context>
 <context>
@@ -3447,6 +3512,16 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
         <location filename="../src/libsync/propagateupload.cpp" line="769"/>
         <source>Error writing metadata to the database</source>
         <translation>Błąd zapisu metadanych do bazy danych</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateupload.cpp" line="770"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateupload.cpp" line="773"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -4682,12 +4757,12 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
 <context>
     <name>OCC::VfsCfApi</name>
     <message>
-        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="328"/>
+        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="333"/>
         <source>Download of end-to-end encrypted file failed</source>
         <translation>Pobieranie pliku zaszyfrowanego end-to-end nie powiodło się</translation>
     </message>
     <message>
-        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="329"/>
+        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="334"/>
         <source>It seems that you are trying to download a virtual file that is end-to-end encrypted. Implicitly downloading such files is not supported at the moment. To workaround this issue, go to the settings and mark the encrypted folder with &quot;Make always available locally&quot;.</source>
         <translation>Wygląda na to, że próbujesz pobrać plik wirtualny, który jest zaszyfrowany end-to-end. Bezpośrednie pobieranie takich plików nie jest obecnie obsługiwane. Aby rozwiązać ten problem, przejdź do ustawień i zaznacz zaszyfrowany katalog za pomocą opcji &quot;Dostępne zawsze lokalnie&quot;.</translation>
     </message>
@@ -5286,6 +5361,14 @@ To nowy, eksperymentalny tryb. Jeśli zdecydujesz się z niego skorzystać, zgł
         <source>%1: %2</source>
         <extracomment>this displays an error string (%2) for a file %1</extracomment>
         <translation>%1: %2</translation>
+    </message>
+</context>
+<context>
+    <name>SyncJournalDb</name>
+    <message>
+        <location filename="../src/common/syncjournaldb.cpp" line="975"/>
+        <source>Failed to connect database.</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>

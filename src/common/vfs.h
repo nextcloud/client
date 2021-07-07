@@ -104,6 +104,13 @@ public:
         XAttr,
     };
     Q_ENUM(Mode)
+    enum class ConvertToPlaceholderResult {
+        Error,
+        Ok,
+        Locked
+    };
+    Q_ENUM(ConvertToPlaceholderResult)
+
     static QString modeToString(Mode mode);
     static Optional<Mode> modeFromString(const QString &str);
 
@@ -197,7 +204,7 @@ public:
      * new placeholder shall supersede, for rename-replace actions with new downloads,
      * for example.
      */
-    virtual Q_REQUIRED_RESULT Result<void, QString> convertToPlaceholder(
+    virtual Q_REQUIRED_RESULT Result<Vfs::ConvertToPlaceholderResult, QString> convertToPlaceholder(
         const QString &filename,
         const SyncFileItem &item,
         const QString &replacesFile = QString()) = 0;
@@ -303,7 +310,7 @@ public:
     Result<void, QString> updateMetadata(const QString &, time_t, qint64, const QByteArray &) override { return {}; }
     Result<void, QString> createPlaceholder(const SyncFileItem &) override { return {}; }
     Result<void, QString> dehydratePlaceholder(const SyncFileItem &) override { return {}; }
-    Result<void, QString> convertToPlaceholder(const QString &, const SyncFileItem &, const QString &) override { return {}; }
+    Result<ConvertToPlaceholderResult, QString> convertToPlaceholder(const QString &, const SyncFileItem &, const QString &) override { return ConvertToPlaceholderResult::Ok; }
 
     bool needsMetadataUpdate(const SyncFileItem &) override { return false; }
     bool isDehydratedPlaceholder(const QString &) override { return false; }

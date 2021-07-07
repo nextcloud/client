@@ -112,10 +112,10 @@ Result<void, QString> VfsXAttr::dehydratePlaceholder(const SyncFileItem &item)
     return {};
 }
 
-Result<void, QString> VfsXAttr::convertToPlaceholder(const QString &, const SyncFileItem &, const QString &)
+Result<Vfs::ConvertToPlaceholderResult, QString> VfsXAttr::convertToPlaceholder(const QString &, const SyncFileItem &, const QString &)
 {
     // Nothing necessary
-    return {};
+    return {ConvertToPlaceholderResult::Ok};
 }
 
 bool VfsXAttr::needsMetadataUpdate(const SyncFileItem &)

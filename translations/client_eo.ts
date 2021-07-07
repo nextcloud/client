@@ -3173,6 +3173,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <source>Error writing metadata to the database</source>
         <translation>Eraro dum skribo de pridatumoj en la datumbazo</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/owncloudpropagator.cpp" line="1025"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/owncloudpropagator.cpp" line="1029"/>
+        <source>File is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateDownloadFile</name>
@@ -3242,6 +3252,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <source>Error writing metadata to the database</source>
         <translation>Eraro dum konservado de pridatumoj en la datumbazo</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/propagatedownload.cpp" line="1141"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatedownload.cpp" line="1144"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateItemJob</name>
@@ -3279,6 +3299,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <translation>ne eblis krei dosierujon %1</translation>
     </message>
     <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="194"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="197"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
         <location filename="../src/libsync/propagatorjobs.cpp" line="193"/>
         <source>Error writing metadata to the database</source>
         <translation>Eraro dum konservado de pridatumoj en la datumbazo</translation>
@@ -3305,7 +3335,7 @@ This is a new, experimental mode. If you decide to use it, please report any iss
 <context>
     <name>OCC::PropagateLocalRename</name>
     <message>
-        <location filename="../src/libsync/propagatorjobs.cpp" line="226"/>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="230"/>
         <source>File %1 cannot be renamed to %2 because of a local file name clash</source>
         <translation type="unfinished"/>
     </message>
@@ -3313,6 +3343,21 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <location filename="../src/libsync/propagatorjobs.cpp" line="226"/>
         <source>File %1 can not be renamed to %2 because of a local file name clash</source>
         <translation>Dosiero %1 ne eblis esti alinomita al %2 pro konflikto kun loka dosiernomo</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="262"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="265"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="271"/>
+        <source>Failed to rename file</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../src/libsync/propagatorjobs.cpp" line="257"/>
@@ -3354,6 +3399,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <source>Error writing metadata to the database</source>
         <translation>Eraro dum skribo de pridatumoj en la datumbazo</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemkdir.cpp" line="264"/>
+        <source>Error writing metadata to the database: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemkdir.cpp" line="267"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateRemoteMove</name>
@@ -3368,15 +3423,25 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <translation>Neĝusta HTTP-kodo ricevita de servilo. Atendita: 201, ricevita: „%1 %2“.</translation>
     </message>
     <message>
-        <location filename="../src/libsync/propagateremotemove.cpp" line="256"/>
-        <location filename="../src/libsync/propagateremotemove.cpp" line="268"/>
-        <source>Error writing metadata to the database</source>
-        <translation>Eraro dum konservado de pridatumoj en la datumbazo</translation>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="257"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="260"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../src/libsync/propagateremotemove.cpp" line="261"/>
         <source>Error setting pin state</source>
         <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="256"/>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="268"/>
+        <source>Error writing metadata to the database</source>
+        <translation>Eraro dum konservado de pridatumoj en la datumbazo</translation>
     </message>
 </context>
 <context>
@@ -3421,6 +3486,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <location filename="../src/libsync/propagateupload.cpp" line="769"/>
         <source>Error writing metadata to the database</source>
         <translation>Eraro dum skribo de pridatumoj en la datumbazo</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateupload.cpp" line="770"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateupload.cpp" line="773"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -4655,12 +4730,12 @@ This is a new, experimental mode. If you decide to use it, please report any iss
 <context>
     <name>OCC::VfsCfApi</name>
     <message>
-        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="328"/>
+        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="333"/>
         <source>Download of end-to-end encrypted file failed</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="329"/>
+        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="334"/>
         <source>It seems that you are trying to download a virtual file that is end-to-end encrypted. Implicitly downloading such files is not supported at the moment. To workaround this issue, go to the settings and mark the encrypted folder with &quot;Make always available locally&quot;.</source>
         <translation type="unfinished"/>
     </message>
@@ -5259,6 +5334,14 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <source>%1: %2</source>
         <extracomment>this displays an error string (%2) for a file %1</extracomment>
         <translation>%1: %2</translation>
+    </message>
+</context>
+<context>
+    <name>SyncJournalDb</name>
+    <message>
+        <location filename="../src/common/syncjournaldb.cpp" line="975"/>
+        <source>Failed to connect database.</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>

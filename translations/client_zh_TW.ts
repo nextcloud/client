@@ -3199,6 +3199,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <source>Error writing metadata to the database</source>
         <translation>將詮釋資料寫入到資料庫時發生錯誤</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/owncloudpropagator.cpp" line="1025"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/owncloudpropagator.cpp" line="1029"/>
+        <source>File is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateDownloadFile</name>
@@ -3268,6 +3278,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <source>Error writing metadata to the database</source>
         <translation>將詮釋資料寫入到資料庫時發生錯誤</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/propagatedownload.cpp" line="1141"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatedownload.cpp" line="1144"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateItemJob</name>
@@ -3305,6 +3325,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <translation>無法建立資料夾 %1</translation>
     </message>
     <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="194"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="197"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
         <location filename="../src/libsync/propagatorjobs.cpp" line="193"/>
         <source>Error writing metadata to the database</source>
         <translation>將詮釋資料寫入到資料庫時發生錯誤</translation>
@@ -3331,7 +3361,7 @@ This is a new, experimental mode. If you decide to use it, please report any iss
 <context>
     <name>OCC::PropagateLocalRename</name>
     <message>
-        <location filename="../src/libsync/propagatorjobs.cpp" line="226"/>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="230"/>
         <source>File %1 cannot be renamed to %2 because of a local file name clash</source>
         <translation>檔案 %1 無法重新命名為 %2，因為本機檔案名稱有衝突</translation>
     </message>
@@ -3339,6 +3369,21 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <location filename="../src/libsync/propagatorjobs.cpp" line="226"/>
         <source>File %1 can not be renamed to %2 because of a local file name clash</source>
         <translation>檔案 %1 無法重新命名為 %2，因為本機檔案名稱有衝突</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="262"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="265"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagatorjobs.cpp" line="271"/>
+        <source>Failed to rename file</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../src/libsync/propagatorjobs.cpp" line="257"/>
@@ -3380,6 +3425,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <source>Error writing metadata to the database</source>
         <translation>將詮釋資料寫入到資料庫時發生錯誤</translation>
     </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemkdir.cpp" line="264"/>
+        <source>Error writing metadata to the database: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemkdir.cpp" line="267"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>OCC::PropagateRemoteMove</name>
@@ -3394,15 +3449,25 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <translation>伺服器回傳錯誤的 HTTP 代碼。預期為 201，但收到的是「%1 %2」。</translation>
     </message>
     <message>
-        <location filename="../src/libsync/propagateremotemove.cpp" line="256"/>
-        <location filename="../src/libsync/propagateremotemove.cpp" line="268"/>
-        <source>Error writing metadata to the database</source>
-        <translation>將詮釋資料寫入到資料庫時發生錯誤</translation>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="257"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="260"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../src/libsync/propagateremotemove.cpp" line="261"/>
         <source>Error setting pin state</source>
         <translation>設定釘選狀態時發生錯誤</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="256"/>
+        <location filename="../src/libsync/propagateremotemove.cpp" line="268"/>
+        <source>Error writing metadata to the database</source>
+        <translation>將詮釋資料寫入到資料庫時發生錯誤</translation>
     </message>
 </context>
 <context>
@@ -3447,6 +3512,16 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <location filename="../src/libsync/propagateupload.cpp" line="769"/>
         <source>Error writing metadata to the database</source>
         <translation>將詮釋資料寫入到資料庫時發生錯誤</translation>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateupload.cpp" line="770"/>
+        <source>Error updating metadata: %1</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libsync/propagateupload.cpp" line="773"/>
+        <source>The file %1 is currently in use</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -4682,12 +4757,12 @@ This is a new, experimental mode. If you decide to use it, please report any iss
 <context>
     <name>OCC::VfsCfApi</name>
     <message>
-        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="328"/>
+        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="333"/>
         <source>Download of end-to-end encrypted file failed</source>
         <translation>下載端到端加密的檔案失敗</translation>
     </message>
     <message>
-        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="329"/>
+        <location filename="../src/libsync/vfs/cfapi/vfs_cfapi.cpp" line="334"/>
         <source>It seems that you are trying to download a virtual file that is end-to-end encrypted. Implicitly downloading such files is not supported at the moment. To workaround this issue, go to the settings and mark the encrypted folder with &quot;Make always available locally&quot;.</source>
         <translation>您似乎正在嘗試下載透過端到端加密的虛擬檔案。目前並不支援下載此類檔案。變通方法則是到設定中並將加密的資料夾標記為「一律可在本機使用」。</translation>
     </message>
@@ -5286,6 +5361,14 @@ This is a new, experimental mode. If you decide to use it, please report any iss
         <source>%1: %2</source>
         <extracomment>this displays an error string (%2) for a file %1</extracomment>
         <translation>%1：%2</translation>
+    </message>
+</context>
+<context>
+    <name>SyncJournalDb</name>
+    <message>
+        <location filename="../src/common/syncjournaldb.cpp" line="975"/>
+        <source>Failed to connect database.</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>

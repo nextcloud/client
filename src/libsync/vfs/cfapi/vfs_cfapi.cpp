@@ -111,10 +111,15 @@ Result<void, QString> VfsCfApi::updateMetadata(const QString &filePath, time_t m
     const auto localPath = QDir::toNativeSeparators(filePath);
     const auto handle = cfapi::handleForPath(localPath);
     if (handle) {
-        return cfapi::updatePlaceholderInfo(handle, modtime, size, fileId);
+        auto result = cfapi::updatePlaceholderInfo(handle, modtime, size, fileId);
+        if (result) {
+            return {};
+        } else {
+            return result.error();
+        }
     } else {
         qCWarning(lcCfApi) << "Couldn't update metadata for non existing file" << localPath;
-        return "Couldn't update metadata";
+        return QStringLiteral("Couldn't update metadata");
     }
 }
 
@@ -150,7 +155,7 @@ Result<void, QString> VfsCfApi::dehydratePlaceholder(const SyncFileItem &item)
     return {};
 }
 
-Result<void, QString> VfsCfApi::convertToPlaceholder(const QString &filename, const SyncFileItem &item, const QString &replacesFile)
+Result<Vfs::ConvertToPlaceholderResult, QString> VfsCfApi::convertToPlaceholder(const QString &filename, const SyncFileItem &item, const QString &replacesFile)
 {
     const auto localPath = QDir::toNativeSeparators(filename);
     const auto replacesPath = QDir::toNativeSeparators(replacesFile);
