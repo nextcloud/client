@@ -37,7 +37,7 @@ IgnoreListEditor::IgnoreListEditor(QWidget *parent)
 
     ConfigFile cfgFile;
     //FIXME This is not true. The entries are hardcoded below in setupTableReadOnlyItems
-    readOnlyTooltip = tr("This entry is provided by the system at '%1' "
+    readOnlyTooltip = tr("This entry is provided by the system at \"%1\" "
                          "and cannot be modified in this view.")
                           .arg(QDir::toNativeSeparators(cfgFile.excludeFile(ConfigFile::SystemScope)));
 

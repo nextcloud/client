@@ -376,7 +376,7 @@ void OwncloudSetupWizard::slotAuthError()
             return;
         }
         errorMsg = tr("The authenticated request to the server was redirected to "
-                      "'%1'. The URL is bad, the server is misconfigured.")
+                      "\"%1\". The URL is bad, the server is misconfigured.")
                        .arg(Utility::escape(redirectUrl.toString()));
 
         // A 404 is actually a success: we were authorized to know that the folder does

@@ -192,7 +192,7 @@ void Logger::setLogFile(const QString &name)
     if (!openSucceeded) {
         locker.unlock(); // Just in case postGuiMessage has a qDebug()
         postGuiMessage(tr("Error"),
-            QString(tr("<nobr>File '%1'<br/>cannot be opened for writing.<br/><br/>"
+            QString(tr("<nobr>File \"%1\"<br/>cannot be opened for writing.<br/><br/>"
                        "The log output can <b>not</b> be saved!</nobr>"))
                 .arg(name));
         return;

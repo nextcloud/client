@@ -108,7 +108,7 @@ void HttpCredentialsGui::showDialog()
     }
     if (!_fetchErrorString.isEmpty()) {
         msg += QLatin1String("<br>")
-            + tr("Reading from keychain failed with error: '%1'")
+            + tr("Reading from keychain failed with error: \"%1\"")
                   .arg(Utility::escape(_fetchErrorString))
             + QLatin1String("<br>");
     }

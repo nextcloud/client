@@ -415,10 +415,10 @@ void ownCloudGui::slotUpdateProgress(const QString &folder, const ProgressInfo &
     if (progress.status() == ProgressInfo::Discovery) {
 #if 0
         if (!progress._currentDiscoveredRemoteFolder.isEmpty()) {
-            _actionStatus->setText(tr("Checking for changes in remote '%1'")
+            _actionStatus->setText(tr("Checking for changes in remote \"%1\"")
                                        .arg(progress._currentDiscoveredRemoteFolder));
         } else if (!progress._currentDiscoveredLocalFolder.isEmpty()) {
-            _actionStatus->setText(tr("Checking for changes in local '%1'")
+            _actionStatus->setText(tr("Checking for changes in local \"%1\"")
                                        .arg(progress._currentDiscoveredLocalFolder));
         }
 #endif

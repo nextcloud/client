@@ -334,7 +334,7 @@ void ShareUserGroupWidget::slotShareesReady()
 
     _pi_sharee.stopAnimation();
     if (_completerModel->rowCount() == 0) {
-        displayError(0, tr("No results for '%1'").arg(_completerModel->currentSearch()));
+        displayError(0, tr("No results for \"%1\"").arg(_completerModel->currentSearch()));
     }
 
     // if no rows are present in the model - complete() will hide the completer

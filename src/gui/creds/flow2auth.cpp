@@ -109,7 +109,7 @@ void Flow2Auth::fetchNewToken(const TokenAction action)
                 errorReason = tr("Error returned from the server: <em>%1</em>")
                                   .arg(errorFromJson.toHtmlEscaped());
             } else if (reply->error() != QNetworkReply::NoError) {
-                errorReason = tr("There was an error accessing the 'token' endpoint: <br><em>%1</em>")
+                errorReason = tr("There was an error accessing the \"token\" endpoint: <br><em>%1</em>")
                                   .arg(reply->errorString().toHtmlEscaped());
             } else if (jsonParseError.error != QJsonParseError::NoError) {
                 errorReason = tr("Could not parse the JSON returned from the server: <br><em>%1</em>")
@@ -212,7 +212,7 @@ void Flow2Auth::slotPollTimerTimeout()
                 errorReason = tr("Error returned from the server: <em>%1</em>")
                                   .arg(errorFromJson.toHtmlEscaped());
             } else if (reply->error() != QNetworkReply::NoError) {
-                errorReason = tr("There was an error accessing the 'token' endpoint: <br><em>%1</em>")
+                errorReason = tr("There was an error accessing the \"token\" endpoint: <br><em>%1</em>")
                                   .arg(reply->errorString().toHtmlEscaped());
             } else if (jsonParseError.error != QJsonParseError::NoError) {
                 errorReason = tr("Could not parse the JSON returned from the server: <br><em>%1</em>")

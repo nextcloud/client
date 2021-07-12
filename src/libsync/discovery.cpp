@@ -269,7 +269,7 @@ bool ProcessDirectoryJob::handleExcluded(const QString &path, const QString &loc
                     }
                 }
                 if (invalid) {
-                    item->_errorString = tr("File names containing the character '%1' are not supported on this file system.")
+                    item->_errorString = tr("File names containing the character \"%1\" are not supported on this file system.")
                                              .arg(QLatin1Char(invalid));
                 }
                 if (isInvalidPattern) {
@@ -1545,7 +1545,7 @@ DiscoverySingleDirectoryJob *ProcessDirectoryJob::startAsyncServerQuery()
                 emit this->finished();
             } else {
                 // Fatal for the root job since it has no SyncFileItem, or for the network errors
-                emit _discoveryData->fatalError(tr("Server replied with an error while reading directory '%1' : %2")
+                emit _discoveryData->fatalError(tr("Server replied with an error while reading directory \"%1\" : %2")
                     .arg(_currentFolder._server, results.error().message));
             }
         }

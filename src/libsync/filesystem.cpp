@@ -155,7 +155,7 @@ bool FileSystem::removeRecursively(const QString &path, const std::function<void
                     onDeleted(di.filePath(), false);
             } else {
                 if (errors) {
-                    errors->append(QCoreApplication::translate("FileSystem", "Error removing '%1': %2")
+                    errors->append(QCoreApplication::translate("FileSystem", "Error removing \"%1\": %2")
                                        .arg(QDir::toNativeSeparators(di.filePath()), removeError));
                 }
                 qCWarning(lcFileSystem) << "Error removing " << di.filePath() << ':' << removeError;
@@ -171,7 +171,7 @@ bool FileSystem::removeRecursively(const QString &path, const std::function<void
                 onDeleted(path, true);
         } else {
             if (errors) {
-                errors->append(QCoreApplication::translate("FileSystem", "Could not remove folder '%1'")
+                errors->append(QCoreApplication::translate("FileSystem", "Could not remove folder \"%1\"")
                                    .arg(QDir::toNativeSeparators(path)));
             }
             qCWarning(lcFileSystem) << "Error removing folder" << path;

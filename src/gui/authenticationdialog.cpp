@@ -29,7 +29,7 @@ AuthenticationDialog::AuthenticationDialog(const QString &realm, const QString &
 {
     setWindowTitle(tr("Authentication Required"));
     auto *lay = new QVBoxLayout(this);
-    auto *label = new QLabel(tr("Enter username and password for '%1' at %2.").arg(realm, domain));
+    auto *label = new QLabel(tr("Enter username and password for \"%1\" at %2.").arg(realm, domain));
     label->setTextFormat(Qt::PlainText);
     lay->addWidget(label);
 

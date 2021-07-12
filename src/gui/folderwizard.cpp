@@ -181,7 +181,7 @@ void FolderWizardRemotePath::slotAddRemoteFolder()
     auto *dlg = new QInputDialog(this);
 
     dlg->setWindowTitle(tr("Create Remote Folder"));
-    dlg->setLabelText(tr("Enter the name of the new folder to be created below '%1':")
+    dlg->setLabelText(tr("Enter the name of the new folder to be created below \"%1\":")
                           .arg(parent));
     dlg->open(this, SLOT(slotCreateRemoteFolder(QString)));
     dlg->setAttribute(Qt::WA_DeleteOnClose);

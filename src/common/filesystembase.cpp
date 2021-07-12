@@ -395,13 +395,13 @@ bool FileSystem::moveToTrash(const QString &fileName, QString *errorString)
             suffix_number++;
         }
         if (!file.rename(f.absoluteFilePath(), path + QString::number(suffix_number))) { // rename(file old path, file trash path)
-            *errorString = QCoreApplication::translate("FileSystem", "Could not move '%1' to '%2'")
+            *errorString = QCoreApplication::translate("FileSystem", "Could not move \"%1\" to \"%2\"")
                                .arg(f.absoluteFilePath(), path + QString::number(suffix_number));
             return false;
         }
     } else {
         if (!file.rename(f.absoluteFilePath(), trashFilePath + f.fileName())) { // rename(file old path, file trash path)
-            *errorString = QCoreApplication::translate("FileSystem", "Could not move '%1' to '%2'")
+            *errorString = QCoreApplication::translate("FileSystem", "Could not move \"%1\" to \"%2\"")
                                .arg(f.absoluteFilePath(), trashFilePath + f.fileName());
             return false;
         }
