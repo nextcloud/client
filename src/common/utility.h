@@ -30,8 +30,11 @@
 #include <QMap>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QHash>
+#include <QtGlobal>
 #include <functional>
 #include <memory>
+#include <functional>
 
 #ifdef Q_OS_WIN
 #include <QRect>
@@ -39,6 +42,19 @@
 #endif
 
 class QSettings;
+
+namespace std {
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+template <>
+struct hash<QString>
+{
+    std::size_t operator()(const QString &s) const noexcept
+    {
+        return static_cast<size_t>(qHash(s));
+    }
+};
+#endif
+}
 
 namespace OCC {
 

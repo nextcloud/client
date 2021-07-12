@@ -266,18 +266,22 @@ QString Theme::themeImagePath(const QString &name, int size, bool sysTray) const
     }
 }
 
+double Theme::pixelRatio(QPaintDevice *dev)
+{
+    return static_cast<double>(dev ? dev->devicePixelRatioF() : qApp->primaryScreen()->devicePixelRatio());
+}
+
 bool Theme::isHidpi(QPaintDevice *dev)
 {
-    const auto devicePixelRatio = dev ? dev->devicePixelRatio() : qApp->primaryScreen()->devicePixelRatio();
-    return devicePixelRatio > 1;
+    return pixelRatio(dev) > 1.0;
 }
 
 QIcon Theme::uiThemeIcon(const QString &iconName, bool uiHasDarkBg) const
 {
-    QString themeResBasePath = ":/client/theme/";
-    QString iconPath = themeResBasePath + (uiHasDarkBg?"white/":"black/") + iconName;
-    std::string icnPath = iconPath.toUtf8().constData();
-    return QIcon(QPixmap(iconPath));
+    const QString themeResBasePath(QStringLiteral(":/client/theme/"));
+    const QString iconPath = themeResBasePath + (uiHasDarkBg ? QStringLiteral("white/")
+                                                 : QStringLiteral("black/")) + iconName;
+    return QIcon(iconPath);
 }
 
 QString Theme::hidpiFileName(const QString &fileName, QPaintDevice *dev)
