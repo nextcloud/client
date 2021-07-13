@@ -52,6 +52,11 @@ public:
 
 protected:
     bool certificateError(const QWebEngineCertificateError &certificateError) override;
+
+    bool acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame) override;
+
+private:
+    bool _enforceHttps = false;
 };
 
 // We need a separate class here, since we cannot simply return the same WebEnginePage object
@@ -186,8 +191,15 @@ QWebEnginePage * WebEnginePage::createWindow(QWebEnginePage::WebWindowType type)
     return view;
 }
 
-void WebEnginePage::setUrl(const QUrl &url) {
+void WebEnginePage::setUrl(const QUrl &url)
+{
     QWebEnginePage::setUrl(url);
+
+    if (url.scheme() == "https") {
+        _enforceHttps = true;
+    } else {
+        _enforceHttps = false;
+    }
 }
 
 bool WebEnginePage::certificateError(const QWebEngineCertificateError &certificateError)
@@ -209,6 +221,15 @@ bool WebEnginePage::certificateError(const QWebEngineCertificateError &certifica
     int ret = messageBox.exec();
 
     return ret == QMessageBox::Yes;
+}
+
+bool WebEnginePage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType /*type*/, bool /*isMainFrame*/)
+{
+    if (_enforceHttps && url.scheme() != "https") {
+        QMessageBox::warning(nullptr, "Security warning", "Can not follow non https link on a https website. This might be a security issue. Please contact your administrator");
+        return false;
+    }
+    return true;
 }
 
 ExternalWebEnginePage::ExternalWebEnginePage(QWebEngineProfile *profile, QObject* parent) : QWebEnginePage(profile, parent) {

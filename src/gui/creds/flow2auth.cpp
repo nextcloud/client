@@ -79,6 +79,9 @@ void Flow2Auth::fetchNewToken(const TokenAction action)
 
     // Step 1: Initiate a login, do an anonymous POST request
     QUrl url = Utility::concatUrlPath(_account->url().toString(), QLatin1String("/index.php/login/v2"));
+    if (url.scheme() == "https") {
+        _enforceHttps = true;
+    }
 
     // add 'Content-Length: 0' header (see https://github.com/nextcloud/desktop/issues/1473)
     QNetworkRequest req;
@@ -187,6 +190,12 @@ void Flow2Auth::slotPollTimerTimeout()
     QUrlQuery arguments(QString("token=%1").arg(_pollToken));
     requestBody->setData(arguments.query(QUrl::FullyEncoded).toLatin1());
 
+    if (_enforceHttps && QUrl(_pollEndpoint).scheme() != "https") {
+        qCWarning(lcFlow2auth) << "Can not poll endpoint because the returned url" << _pollEndpoint << "does not start with https";
+        emit result(Error, tr("The polling URL does not start with https despite the login URL started with https. Login will not be possible because this might be a security issue. Please contact your administrator."));
+        return;
+    }
+
     auto job = _account->sendRequest("POST", _pollEndpoint, req, requestBody);
     job->setTimeout(qMin(30 * 1000ll, job->timeoutMsec()));
 
@@ -200,6 +209,11 @@ void Flow2Auth::slotPollTimerTimeout()
         if (reply->error() == QNetworkReply::NoError && jsonParseError.error == QJsonParseError::NoError
             && !json.isEmpty()) {
             serverUrl = json["server"].toString();
+            if (_enforceHttps && serverUrl.scheme() != "https") {
+                qCWarning(lcFlow2auth) << "Returned server url" << serverUrl << "does not start with https";
+                emit result(Error, tr("The returned server URL does not start with https despite the login URL started with https. Login will not be possible because this might be a security issue. Please contact your administrator."));
+                return;
+            }
             loginName = json["loginName"].toString();
             appPassword = json["appPassword"].toString();
         }
