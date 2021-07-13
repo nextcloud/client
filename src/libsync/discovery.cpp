@@ -502,6 +502,9 @@ void ProcessDirectoryJob::processFileAnalyzeRemoteInfo(
             item->_instruction = CSYNC_INSTRUCTION_UPDATE_METADATA;
             item->_direction = SyncFileItem::Down;
         } else {
+            // if (is virtual mode enabled and folder is encrypted - check if the size is the same as on the server and then - trigger server query
+            // to update a placeholder with corrected size (-16 Bytes)
+            // or, maybe, add a flag to the database - vfsE2eeSizeCorrected? if it is not set - subtract it from the placeholder's size and re-create/update a placeholder?
             processFileAnalyzeLocalInfo(item, path, localEntry, serverEntry, dbEntry, ParentNotChanged);
             return;
         }
