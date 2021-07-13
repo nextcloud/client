@@ -513,12 +513,18 @@ void ProcessDirectoryJob::processFileAnalyzeRemoteInfo(
             // or, maybe, add a flag to the database - vfsE2eeSizeCorrected? if it is not set - subtract it from the placeholder's size and re-create/update a placeholder?
             QueryMode serverQueryMode = ParentNotChanged;
             if (dbEntry.isDirectory() && dbEntry._isE2eEncrypted) {
-                const qint64 sizeOfFolder = serverEntry.sizeOfFolder;
-                const bool totalSizeOfPathResult = _discoveryData->_statedb->totalSizeOfPath(dbEntry.path().toUtf8(), [sizeOfFolder, &serverQueryMode](const qint64 &size) {
-                    if (size == sizeOfFolder) {
+                qint64 totalSizeOfPath = 0;
+                if (_discoveryData->_statedb->listFilesInPath(dbEntry.path().toUtf8(), [this, &totalSizeOfPath](const OCC::SyncJournalFileRecord &record) {
+                        if (record.isFile()) {
+                            totalSizeOfPath += record._fileSize + CommonConstants::e2EeTagSize;
+                        } else if (record.isVirtualFile()) {
+                            totalSizeOfPath += record._fileSize;
+                        }
+                    })) {
+                    if (totalSizeOfPath != 0 && totalSizeOfPath == serverEntry.sizeOfFolder) {
                         serverQueryMode = NormalQuery;
                     }
-                });
+                }
             }
             processFileAnalyzeLocalInfo(item, path, localEntry, serverEntry, dbEntry, serverQueryMode);
             return;

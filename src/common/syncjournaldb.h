@@ -65,7 +65,6 @@ public:
     bool getFileRecordsByFileId(const QByteArray &fileId, const std::function<void(const SyncJournalFileRecord &)> &rowCallback);
     bool getFilesBelowPath(const QByteArray &path, const std::function<void(const SyncJournalFileRecord&)> &rowCallback);
     bool listFilesInPath(const QByteArray &path, const std::function<void(const SyncJournalFileRecord&)> &rowCallback);
-    bool totalSizeOfPath(const QByteArray &path, const std::function<void(const qint64)> &rowCallback);
     Result<void, QString> setFileRecord(const SyncJournalFileRecord &record);
 
     void keyValueStoreSet(const QString &key, QVariant value);
@@ -405,7 +404,6 @@ private:
     SqlQuery _getFilesBelowPathQuery;
     SqlQuery _getAllFilesQuery;
     SqlQuery _listFilesInPathQuery;
-    SqlQuery _totalSizeOfPathQuery;
     SqlQuery _setFileRecordQuery;
     SqlQuery _setFileRecordChecksumQuery;
     SqlQuery _setFileRecordLocalMetadataQuery;

@@ -1327,37 +1327,6 @@ bool SyncJournalDb::listFilesInPath(const QByteArray& path,
     return true;
 }
 
-bool SyncJournalDb::totalSizeOfPath(const QByteArray &path, const std::function<void(const qint64)> &rowCallback)
-{
-    QMutexLocker locker(&_mutex);
-
-    if (_metadataTableIsEmpty)
-        return true;
-
-    if (!checkConnect())
-        return false;
-
-    if (!_totalSizeOfPathQuery.initOrReset(QByteArrayLiteral("SELECT SUM(filesize) FROM metadata WHERE parent_hash(path) = ?1"), _db))
-        return false;
-
-    _totalSizeOfPathQuery.bindValue(1, getPHash(path));
-
-    if (!_totalSizeOfPathQuery.exec())
-        return false;
-
-    auto next = _totalSizeOfPathQuery.next();
-    if (!next.ok) {
-        qCWarning(lcDb) << "Could not calculate total size of path" << path << "Error:" << _totalSizeOfPathQuery.error();
-        close();
-        return false;
-    }
-    if (next.hasData) {
-        rowCallback(_totalSizeOfPathQuery.int64Value(0));
-    }
-
-    return true;
-}
-
 int SyncJournalDb::getFileRecordCount()
 {
     QMutexLocker locker(&_mutex);
