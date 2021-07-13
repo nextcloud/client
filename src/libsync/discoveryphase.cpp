@@ -349,6 +349,7 @@ void DiscoverySingleDirectoryJob::start()
           << "getlastmodified"
           << "getcontentlength"
           << "getetag"
+          << "http://owncloud.org/ns:size"
           << "http://owncloud.org/ns:id"
           << "http://owncloud.org/ns:downloadURL"
           << "http://owncloud.org/ns:dDC"
@@ -429,6 +430,10 @@ static void propertyMapToRemoteInfo(const QMap<QString, QString> &map, RemoteInf
             result.isE2eEncrypted = true;
         }
     }
+
+    if (result.isDirectory && map.contains("size")) {
+        result.sizeOfFolder = map.value("size").toInt();
+    }
 }
 
 void DiscoverySingleDirectoryJob::directoryListingIteratedSlot(const QString &file, const QMap<QString, QString> &map)
@@ -454,6 +459,9 @@ void DiscoverySingleDirectoryJob::directoryListingIteratedSlot(const QString &fi
         if (map.contains("is-encrypted") && map.value("is-encrypted") == QStringLiteral("1")) {
             _isE2eEncrypted = true;
             Q_ASSERT(!_fileId.isEmpty());
+        }
+        if (map.contains("size")) {
+            _size = map.value("size").toInt();
         }
     } else {
 
