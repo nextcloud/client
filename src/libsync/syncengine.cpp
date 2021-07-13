@@ -1076,9 +1076,8 @@ void SyncEngine::abort()
         // Delete the discovery and all child jobs after ensuring
         // it can't finish and start the propagator
         disconnect(_discoveryPhase.data(), nullptr, this, nullptr);
-        _discoveryPhase.take()->deleteLater();
 
-        syncError(tr("Aborted"));
+        syncError(tr("Syncing got interrupted by another request. You may try to restart it manually."));
         finalize(false);
     }
 }
