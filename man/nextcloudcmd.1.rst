@@ -29,44 +29,54 @@ the server URL.
 
 OPTIONS
 =======
-``—user``, ``-u`` ``[user]``
+``--user``, ``-u`` ``[user]``
        Use ``user`` as the login name.
 
-``—password``, ``-p`` ``[password]``
+``--password``, ``-p`` ``[password]``
        Use ``password`` as the password.
 
-``-n``
+``--netrc``, ``-n``
        Use ``netrc (5)`` for login.
 
-``—non-interactive``
+``--non-interactive``
        Do not prompt for questions.
 
-``—silent``, ``—s``
+``--silent``, ``-s``
        Inhibits verbose log output.
 
-``—trust``
+``--trust``
        Trust any SSL certificate, including invalid ones.
 
-``—httpproxy  http://[user@pass:]<server>:<port>``
+``--httpproxy  http://[user@pass:]<server>:<port>``
       Uses ``server`` as HTTP proxy.
 
-``—nonshib``
+``--nonshib``
       Uses Non Shibboleth WebDAV Authentication
 
-``—davpath [path]``
+``--davpath [path]``
       Overrides the WebDAV Path with ``path``
 
-``—exclude [file]``
+``--exclude [file]``
       Exclude list file
 
-``—unsyncedfolders [file]``
+``--unsyncedfolders [file]``
       File containing the list of unsynced folders (selective sync)
 
-``—max-sync-retries [n]``
+``--max-sync-retries [n]``
       Retries maximum n times (defaults to 3)
 
-``-h``
-      Sync hidden files,do not ignore them
+``--ignore-hidden``, ``-i``
+      Ignores hidden files, do not sync them
+
+``--uplimit``
+      Limit the upload speed of files to n KB/s
+
+``--downlimit``
+      Limit the download speed of files to n KB/s
+
+``--logdebug``
+      More verbose logging
+
 
 Example
 =======
@@ -74,7 +84,7 @@ To synchronize the nextCloud directory ``Music`` to the local directory ``media/
 through a proxy listening on port ``8080`` on the gateway machine ``192.168.178.1``,
 the command line would be::
 
-  $ nextcloudcmd —httpproxy http://192.168.178.1:8080 \
+  $ nextcloudcmd --httpproxy http://192.168.178.1:8080 \
                 $HOME/media/music \
                 https://server/nextcloud/remote.php/webdav/Music
 
@@ -83,7 +93,7 @@ been specified on the command line or ``-n`` (see `netrc(5)`) has been passed.
 
 Using the legacy scheme, it would be::
 
-  $ nextcloudcmd —httpproxy http://192.168.178.1:8080 \
+  $ nextcloudcmd --httpproxy http://192.168.178.1:8080 \
                 $HOME/media/music \
                 nextclouds://server/nextcloud/remote.php/webdav/Music
 

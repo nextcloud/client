@@ -67,23 +67,6 @@ namespace OCC {
 Q_LOGGING_CATEGORY(lcApplication, "nextcloud.gui.application", QtInfoMsg)
 
 namespace {
-
-    static const char optionsC[] =
-        "Options:\n"
-        "  --help, -h           : show this help screen.\n"
-        "  --version, -v        : show version information.\n"
-        "  -q --quit            : quit the running instance\n"
-        "  --logwindow, -l      : open a window to show log output.\n"
-        "  --logfile <filename> : write log output to file <filename>.\n"
-        "  --logdir <name>      : write each sync log output in a new file\n"
-        "                         in folder <name>.\n"
-        "  --logexpire <hours>  : removes logs older than <hours> hours.\n"
-        "                         (to be used with --logdir)\n"
-        "  --logflush           : flush the log file after every write.\n"
-        "  --logdebug           : also output debug-level messages in the log.\n"
-        "  --confdir <dirname>  : Use the given configuration folder.\n"
-        "  --background         : launch the application in the background.\n";
-
     QString applicationTrPath()
     {
         QString devTrPath = qApp->applicationDirPath() + QString::fromLatin1("/../src/gui/");
@@ -103,6 +86,18 @@ namespace {
 }
 
 // ----------------------------------------------------------------------------------
+
+void Application::virtualFileFromArguments()
+{
+    const QStringList args = _parser.positionalArguments();
+    for (int i = 0; i < args.size(); i++) {
+        QString virtualFile = args.at(i);
+        if (virtualFile.endsWith(QStringLiteral(APPLICATION_DOTVIRTUALFILE_SUFFIX))) {
+            // virtual file, open it after the Folder were created (if the app is not terminated)
+            QTimer::singleShot(0, this, [this, virtualFile] { openVirtualFile(virtualFile); });
+        }
+    }
+}
 
 bool Application::configVersionMigration()
 {
@@ -173,15 +168,6 @@ Application::Application(int &argc, char **argv)
     : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv)
     , _gui(nullptr)
     , _theme(Theme::instance())
-    , _helpOnly(false)
-    , _versionOnly(false)
-    , _showLogWindow(false)
-    , _logExpire(0)
-    , _logFlush(false)
-    , _logDebug(false)
-    , _userTriggeredConnect(false)
-    , _debugMode(false)
-    , _backgroundMode(false)
 {
     _startedAt.start();
 
@@ -206,6 +192,7 @@ Application::Application(int &argc, char **argv)
 #endif
 
     setApplicationName(_theme->appName());
+    setApplicationVersion(Theme::instance()->versionSwitchOutput());
     setWindowIcon(_theme->applicationIcon());
 
     if (!ConfigFile().exists()) {
@@ -249,12 +236,29 @@ Application::Application(int &argc, char **argv)
         }
     }
 
-    parseOptions(arguments());
-    //no need to waste time;
-    if (_helpOnly || _versionOnly)
-        return;
+    QString description = QString("%1 version %2 is a file synchronisation desktop utility. For more information see, %3")
+                              .arg(_theme->appName())
+                              .arg(_theme->version())
+                              .arg(_theme->helpUrl());
+    _parser.setApplicationDescription(description);
+    _parser.addHelpOption();
+    _parser.addVersionOption();
+    _parser.addOptions({ 
+        { {"q", "quit"}, "Quits the running instance" },
+        { {"l", "logwindow"}, "Opens a window to show log output" },
+        { "logfile", "Writes log output to file <filename>", "filename" },
+        { "logdir", "Writes each sync log output in a new file in folder <name>", "directory" },
+        { "logexpire", "Removes logs older than <hours> hours, to be used with --logdir", "hours" },
+        { "logflush", "Clears (flushes) the log output directory" },
+        { "logdebug", "Also outputs debug-level messages in the log" },
+        { "confdir", "Uses the given configuration folder", "directory" },
+        { "background", "Launches the application in the background" }
+    });
+    _parser.addPositionalArgument("virtual_file", "Virtual File");
+    _parser.process(*this);
+    virtualFileFromArguments();
 
-    if (_quitInstance) {
+    if (_parser.isSet("quit")) {
         QTimer::singleShot(0, qApp, &QApplication::quit);
         return;
     }
@@ -328,7 +332,7 @@ Application::Application(int &argc, char **argv)
     // Setting up the gui class will allow tray notifications for the
     // setup that follows, like folder setup
     _gui = new ownCloudGui(this);
-    if (_showLogWindow) {
+    if ( _parser.isSet("logwindow") ) {
         _gui->slotToggleLogBrowser(); // _showLogWindow is set in parseOptions.
     }
 #if WITH_LIBCLOUDPROVIDERS
@@ -510,15 +514,19 @@ void Application::slotownCloudWizardDone(int res)
 
 void Application::setupLogging()
 {
+    QString logDir = _parser.value("logdir");
+    QString logFile = _parser.value("logfile");
+    int logExpire = _parser.value("logexpire").toInt();
+
     // might be called from second instance
     auto logger = Logger::instance();
-    logger->setLogFile(_logFile);
-    if (_logFile.isEmpty()) {
-        logger->setLogDir(_logDir.isEmpty() ? ConfigFile().logDir() : _logDir);
+    logger->setLogFile(logFile);
+    if (logFile.isEmpty()) {
+        logger->setLogDir(!logDir.isEmpty() ? logDir : ConfigFile().logDir());
     }
-    logger->setLogExpire(_logExpire > 0 ? _logExpire : ConfigFile().logExpire());
-    logger->setLogFlush(_logFlush || ConfigFile().logFlush());
-    logger->setLogDebug(_logDebug || ConfigFile().logDebug());
+    logger->setLogExpire(logExpire > 0 ? logExpire : ConfigFile().logExpire());
+    logger->setLogFlush(_parser.isSet("logflush") || ConfigFile().logFlush());
+    logger->setLogDebug(_parser.isSet("logdebug") || ConfigFile().logDebug());
     if (!logger->isLoggingToFile() && ConfigFile().automaticLogDir()) {
         logger->setupTemporaryFolderLogDir();
     }
@@ -538,13 +546,13 @@ void Application::slotParseMessage(const QString &msg, QObject *)
     if (msg.startsWith(QLatin1String("MSG_PARSEOPTIONS:"))) {
         const int lengthOfMsgPrefix = 17;
         QStringList options = msg.mid(lengthOfMsgPrefix).split(QLatin1Char('|'));
-        _showLogWindow = false;
-        parseOptions(options);
+        _parser.parse(options);
+        virtualFileFromArguments();
         setupLogging();
-        if (_showLogWindow) {
+        if (_parser.isSet("logwindow")) {
             _gui->slotToggleLogBrowser(); // _showLogWindow is set in parseOptions.
         }
-        if (_quitInstance) {
+        if (_parser.isSet("quit")) {
             qApp->quit();
         }
 
@@ -561,70 +569,6 @@ void Application::slotParseMessage(const QString &msg, QObject *)
             showMainDialog();
         } else {
             _gui->slotNewAccountWizard();
-        }
-    }
-}
-
-void Application::parseOptions(const QStringList &options)
-{
-    QStringListIterator it(options);
-    // skip file name;
-    if (it.hasNext())
-        it.next();
-
-    //parse options; if help or bad option exit
-    while (it.hasNext()) {
-        QString option = it.next();
-        if (option == QLatin1String("--help") || option == QLatin1String("-h")) {
-            setHelp();
-            break;
-        } else if (option == QLatin1String("--quit") || option == QLatin1String("-q")) {
-            _quitInstance = true;
-        } else if (option == QLatin1String("--logwindow") || option == QLatin1String("-l")) {
-            _showLogWindow = true;
-        } else if (option == QLatin1String("--logfile")) {
-            if (it.hasNext() && !it.peekNext().startsWith(QLatin1String("--"))) {
-                _logFile = it.next();
-            } else {
-                showHint("Log file not specified");
-            }
-        } else if (option == QLatin1String("--logdir")) {
-            if (it.hasNext() && !it.peekNext().startsWith(QLatin1String("--"))) {
-                _logDir = it.next();
-            } else {
-                showHint("Log dir not specified");
-            }
-        } else if (option == QLatin1String("--logexpire")) {
-            if (it.hasNext() && !it.peekNext().startsWith(QLatin1String("--"))) {
-                _logExpire = it.next().toInt();
-            } else {
-                showHint("Log expiration not specified");
-            }
-        } else if (option == QLatin1String("--logflush")) {
-            _logFlush = true;
-        } else if (option == QLatin1String("--logdebug")) {
-            _logDebug = true;
-        } else if (option == QLatin1String("--confdir")) {
-            if (it.hasNext() && !it.peekNext().startsWith(QLatin1String("--"))) {
-                QString confDir = it.next();
-                if (!ConfigFile::setConfDir(confDir)) {
-                    showHint("Invalid path passed to --confdir");
-                }
-            } else {
-                showHint("Path for confdir not specified");
-            }
-        } else if (option == QLatin1String("--debug")) {
-            _logDebug = true;
-            _debugMode = true;
-        } else if (option == QLatin1String("--background")) {
-            _backgroundMode = true;
-        } else if (option == QLatin1String("--version") || option == QLatin1String("-v")) {
-            _versionOnly = true;
-        } else if (option.endsWith(QStringLiteral(APPLICATION_DOTVIRTUALFILE_SUFFIX))) {
-            // virtual file, open it after the Folder were created (if the app is not terminated)
-            QTimer::singleShot(0, this, [this, option] { openVirtualFile(option); });
-        } else {
-            showHint("Unrecognized option '" + option.toStdString() + "'");
         }
     }
 }
@@ -655,32 +599,6 @@ static void displayHelpText(const QString &t)
 }
 #endif
 
-void Application::showHelp()
-{
-    setHelp();
-    QString helpText;
-    QTextStream stream(&helpText);
-    stream << _theme->appName()
-           << QLatin1String(" version ")
-           << _theme->version() << endl;
-
-    stream << QLatin1String("File synchronisation desktop utility.") << endl
-           << endl
-           << QLatin1String(optionsC);
-
-    if (_theme->appName() == QLatin1String("ownCloud"))
-        stream << endl
-               << "For more information, see http://www.owncloud.org" << endl
-               << endl;
-
-    displayHelpText(helpText);
-}
-
-void Application::showVersion()
-{
-    displayHelpText(Theme::instance()->versionSwitchOutput());
-}
-
 void Application::showHint(std::string errorHint)
 {
     static QString binName = QFileInfo(QCoreApplication::applicationFilePath()).fileName();
@@ -689,19 +607,9 @@ void Application::showHint(std::string errorHint)
     std::exit(1);
 }
 
-bool Application::debugMode()
-{
-    return _debugMode;
-}
-
 bool Application::backgroundMode() const
 {
-    return _backgroundMode;
-}
-
-void Application::setHelp()
-{
-    _helpOnly = true;
+    return _parser.isSet("background");
 }
 
 QString substLang(const QString &lang)
@@ -776,16 +684,6 @@ void Application::setupTranslations()
         if (property("ui_lang").isNull())
             setProperty("ui_lang", "C");
     }
-}
-
-bool Application::giveHelp()
-{
-    return _helpOnly;
-}
-
-bool Application::versionOnly()
-{
-    return _versionOnly;
 }
 
 void Application::showMainDialog()

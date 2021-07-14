@@ -16,7 +16,8 @@
 
 #include <iostream>
 #include <random>
-#include <qcoreapplication.h>
+#include <QCoreApplication>
+#include <QCommandLineParser>
 #include <QStringList>
 #include <QUrl>
 #include <QFile>
@@ -24,7 +25,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkProxy>
-#include <qdebug.h>
+#include <QDebug>
 
 #include "account.h"
 #include "configfile.h" // ONLY ACCESS THE STATIC FUNCTIONS!
@@ -46,8 +47,6 @@
 #include "netrcparser.h"
 #include "libsync/logger.h"
 
-#include "config.h"
-
 #ifdef Q_OS_WIN32
 #include <windows.h>
 #else
@@ -61,32 +60,6 @@ using namespace OCC;
 static void nullMessageHandler(QtMsgType, const QMessageLogContext &, const QString &)
 {
 }
-
-struct CmdOptions
-{
-    QString source_dir;
-    QString target_url;
-    QString config_directory;
-    QString user;
-    QString password;
-    QString proxy;
-    bool silent;
-    bool trustSSL;
-    bool useNetrc;
-    bool interactive;
-    bool ignoreHiddenFiles;
-    bool nonShib;
-    QString exclude;
-    QString unsyncedfolders;
-    QString davPath;
-    int restartTimes;
-    int downlimit;
-    int uplimit;
-};
-
-// we can't use csync_set_userdata because the SyncEngine sets it already.
-// So we have to use a global variable
-CmdOptions *opts = nullptr;
 
 class EchoDisabler
 {
@@ -166,126 +139,6 @@ private:
 };
 #endif /* TOKEN_AUTH_ONLY */
 
-void help()
-{
-    const char *binaryName = APPLICATION_EXECUTABLE "cmd";
-
-    std::cout << binaryName << " - command line " APPLICATION_NAME " client tool" << std::endl;
-    std::cout << "" << std::endl;
-    std::cout << "Usage: " << binaryName << " [OPTION] <source_dir> <server_url>" << std::endl;
-    std::cout << "" << std::endl;
-    std::cout << "A proxy can either be set manually using --httpproxy." << std::endl;
-    std::cout << "Otherwise, the setting from a configured sync client will be used." << std::endl;
-    std::cout << std::endl;
-    std::cout << "Options:" << std::endl;
-    std::cout << "  --silent, -s           Don't be so verbose" << std::endl;
-    std::cout << "  --httpproxy [proxy]    Specify a http proxy to use." << std::endl;
-    std::cout << "                         Proxy is http://server:port" << std::endl;
-    std::cout << "  --trust                Trust the SSL certification." << std::endl;
-    std::cout << "  --exclude [file]       Exclude list file" << std::endl;
-    std::cout << "  --unsyncedfolders [file]    File containing the list of unsynced remote folders (selective sync)" << std::endl;
-    std::cout << "  --user, -u [name]      Use [name] as the login name" << std::endl;
-    std::cout << "  --password, -p [pass]  Use [pass] as password" << std::endl;
-    std::cout << "  -n                     Use netrc (5) for login" << std::endl;
-    std::cout << "  --non-interactive      Do not block execution with interaction" << std::endl;
-    std::cout << "  --nonshib              Use Non Shibboleth WebDAV authentication" << std::endl;
-    std::cout << "  --davpath [path]       Custom themed dav path, overrides --nonshib" << std::endl;
-    std::cout << "  --max-sync-retries [n] Retries maximum n times (default to 3)" << std::endl;
-    std::cout << "  --uplimit [n]          Limit the upload speed of files to n KB/s" << std::endl;
-    std::cout << "  --downlimit [n]        Limit the download speed of files to n KB/s" << std::endl;
-    std::cout << "  -h                     Sync hidden files, do not ignore them" << std::endl;
-    std::cout << "  --version, -v          Display version and exit" << std::endl;
-    std::cout << "  --logdebug             More verbose logging" << std::endl;
-    std::cout << "" << std::endl;
-    exit(0);
-}
-
-void showVersion()
-{
-    std::cout << qUtf8Printable(Theme::instance()->versionSwitchOutput());
-    exit(0);
-}
-
-void parseOptions(const QStringList &app_args, CmdOptions *options)
-{
-    QStringList args(app_args);
-
-    int argCount = args.count();
-
-    if (argCount < 3) {
-        if (argCount >= 2) {
-            const QString option = args.at(1);
-            if (option == "-v" || option == "--version") {
-                showVersion();
-            }
-        }
-        help();
-    }
-
-    options->target_url = args.takeLast();
-
-    options->source_dir = args.takeLast();
-    if (!options->source_dir.endsWith('/')) {
-        options->source_dir.append('/');
-    }
-    QFileInfo fi(options->source_dir);
-    if (!fi.exists()) {
-        std::cerr << "Source dir '" << qPrintable(options->source_dir) << "' does not exist." << std::endl;
-        exit(1);
-    }
-    options->source_dir = fi.absoluteFilePath();
-
-    QStringListIterator it(args);
-    // skip file name;
-    if (it.hasNext())
-        it.next();
-
-    while (it.hasNext()) {
-        const QString option = it.next();
-
-        if (option == "--httpproxy" && !it.peekNext().startsWith("-")) {
-            options->proxy = it.next();
-        } else if (option == "-s" || option == "--silent") {
-            options->silent = true;
-        } else if (option == "--trust") {
-            options->trustSSL = true;
-        } else if (option == "-n") {
-            options->useNetrc = true;
-        } else if (option == "-h") {
-            options->ignoreHiddenFiles = false;
-        } else if (option == "--non-interactive") {
-            options->interactive = false;
-        } else if ((option == "-u" || option == "--user") && !it.peekNext().startsWith("-")) {
-            options->user = it.next();
-        } else if ((option == "-p" || option == "--password") && !it.peekNext().startsWith("-")) {
-            options->password = it.next();
-        } else if (option == "--exclude" && !it.peekNext().startsWith("-")) {
-            options->exclude = it.next();
-        } else if (option == "--unsyncedfolders" && !it.peekNext().startsWith("-")) {
-            options->unsyncedfolders = it.next();
-        } else if (option == "--nonshib") {
-            options->nonShib = true;
-        } else if (option == "--davpath" && !it.peekNext().startsWith("-")) {
-            options->davPath = it.next();
-        } else if (option == "--max-sync-retries" && !it.peekNext().startsWith("-")) {
-            options->restartTimes = it.next().toInt();
-        } else if (option == "--uplimit" && !it.peekNext().startsWith("-")) {
-            options->uplimit = it.next().toInt() * 1000;
-        } else if (option == "--downlimit" && !it.peekNext().startsWith("-")) {
-            options->downlimit = it.next().toInt() * 1000;
-        } else if (option == "--logdebug") {
-            Logger::instance()->setLogFile("-");
-            Logger::instance()->setLogDebug(true);
-        } else {
-            help();
-        }
-    }
-
-    if (options->target_url.isEmpty() || options->source_dir.isEmpty()) {
-        help();
-    }
-}
-
 /* If the selective sync list is different from before, we need to disable the read from db
   (The normal client does it in SelectiveSyncDialog::accept*)
  */
@@ -313,6 +166,46 @@ void selectiveSyncFixup(OCC::SyncJournalDb *journal, const QStringList &newList)
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
+    app.setApplicationName(Theme::instance()->appName());
+    app.setApplicationVersion(Theme::instance()->versionSwitchOutput());
+
+    QCommandLineParser parser;
+    QString binaryName = APPLICATION_EXECUTABLE "cmd";
+    QString description = QString(R"(%1 - command line %2 client tool
+
+Usage: %3 [OPTION] <source_dir> <server_url>
+       A proxy can either be set manually using --httpproxy.
+       Otherwise, the setting from a configured sync client will be used.
+)").arg(binaryName).arg(APPLICATION_NAME).arg(binaryName);
+    parser.setApplicationDescription(description);
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOptions({
+        { {"u", "user"}, "Use [name] as the login name", "name" },
+        { {"p", "password"}, "Use [pass] as password", "pass" },
+        { "httpproxy", "Specify a http proxy to use. Proxy is http://server:port", "proxy" },
+        { {"s", "silent"}, "Don't be so verbose" },
+        { "trust", "Trust the SSL certification." },
+        { {"n", "netrc"}, "Use netrc (5) for login" },
+        { "non-interactive", "Do not block execution with interaction" },
+        { {"i", "ignore-hidden"}, "Ignores hidden files, do not sync them" },
+        { "nonshib", "Use Non Shibboleth WebDAV authentication" },
+        { "exclude", "Exclude list file", "file" },
+        { "unsyncedfolders", "File containing the list of unsynced remote folders (selective sync)", "file" },
+        { "davpath", "Custom themed dav path, overrides --nonshib", "path" },
+        { "max-sync-retries", "Retries maximum n times (default to 3)", "n", "3" },
+        { "uplimit", "Limit the upload speed of files to n KB/s", "n", "0" },
+        { "downlimit", "Limit the download speed of files to n KB/s", "n", "0" },
+        { "logdebug", "More verbose logging" }
+    });
+    parser.addPositionalArgument("source_dir", "Source directory");
+    parser.addPositionalArgument("server_url", "Server url");
+    parser.process(app);
+
+    const QStringList args = parser.positionalArguments();
+    if (args.size() < 2 || parser.isSet("help")) {
+        parser.showHelp();
+    }
 
 #ifdef Q_OS_WIN
     // Ensure OpenSSL config file is only loaded from app directory
@@ -322,20 +215,41 @@ int main(int argc, char **argv)
 
     qsrand(std::random_device()());
 
-    CmdOptions options;
-    options.silent = false;
-    options.trustSSL = false;
-    options.useNetrc = false;
-    options.interactive = true;
-    options.ignoreHiddenFiles = false; // Default is to sync hidden files
-    options.nonShib = false;
-    options.restartTimes = 3;
-    options.uplimit = 0;
-    options.downlimit = 0;
+    QString source_dir = args.at(0);
+    QString target_url = args.at(1);
+    QString options_user = parser.value("user");
+    QString options_password = parser.value("password");
+    QString proxy = parser.value("httpproxy");
+    bool silent = parser.isSet("silent");
+    bool trustSSL = parser.isSet("trust");
+    bool useNetrc = parser.isSet("netrc");
+    bool interactive = !parser.isSet("non-interactive");
+    bool ignoreHiddenFiles = parser.isSet("ignore-hidden");
+    bool nonShib = parser.isSet("nonshib");
+    QString exclude = parser.value("exclude");
+    QString unsyncedfolders = parser.value("unsyncedfolders");
+    QString davPath = parser.value("davpath");
+    int restartTimes = parser.value("max-sync-retries").toInt();
+    int uplimit = parser.value("uplimit").toInt() * 1000;
+    int downlimit = parser.value("downlimit").toInt() * 1000;
+    bool logdebug = parser.isSet("logdebug");
 
-    parseOptions(app.arguments(), &options);
+    if (logdebug) {
+        Logger::instance()->setLogFile("-");
+        Logger::instance()->setLogDebug(true);
+    }
 
-    if (options.silent) {
+    if (!source_dir.endsWith('/')) {
+        source_dir.append('/');
+    }
+    QFileInfo fi(source_dir);
+    if (!fi.exists()) {
+        std::cerr << "Source dir '" << qPrintable(source_dir) << "' does not exist." << std::endl;
+        exit(1);
+    }
+    source_dir = fi.absoluteFilePath();
+
+    if (silent) {
         qInstallMessageHandler(nullMessageHandler);
     } else {
         qSetMessagePattern("%{time MM-dd hh:mm:ss:zzz} [ %{type} %{category} ]%{if-debug}\t[ %{function} ]%{endif}:\t%{message}");
@@ -348,23 +262,21 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
     // check if the webDAV path was added to the url and append if not.
-    if (!options.target_url.endsWith("/")) {
-        options.target_url.append("/");
+    if (!target_url.endsWith("/")) {
+        target_url.append("/");
     }
 
-    if (options.nonShib) {
-        account->setNonShib(true);
+    account->setNonShib(nonShib);
+
+    if (!davPath.isEmpty()) {
+        account->setDavPath(davPath);
     }
 
-    if (!options.davPath.isEmpty()) {
-        account->setDavPath(options.davPath);
+    if (!target_url.contains(account->davPath())) {
+        target_url.append(account->davPath());
     }
 
-    if (!options.target_url.contains(account->davPath())) {
-        options.target_url.append(account->davPath());
-    }
-
-    QUrl url = QUrl::fromUserInput(options.target_url);
+    QUrl url = QUrl::fromUserInput(target_url);
 
     // Order of retrieval attempt (later attempts override earlier ones):
     // 1. From URL
@@ -375,15 +287,15 @@ int main(int argc, char **argv)
     QString user = url.userName();
     QString password = url.password();
 
-    if (!options.user.isEmpty()) {
-        user = options.user;
+    if (!options_user.isEmpty()) {
+        user = options_user;
     }
 
-    if (!options.password.isEmpty()) {
-        password = options.password;
+    if (!options_password.isEmpty()) {
+        password = options_password;
     }
 
-    if (options.useNetrc) {
+    if (useNetrc) {
         NetrcParser parser;
         if (parser.parse()) {
             NetrcParser::LoginPair pair = parser.find(url.host());
@@ -392,7 +304,7 @@ int main(int argc, char **argv)
         }
     }
 
-    if (options.interactive) {
+    if (interactive) {
         if (user.isEmpty()) {
             std::cout << "Please enter user name: ";
             std::string s;
@@ -405,7 +317,7 @@ int main(int argc, char **argv)
     }
 
     // take the unmodified url to pass to csync_create()
-    QByteArray remUrl = options.target_url.toUtf8();
+    QByteArray remUrl = target_url.toUtf8();
 
     // Find the folder and the original owncloud url
     QStringList splitted = url.path().split("/" + account->davPath());
@@ -423,12 +335,12 @@ int main(int argc, char **argv)
         folder.chop(1);
     }
 
-    if (!options.proxy.isNull()) {
+    if (!proxy.isEmpty()) {
         QString host;
         int port = 0;
         bool ok = false;
 
-        QStringList pList = options.proxy.split(':');
+        QStringList pList = proxy.split(':');
         if (pList.count() == 3) {
             // http: //192.168.178.23 : 8080
             //  0            1            2
@@ -453,7 +365,7 @@ int main(int argc, char **argv)
 #else
     auto *cred = new HttpCredentialsText(user, password);
     account->setCredentials(cred);
-    if (options.trustSSL) {
+    if (trustSSL) {
         cred->setSSLTrusted(true);
     }
 #endif
@@ -462,7 +374,7 @@ int main(int argc, char **argv)
     account->setSslErrorHandler(sslErrorHandler);
 
     // Perform a call to get the capabilities.
-    if (!options.nonShib) {
+    if (!nonShib) {
         // Do not do it if '--nonshib' was passed. This mean we should only connect to the 'nonshib'
         // dav endpoint. Since we do not get the capabilities, in that case, this has the additional
         // side effect that chunking-ng will be disabled. (because otherwise it would use the new
@@ -502,13 +414,11 @@ int main(int argc, char **argv)
     int restartCount = 0;
 restart_sync:
 
-    opts = &options;
-
     QStringList selectiveSyncList;
-    if (!options.unsyncedfolders.isEmpty()) {
-        QFile f(options.unsyncedfolders);
+    if (!unsyncedfolders.isEmpty()) {
+        QFile f(unsyncedfolders);
         if (!f.open(QFile::ReadOnly)) {
-            qCritical() << "Could not open file containing the list of unsynced folders: " << options.unsyncedfolders;
+            qCritical() << "Could not open file containing the list of unsynced folders: " << unsyncedfolders;
         } else {
             // filter out empty lines and comments
             selectiveSyncList = QString::fromUtf8(f.readAll()).split('\n').filter(QRegExp("\\S+")).filter(QRegExp("^[^#]"));
@@ -522,16 +432,16 @@ restart_sync:
     }
 
     Cmd cmd;
-    QString dbPath = options.source_dir + SyncJournalDb::makeDbName(options.source_dir, credentialFreeUrl, folder, user);
+    QString dbPath = source_dir + SyncJournalDb::makeDbName(source_dir, credentialFreeUrl, folder, user);
     SyncJournalDb db(dbPath);
 
     if (!selectiveSyncList.empty()) {
         selectiveSyncFixup(&db, selectiveSyncList);
     }
 
-    SyncEngine engine(account, options.source_dir, folder, &db);
-    engine.setIgnoreHiddenFiles(options.ignoreHiddenFiles);
-    engine.setNetworkLimits(options.uplimit, options.downlimit);
+    SyncEngine engine(account, source_dir, folder, &db);
+    engine.setIgnoreHiddenFiles(ignoreHiddenFiles);
+    engine.setNetworkLimits(uplimit, downlimit);
     QObject::connect(&engine, &SyncEngine::finished,
         [&app](bool result) { app.exit(result ? EXIT_SUCCESS : EXIT_FAILURE); });
     QObject::connect(&engine, &SyncEngine::transmissionProgress, &cmd, &Cmd::transmissionProgressSlot);
@@ -541,12 +451,12 @@ restart_sync:
 
     // Exclude lists
 
-    bool hasUserExcludeFile = !options.exclude.isEmpty();
+    bool hasUserExcludeFile = !exclude.isEmpty();
     QString systemExcludeFile = ConfigFile::excludeFileFromSystem();
 
     // Always try to load the user-provided exclude list if one is specified
     if (hasUserExcludeFile) {
-        engine.excludedFiles().addExcludeFilePath(options.exclude);
+        engine.excludedFiles().addExcludeFilePath(exclude);
     }
     // Load the system list if available, or if there's no user-provided list
     if (!hasUserExcludeFile || QFile::exists(systemExcludeFile)) {
@@ -565,7 +475,7 @@ restart_sync:
     int resultCode = app.exec();
 
     if (engine.isAnotherSyncNeeded() != NoFollowUpSync) {
-        if (restartCount < options.restartTimes) {
+        if (restartCount < restartTimes) {
             restartCount++;
             qDebug() << "Restarting Sync, because another sync is needed" << restartCount;
             goto restart_sync;
