@@ -496,6 +496,7 @@ void ProcessDirectoryJob::processFileAnalyzeRemoteInfo(
         } else if (dbEntry._remotePerm != serverEntry.remotePerm || dbEntry._fileId != serverEntry.fileId || metaDataSizeNeedsUpdateForE2EeFilePlaceholder) {
             if (metaDataSizeNeedsUpdateForE2EeFilePlaceholder) {
                 // we are updating placeholder sizes after migrating from older versions with VFS + E2EE implicit hydration not supported
+                qCInfo(lcDisco) << "Migrating the E2EE VFS placeholder " << dbEntry.path() << " from older version. The old size is " << item->_size << ". The new size is " << sizeOnServer;
                 item->_size = sizeOnServer;
             }
             item->_instruction = CSYNC_INSTRUCTION_UPDATE_METADATA;
@@ -518,6 +519,7 @@ void ProcessDirectoryJob::processFileAnalyzeRemoteInfo(
                     };
                     if (_discoveryData->_statedb->listFilesInPath(dbEntry.path().toUtf8(), listFilesCallback)
                         && localFolderSize != 0 && localFolderSize == serverEntry.sizeOfFolder) {
+                        qCInfo(lcDisco) << "Migration of E2EE folder " << dbEntry.path() << " from older version to the one, supporting the implicit VFS hydration.";
                         return NormalQuery;
                     }
                 }

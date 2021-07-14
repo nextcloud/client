@@ -149,6 +149,8 @@ protected:
 private:
     QSharedPointer<EncryptionHelper::StreamingDecryptor> _decryptor;
     EncryptedFile _encryptedFileInfo = {};
+    QByteArray _pendingBytes;
+    qint64 _processedSoFar = 0;
 };
 
 /**

@@ -22,8 +22,9 @@
 #include "common/utility.h"
 #include "filesystem.h"
 #include "propagatorjobs.h"
-#include "common/checksums.h"
-#include "common/asserts.h"
+#include <common/checksums.h>
+#include <common/asserts.h>
+#include <common/constants.h>
 #include "clientsideencryptionjobs.h"
 #include "propagatedownloadencrypted.h"
 #include "common/vfs.h"
@@ -407,12 +408,39 @@ qint64 GETEncryptedFileJob::writeToDevice(const char *data, qint64 len)
         return -1;
     }
 
+    const auto bytesRemaining = _contentLength - _processedSoFar - len;
+
+    if (bytesRemaining != 0 && bytesRemaining < OCC::CommonConstants::e2EeTagSize) {
+        // decryption is going to fail if last chunk does not include or does not equal to OCC::CommonConstants::e2EeTagSize bytes tag
+        // we may end up receiving packets beyond OCC::CommonConstants::e2EeTagSize bytes tag at the end
+        // in that case, we don't want to try and decrypt less than OCC::CommonConstants::e2EeTagSize ending bytes of tag, we will accumulate all the incoming data till the end
+        // and then, we are going to decrypt the entire chunk containing OCC::CommonConstants::e2EeTagSize bytes at the end
+        _pendingBytes += QByteArray(data, len);
+        _processedSoFar += len;
+        if (_processedSoFar != _contentLength) {
+            return len;
+        }
+    }
+
+    if (!_pendingBytes.isEmpty()) {
+        const auto bytesDecrypted = _decryptor->chunkDecryption(_pendingBytes.constData(), _device, _pendingBytes.size());
+
+        if (bytesDecrypted == -1) {
+            qCCritical(lcPropagateDownload) << "Decryption failed!";
+            return -1;
+        }
+
+        return len;
+    }
+
     const auto bytesDecrypted = _decryptor->chunkDecryption(data, _device, len);
 
     if (bytesDecrypted == -1) {
         qCCritical(lcPropagateDownload) << "Decryption failed!";
         return -1;
     }
+
+    _processedSoFar += len;
 
     return len;
 }

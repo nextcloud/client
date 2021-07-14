@@ -9,6 +9,8 @@
 #include <QTemporaryFile>
 #include <QRandomGenerator>
 
+#include <common/constants.h>
+
 #include "clientsideencryption.h"
 
 using namespace OCC;
@@ -190,18 +192,38 @@ private slots:
 
         QVERIFY(dummyEncryptionOutputFile.open());
 
-        const auto readBytesAvailable = dummyEncryptionOutputFile.bytesAvailable();
-        while (dummyEncryptionOutputFile.pos() < readBytesAvailable) {
-            // auto toRead = QRandomGenerator::global()->bounded(8, 128);
-            // decryption is going to fail if last chunk does not include or does not equal to 16-bytes tag (accumulation required? - but where? in the caller's code?)
-            auto toRead = 64;
-            if (dummyEncryptionOutputFile.pos() + toRead > readBytesAvailable) {
-                toRead = readBytesAvailable - dummyEncryptionOutputFile.pos();
+        QByteArray pendingBytes;
+
+        const int randBytesMin = QRandomGenerator::global()->bounded(1, 10);
+
+        while (dummyEncryptionOutputFile.pos() < dummyEncryptionOutputFile.size()) {
+            const auto bytesRemaining = dummyEncryptionOutputFile.size() - dummyEncryptionOutputFile.pos();
+            auto toRead = bytesRemaining > randBytesMin ? QRandomGenerator::global()->bounded(randBytesMin, bytesRemaining) : bytesRemaining;
+
+            if (dummyEncryptionOutputFile.pos() + toRead > dummyEncryptionOutputFile.size()) {
+                toRead = dummyEncryptionOutputFile.size() - dummyEncryptionOutputFile.pos();
             }
+
+            if (bytesRemaining - toRead != 0 && bytesRemaining - toRead < OCC::CommonConstants::e2EeTagSize) {
+                // decryption is going to fail if last chunk does not include or does not equal to OCC::CommonConstants::e2EeTagSize bytes tag
+                // since we are emulating random size of network packets, we may end up reading beyond OCC::CommonConstants::e2EeTagSize bytes tag at the end
+                // in that case, we don't want to try and decrypt less than OCC::CommonConstants::e2EeTagSize ending bytes of tag, we will accumulate all the incoming data till the end
+                // and then, we are going to decrypt the entire chunk containing OCC::CommonConstants::e2EeTagSize bytes at the end
+                pendingBytes += dummyEncryptionOutputFile.read(bytesRemaining);
+                continue;
+            }
+
             const auto decryptedBytes = streamingDecryptor.chunkDecryption(dummyEncryptionOutputFile.read(toRead).constData(), &chunkedOutputDecrypted, toRead);
             QVERIFY(decryptedBytes != -1);
-            QVERIFY(decryptedBytes == toRead || streamingDecryptor.isFinished());
+            QVERIFY(decryptedBytes == toRead || streamingDecryptor.isFinished() || !pendingBytes.isEmpty());
         }
+
+        if (!pendingBytes.isEmpty()) {
+            const auto decryptedBytes = streamingDecryptor.chunkDecryption(pendingBytes.constData(), &chunkedOutputDecrypted, pendingBytes.size());
+            QVERIFY(decryptedBytes != -1);
+            QVERIFY(decryptedBytes == pendingBytes.size() || streamingDecryptor.isFinished());
+        }
+
         chunkedOutputDecrypted.close();
 
         QVERIFY(chunkedOutputDecrypted.open(QBuffer::ReadOnly));

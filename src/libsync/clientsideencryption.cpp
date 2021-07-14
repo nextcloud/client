@@ -67,7 +67,7 @@ namespace {
     const char e2e_private[] = "_e2e-private";
     const char e2e_mnemonic[] = "_e2e-mnemonic";
 
-    const int blockSize = 1024;
+    const qint64 blockSize = 1024;
 
     QList<QByteArray> oldCipherFormatSplit(const QByteArray &cipher)
     {
@@ -1807,7 +1807,7 @@ EncryptionHelper::StreamingDecryptor::StreamingDecryptor(const QByteArray &key, 
     }
 }
 
-qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, QIODevice *output, quint32 chunkSize)
+qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, QIODevice *output, quint64 chunkSize)
 {
     Q_ASSERT(isInitialized());
     if (!isInitialized()) {
@@ -1843,21 +1843,28 @@ qint32 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
         return -1;
     }
 
+    Q_ASSERT(_decryptedSoFar + chunkSize < OCC::CommonConstants::e2EeTagSize || _totalSize - OCC::CommonConstants::e2EeTagSize >= _decryptedSoFar + chunkSize - OCC::CommonConstants::e2EeTagSize);
+    if (_decryptedSoFar + chunkSize > OCC::CommonConstants::e2EeTagSize && _totalSize - OCC::CommonConstants::e2EeTagSize < _decryptedSoFar + chunkSize - OCC::CommonConstants::e2EeTagSize) {
+        qCritical(lcCse()) << "Decryption failed. Incorrect chunk!";
+        return -1;
+    }
+
     const bool isLastChunk = _decryptedSoFar + chunkSize == _totalSize;
 
     // last OCC::CommonConstants::e2EeTagSize bytes is ALWAYS a tag!!!
-    const qint32 size = isLastChunk ? static_cast<qint32>(chunkSize) - OCC::CommonConstants::e2EeTagSize : static_cast<qint32>(chunkSize);
+    const qint64 size = isLastChunk ? chunkSize - OCC::CommonConstants::e2EeTagSize : chunkSize;
 
-    Q_ASSERT(size > 0);
-    if (size <= 0) {
+    // either the size is more than 0 and an e2EeTag is at the end of chunk, or, chunk is the e2EeTag itself
+    Q_ASSERT(size > 0 || chunkSize == OCC::CommonConstants::e2EeTagSize);
+    if (size <= 0 && chunkSize != OCC::CommonConstants::e2EeTagSize) {
         qCritical(lcCse()) << "Decryption failed. Invalid input size: " << size << " !";
         return -1;
     }
 
-    int bytesWritten = 0;
+    qint64 bytesWritten = 0;
+    qint64 inputPos = 0;
 
     QByteArray decryptedBlock(blockSize + OCC::CommonConstants::e2EeTagSize - 1, '\0');
-    int inputPos = 0;
 
     while(inputPos < size) {
         // read blockSize or less bytes

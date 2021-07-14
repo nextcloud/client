@@ -16,6 +16,6 @@
 
 namespace OCC {
 namespace CommonConstants {
-    const qint64 e2EeTagSize = 16;
+    const qint32 e2EeTagSize = 16;
 };
 };
