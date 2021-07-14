@@ -95,6 +95,9 @@ ENDIF(NOT APPLE)
 
 find_package(Qt5 REQUIRED COMPONENTS WebSockets)
 add_library(${synclib_NAME} SHARED ${libsync_SRCS})
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "Source Files" FILES ${libsync_SRCS})
+
 target_link_libraries(${synclib_NAME}
   PUBLIC
   "${csync_NAME}"
