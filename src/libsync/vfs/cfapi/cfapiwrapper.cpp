@@ -591,6 +591,8 @@ OCC::CfApiWrapper::FileHandle OCC::CfApiWrapper::handleForPath(const QString &pa
         const qint64 openResult = CfOpenFileWithOplock(path.toStdWString().data(), CF_OPEN_FILE_FLAG_NONE, &handle);
         if (openResult == S_OK) {
             return {handle, [](HANDLE h) { CfCloseHandle(h); }};
+        } else {
+            qCWarning(lcCfApiWrapper) << "Could not open handle for " << path << " result: " << QString::fromWCharArray(_com_error(openResult).ErrorMessage());
         }
     } else {
         const auto longpath = OCC::FileSystem::longWinPath(path);
@@ -606,14 +608,12 @@ OCC::CfApiWrapper::FileHandle OCC::CfApiWrapper::handleForPath(const QString &pa
     return {};
 }
 
-OCC::CfApiWrapper::PlaceHolderInfo OCC::CfApiWrapper::findPlaceholderInfo(const FileHandle &handle)
+OCC::CfApiWrapper::PlaceHolderInfo OCC::CfApiWrapper::findPlaceholderInfo(const QString & path)
 {
-    Q_ASSERT(handle);
-
     constexpr auto fileIdMaxLength = 128;
     const auto infoSize = sizeof(CF_PLACEHOLDER_BASIC_INFO) + fileIdMaxLength;
     auto info = PlaceHolderInfo(reinterpret_cast<CF_PLACEHOLDER_BASIC_INFO *>(new char[infoSize]), deletePlaceholderInfo);
-    const qint64 result = CfGetPlaceholderInfo(handle.get(), CF_PLACEHOLDER_INFO_BASIC, info.get(), sizeToDWORD(infoSize), nullptr);
+    const qint64 result = CfGetPlaceholderInfo(handleForPath(path).get(), CF_PLACEHOLDER_INFO_BASIC, info.get(), sizeToDWORD(infoSize), nullptr);
 
     if (result == S_OK) {
         return info;
@@ -622,16 +622,16 @@ OCC::CfApiWrapper::PlaceHolderInfo OCC::CfApiWrapper::findPlaceholderInfo(const 
     }
 }
 
-OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::setPinState(const FileHandle &handle, OCC::PinStateEnums::PinState state, SetPinRecurseMode mode)
+OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::setPinState(const QString &path, OCC::PinStateEnums::PinState state, SetPinRecurseMode mode)
 {
     const auto cfState = pinStateToCfPinState(state);
     const auto flags = pinRecurseModeToCfSetPinFlags(mode);
 
-    const qint64 result = CfSetPinState(handle.get(), cfState, flags, nullptr);
+    const qint64 result = CfSetPinState(handleForPath(path).get(), cfState, flags, nullptr);
     if (result == S_OK) {
         return OCC::Vfs::ConvertToPlaceholderResult::Ok;
     } else {
-        qCWarning(lcCfApiWrapper) << "Couldn't set pin state" << state << "for" << pathForHandle(handle) << "with recurse mode" << mode << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
+        qCWarning(lcCfApiWrapper) << "Couldn't set pin state" << state << "for" << path << "with recurse mode" << mode << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
         return { "Couldn't set pin state" };
     }
 }
@@ -670,24 +670,20 @@ OCC::Result<void, QString> OCC::CfApiWrapper::createPlaceholderInfo(const QStrin
         return { "Couldn't create placeholder info" };
     }
 
-    const auto parentHandle = handleForPath(QDir::toNativeSeparators(QFileInfo(path).absolutePath()));
-    const auto parentInfo = findPlaceholderInfo(parentHandle);
+    const auto parentInfo = findPlaceholderInfo(QDir::toNativeSeparators(QFileInfo(path).absolutePath()));
     const auto state = parentInfo && parentInfo->PinState == CF_PIN_STATE_UNPINNED ? CF_PIN_STATE_UNPINNED : CF_PIN_STATE_INHERIT;
 
-    const auto handle = handleForPath(path);
-    if (!setPinState(handle, cfPinStateToPinState(state), NoRecurse)) {
+    if (!setPinState(path, cfPinStateToPinState(state), NoRecurse)) {
         return { "Couldn't set the default inherit pin state" };
     }
 
     return {};
 }
 
-OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::updatePlaceholderInfo(const FileHandle &handle, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath)
+OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::updatePlaceholderInfo(const QString &path, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath)
 {
-    Q_ASSERT(handle);
-
-    const auto info = replacesPath.isEmpty() ? findPlaceholderInfo(handle)
-                                             : findPlaceholderInfo(handleForPath(replacesPath));
+    const auto info = replacesPath.isEmpty() ? findPlaceholderInfo(path)
+                                             : findPlaceholderInfo(replacesPath);
     if (!info) {
         return { "Can't update non existing placeholder info" };
     }
@@ -703,48 +699,45 @@ OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::up
     OCC::Utility::UnixTimeToLargeIntegerFiletime(modtime, &metadata.BasicInfo.LastAccessTime);
     OCC::Utility::UnixTimeToLargeIntegerFiletime(modtime, &metadata.BasicInfo.ChangeTime);
 
-    const qint64 result = CfUpdatePlaceholder(handle.get(), &metadata,
+    const qint64 result = CfUpdatePlaceholder(handleForPath(path).get(), &metadata,
                                               fileIdentity.data(), sizeToDWORD(fileIdentitySize),
                                               nullptr, 0, CF_UPDATE_FLAG_MARK_IN_SYNC, nullptr, nullptr);
 
     if (result != S_OK) {
-        qCWarning(lcCfApiWrapper) << "Couldn't update placeholder info for" << pathForHandle(handle) << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
+        qCWarning(lcCfApiWrapper) << "Couldn't update placeholder info for" << path << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
         return { "Couldn't update placeholder info" };
     }
 
     // Pin state tends to be lost on updates, so restore it every time
-    if (!setPinState(handle, previousPinState, NoRecurse)) {
+    if (!setPinState(path, previousPinState, NoRecurse)) {
         return { "Couldn't restore pin state" };
     }
 
     return OCC::Vfs::ConvertToPlaceholderResult::Ok;
 }
 
-OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::convertToPlaceholder(const FileHandle &handle, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath)
+OCC::Result<OCC::Vfs::ConvertToPlaceholderResult, QString> OCC::CfApiWrapper::convertToPlaceholder(const QString &path, time_t modtime, qint64 size, const QByteArray &fileId, const QString &replacesPath)
 {
     Q_UNUSED(modtime);
     Q_UNUSED(size);
 
-    Q_ASSERT(handle);
-
     const auto fileIdentity = QString::fromUtf8(fileId).toStdWString();
     const auto fileIdentitySize = (fileIdentity.length() + 1) * sizeof(wchar_t);
-    const qint64 result = CfConvertToPlaceholder(handle.get(), fileIdentity.data(), sizeToDWORD(fileIdentitySize), CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr);
+    const qint64 result = CfConvertToPlaceholder(handleForPath(path).get(), fileIdentity.data(), sizeToDWORD(fileIdentitySize), CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr);
     Q_ASSERT(result == S_OK);
     if (result != S_OK) {
-        qCCritical(lcCfApiWrapper) << "Couldn't convert to placeholder" << pathForHandle(handle) << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
+        qCCritical(lcCfApiWrapper) << "Couldn't convert to placeholder" << path << ":" << QString::fromWCharArray(_com_error(result).ErrorMessage());
         return { "Couldn't convert to placeholder" };
     }
 
-    const auto originalHandle = handleForPath(replacesPath);
-    const auto originalInfo = originalHandle ? findPlaceholderInfo(originalHandle) : PlaceHolderInfo(nullptr, deletePlaceholderInfo);
+    const auto originalInfo = findPlaceholderInfo(replacesPath);
     if (!originalInfo) {
-        const auto stateResult = setPinState(handle, PinState::Inherited, NoRecurse);
+        const auto stateResult = setPinState(path, PinState::Inherited, NoRecurse);
         Q_ASSERT(stateResult);
         return stateResult;
     } else {
         const auto state = cfPinStateToPinState(originalInfo->PinState);
-        const auto stateResult = setPinState(handle, state, NoRecurse);
+        const auto stateResult = setPinState(path, state, NoRecurse);
         Q_ASSERT(stateResult);
         return stateResult;
     }
