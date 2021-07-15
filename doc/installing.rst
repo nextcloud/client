@@ -31,12 +31,18 @@ download page.
 System Requirements
 ----------------------------------
 
-- Windows 10+
+- Windows 10 minimum version 1709 [SAC] 
 - macOS 10.12+ (64-bit only)
 - Linux
 - FreeBSD
 
-.. note::
+.. NOTE::
+   For Windows 10 there is Semi-Anual Channel [SAC] version support only, not for LTSB/LTSC or IoT versions.
+   
+   For Windows there is client operating systems support only, not for Windows Server platforms.
+   
+   Installing and using the Nextcloud Desktop Synchronization Client on unsupported Windows platform or version may work but it is not guaranteed or tested.
+   
    For Linux distributions, we support, if technically feasible, the latest 2 versions per platform and the previous LTS.
 
 Customizing the Windows Installation
