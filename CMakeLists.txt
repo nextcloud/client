@@ -264,4 +264,13 @@ elseif(BUILD_CLIENT)
     configure_file(sync-exclude.lst bin/sync-exclude.lst COPYONLY)
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    option(INSTALL_SYSTEMD "Install systemd user service" ON)
+    if(INSTALL_SYSTEMD)
+        set(bindir ${CMAKE_INSTALL_FULL_BINDIR})
+        configure_file(systemd/nextcloud-desktop.service.in ${CMAKE_CURRENT_BINARY_DIR}/nextcloud-desktop.service)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/nextcloud-desktop.service DESTINATION lib/systemd/user)
+    endif()
+endif()
+
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES INCLUDE_QUIET_PACKAGES)

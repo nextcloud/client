@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2021 Andrea Pappacoda <andrea@pappacoda.it>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+[Unit]
+Description=Nextcloud desktop user service
+Wants=network-online.target
+
+[Service]
+ExecStart=@bindir@/nextcloud --background
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+RestrictRealtime=true
+
+[Install]
+WantedBy=default.target
