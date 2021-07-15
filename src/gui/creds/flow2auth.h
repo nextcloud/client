@@ -81,6 +81,7 @@ private:
     qint64 _secondsInterval;
     bool _isBusy;
     bool _hasToken;
+    bool _enforceHttps = false;
 };
 
 } // namespace OCC
