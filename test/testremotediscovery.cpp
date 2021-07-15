@@ -91,7 +91,7 @@ private slots:
         auto oldLocalState = fakeFolder.currentLocalState();
         auto oldRemoteState = fakeFolder.currentRemoteState();
 
-        QString errorFolder = "webdav/B";
+        QString errorFolder = "dav/B";
         QString fatalErrorPrefix = "Server replied with an error while reading directory 'B' : ";
         fakeFolder.setServerOverride([&](QNetworkAccessManager::Operation op, const QNetworkRequest &req, QIODevice *)
                 -> QNetworkReply *{
@@ -133,7 +133,7 @@ private slots:
         //
         // Check the same discovery error on the sync root
         //
-        errorFolder = "webdav/";
+        errorFolder = "dav/";
         fatalErrorPrefix = "Server replied with an error while reading directory '' : ";
         errorSpy.clear();
         QVERIFY(!fakeFolder.syncOnce());

@@ -152,7 +152,7 @@ Conflict files are always created on the client and never on the server.
             "capabilities":{
                 "core":{
                   "pollinterval":60,
-                  "webdav-root":"remote.php/webdav"
+                  "webdav-root":"remote.php/dav"
                 },
                 "dav":{
                   "chunking":"1.0"

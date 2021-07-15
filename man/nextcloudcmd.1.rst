@@ -76,7 +76,7 @@ the command line would be::
 
   $ nextcloudcmd —httpproxy http://192.168.178.1:8080 \
                 $HOME/media/music \
-                https://server/nextcloud/remote.php/webdav/Music
+                https://server/nextcloud/remote.php/dav/Music
 
 ``nextcloudcmd`` will enquire user name and password, unless they have
 been specified on the command line or ``-n`` (see `netrc(5)`) has been passed.
@@ -85,7 +85,7 @@ Using the legacy scheme, it would be::
 
   $ nextcloudcmd —httpproxy http://192.168.178.1:8080 \
                 $HOME/media/music \
-                nextclouds://server/nextcloud/remote.php/webdav/Music
+                nextclouds://server/nextcloud/remote.php/dav/Music
 
 
 BUGS

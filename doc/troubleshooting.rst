@@ -34,7 +34,7 @@ Identifying Basic Functionality Problems
 
   For example, if your Nextcloud instance is installed at
   ``http://yourserver.com/nextcloud``, your WebDAV server address is
-  ``http://yourserver.com/nextcloud/remote.php/webdav``.
+  ``http://yourserver.com/nextcloud/remote.php/dav``.
 
   If you are prompted for your username and password but, after providing the
   correct credentials, authentication fails, please ensure that your

@@ -341,7 +341,7 @@ public:
      * Alternative path on the server that provides access to the webdav capabilities
      *
      * Attention: Make sure that this string does NOT have a leading slash and that
-     * it has a trailing slash, for example "remote.php/webdav/".
+     * it has a trailing slash, for example "remote.php/dav/".
      */
     virtual QString webDavPath() const;
     virtual QString webDavPathNonShib() const;
