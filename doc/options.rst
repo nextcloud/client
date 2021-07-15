@@ -1,16 +1,19 @@
 You have the option of starting your Nextcloud desktop client with the 
 ``nextcloud`` command. The following options are supported:
 
-``nextcloud -h`` or ``nextcloud --help``
+``nextcloud --help``, ``nextcloud -h`` or ``nextcloud -?``, 
         Displays all command options.
 
 The other options are:
 
-``--logwindow``
+``--quit``, ``-q``
+        Quits the running instance.
+
+``--logwindow``, ``-l``
         Opens a window displaying log output.
 
 ``--logfile`` `<filename>`
-        Write log output to the file specified. To write to stdout, specify `-` 
+        Writes log output to the file specified. To write to stdout, specify `-` 
         as the filename.
 
 ``--logdir`` `<name>`
@@ -25,10 +28,10 @@ The other options are:
         Clears (flushes) the log file after each write action.
 
 ``--logdebug``
-        Also output debug-level messages in the log (equivalent to setting the env var QT_LOGGING_RULES="qt.*=true;*.debug=true").
+        Also outputs debug-level messages in the log (equivalent to setting the env var QT_LOGGING_RULES="qt.*=true;*.debug=true").
 
 ``--confdir`` `<dirname>`
         Uses the specified configuration directory.
 
 ``--background``
-        Launch the application in the background (i.e. without opening the main dialog).
+        Launches the application in the background (i.e. without opening the main dialog).

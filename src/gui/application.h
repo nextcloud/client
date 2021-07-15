@@ -16,6 +16,7 @@
 #define APPLICATION_H
 
 #include <QApplication>
+#include <QCommandLineParser>
 #include <QPointer>
 #include <QQueue>
 #include <QTimer>
@@ -59,13 +60,8 @@ public:
     explicit Application(int &argc, char **argv);
     ~Application();
 
-    bool giveHelp();
-    void showHelp();
     void showHint(std::string errorHint);
-    bool debugMode();
     bool backgroundMode() const;
-    bool versionOnly(); // only display the version?
-    void showVersion();
 
     void showMainDialog();
 
@@ -85,7 +81,6 @@ public slots:
     void tryTrayAgain();
 
 protected:
-    void parseOptions(const QStringList &);
     void setupTranslations();
     void setupLogging();
     bool event(QEvent *event);
@@ -106,7 +101,7 @@ protected slots:
     void slotGuiIsShowingSettings();
 
 private:
-    void setHelp();
+    void virtualFileFromArguments();
 
     /**
      * Maybe a newer version of the client was used with this config file:
@@ -115,28 +110,10 @@ private:
     bool configVersionMigration();
 
     QPointer<ownCloudGui> _gui;
-
+    QCommandLineParser _parser;
     Theme *_theme;
-
-    bool _helpOnly;
-    bool _versionOnly;
-
     QElapsedTimer _startedAt;
-
-    // options from command line:
-    bool _showLogWindow;
-    bool _quitInstance = false;
-    QString _logFile;
-    QString _logDir;
-    int _logExpire;
-    bool _logFlush;
-    bool _logDebug;
-    bool _userTriggeredConnect;
-    bool _debugMode;
-    bool _backgroundMode;
-
     ClientProxy _proxy;
-
     QNetworkConfigurationManager _networkConfigurationManager;
     QTimer _checkConnectionTimer;
 

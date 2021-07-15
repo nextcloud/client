@@ -83,14 +83,6 @@ int main(int argc, char **argv)
 #ifndef Q_OS_WIN
     signal(SIGPIPE, SIG_IGN);
 #endif
-    if (app.giveHelp()) {
-        app.showHelp();
-        return 0;
-    }
-    if (app.versionOnly()) {
-        app.showVersion();
-        return 0;
-    }
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QQuickWindow::setTextRenderType(QQuickWindow::NativeTextRendering);
