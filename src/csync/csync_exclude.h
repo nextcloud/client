@@ -29,6 +29,7 @@
 #include <QSet>
 #include <QString>
 #include <QRegularExpression>
+#include <QFile>
 
 #include <functional>
 
@@ -148,7 +149,7 @@ public slots:
     /**
      * Loads the exclude patterns from file the registered base paths.
      */
-    bool loadExcludeFile(const QString &basePath, const QString &file);
+    void loadExcludeFilePatterns(const QString &basePath, QFile &file);
 
 private:
     /**

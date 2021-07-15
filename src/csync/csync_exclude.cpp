@@ -34,7 +34,6 @@
 
 #include <QString>
 #include <QFileInfo>
-#include <QFile>
 #include <QDir>
 
 
@@ -288,18 +287,14 @@ void ExcludedFiles::setClientVersion(ExcludedFiles::Version version)
     _clientVersion = version;
 }
 
-bool ExcludedFiles::loadExcludeFile(const QString &basePath, const QString & file)
+void ExcludedFiles::loadExcludeFilePatterns(const QString &basePath, QFile &file)
 {
-    QFile f(file);
-    if (!f.open(QIODevice::ReadOnly))
-        return false;
-
     QStringList patterns;
-    while (!f.atEnd()) {
-        QByteArray line = f.readLine().trimmed();
+    while (!file.atEnd()) {
+        QByteArray line = file.readLine().trimmed();
         if (line.startsWith("#!version")) {
             if (!versionDirectiveKeepNextLine(line))
-                f.readLine();
+                file.readLine();
         }
         if (line.isEmpty() || line.startsWith('#'))
             continue;
@@ -312,8 +307,6 @@ bool ExcludedFiles::loadExcludeFile(const QString &basePath, const QString & fil
     if (!_allExcludes.value(basePath).isEmpty()){
         prepare(basePath);
     }
-
-    return true;
 }
 
 bool ExcludedFiles::reloadExcludeFiles()
@@ -330,8 +323,17 @@ bool ExcludedFiles::reloadExcludeFiles()
     bool success = true;
     const auto keys = _excludeFiles.keys();
     for (const auto& basePath : keys) {
-        for (const auto& file : _excludeFiles.value(basePath)) {
-            success = loadExcludeFile(basePath, file);
+        for (const auto& excludeFile : _excludeFiles.value(basePath)) {
+            QFile file(excludeFile);
+            if (file.open(QIODevice::ReadOnly)) {
+                if (file.exists()) {
+                    loadExcludeFilePatterns(basePath, file);
+                } else {
+                    success = false;
+                    qWarning() << "System exclude list file doesn't exist:" << excludeFile;
+                }
+            }
+
         }
     }
 
@@ -422,11 +424,14 @@ CSYNC_EXCLUDE_TYPE ExcludedFiles::traversalPatternMatch(const QString &path, Ite
     // Directories are guaranteed to be visited before their files
     if (filetype == ItemTypeDirectory) {
         const auto basePath = QString(_localPath + path + QLatin1Char('/'));
-        const auto fi = QFileInfo(basePath + QStringLiteral(".sync-exclude.lst"));
+        const QString absolutePath = basePath + QStringLiteral(".sync-exclude.lst");
+        QFile excludeFile(absolutePath);
 
-        if (fi.isReadable()) {
-            addInTreeExcludeFilePath(fi.absoluteFilePath());
-            loadExcludeFile(basePath, fi.absoluteFilePath());
+        if (excludeFile.open(QIODevice::ReadOnly)) {
+            if (excludeFile.exists()) {
+                addInTreeExcludeFilePath(absolutePath);
+                loadExcludeFilePatterns(basePath, excludeFile);
+            }
         }
     }
 
