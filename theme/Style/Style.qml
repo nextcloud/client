@@ -19,6 +19,7 @@ QtObject {
 
     // Dimensions and sizes
     property int trayWindowWidth: 400
+    property int trayWindowMouseAreaWidth: 396
     property int trayWindowHeight: 510
     property int trayWindowRadius: 10
     property int trayWindowBorderWidth: 1

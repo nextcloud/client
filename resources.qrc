@@ -6,5 +6,6 @@
         <file>theme/Style/Style.qml</file>
         <file>theme/Style/qmldir</file>
         <file>src/gui/tray/ActivityActionButton.qml</file>
+        <file>src/gui/tray/ActivityItem.qml</file>
     </qresource>
 </RCC>

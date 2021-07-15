@@ -9,6 +9,9 @@ Item {
 
     // label value
     property string text: ""
+    
+    // font value
+    property var font: label.font
 
     // icon value
     property string imageSource: ""

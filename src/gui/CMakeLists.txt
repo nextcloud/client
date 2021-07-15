@@ -36,6 +36,7 @@ set(client_UI_SRCS
     proxyauthdialog.ui
     mnemonicdialog.ui
     tray/ActivityActionButton.qml
+    tray/ActivityItem.qml
     tray/Window.qml
     tray/UserLine.qml
     wizard/flow2authwidget.ui
