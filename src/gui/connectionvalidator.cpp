@@ -227,17 +227,6 @@ void ConnectionValidator::checkServerCapabilities()
     job->setTimeout(timeoutToUseMsec);
     QObject::connect(job, &JsonApiJob::jsonReceived, this, &ConnectionValidator::slotCapabilitiesRecieved);
     job->start();
-
-    // And we'll retrieve the ocs config in parallel
-    // note that 'this' might be destroyed before the job finishes, so intentionally not parented
-    auto configJob = new JsonApiJob(_account, QLatin1String("ocs/v1.php/config"));
-    configJob->setTimeout(timeoutToUseMsec);
-    auto account = _account; // capturing account by value will make it live long enough
-    QObject::connect(configJob, &JsonApiJob::jsonReceived, _account.data(),
-        [=](const QJsonDocument &json) {
-            ocsConfigReceived(json, account);
-        });
-    configJob->start();
 }
 
 void ConnectionValidator::slotCapabilitiesRecieved(const QJsonDocument &json)
@@ -258,17 +247,6 @@ void ConnectionValidator::slotCapabilitiesRecieved(const QJsonDocument &json)
     _account->fetchDirectEditors(directEditingURL, directEditingETag);
 
     fetchUser();
-}
-
-void ConnectionValidator::ocsConfigReceived(const QJsonDocument &json, AccountPtr account)
-{
-    QString host = json.object().value("ocs").toObject().value("data").toObject().value("host").toString();
-    if (host.isEmpty()) {
-        qCWarning(lcConnectionValidator) << "Could not extract 'host' from ocs config reply";
-        return;
-    }
-    qCInfo(lcConnectionValidator) << "Determined user-visible host to be" << host;
-    account->setUserVisibleHost(host);
 }
 
 void ConnectionValidator::fetchUser()
