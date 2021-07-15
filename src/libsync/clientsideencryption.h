@@ -27,7 +27,7 @@ QString baseUrl();
 
 namespace EncryptionHelper {
     QByteArray generateRandomFilename();
-    QByteArray generateRandom(int size);
+    OWNCLOUDSYNC_EXPORT QByteArray generateRandom(int size);
     QByteArray generatePassword(const QString &wordlist, const QByteArray& salt);
     OWNCLOUDSYNC_EXPORT QByteArray encryptPrivateKey(
             const QByteArray& key,
@@ -60,12 +60,59 @@ namespace EncryptionHelper {
             const QByteArray& data
     );
 
-    bool fileEncryption(const QByteArray &key, const QByteArray &iv,
+    OWNCLOUDSYNC_EXPORT bool fileEncryption(const QByteArray &key, const QByteArray &iv,
                       QFile *input, QFile *output, QByteArray& returnTag);
 
-    bool fileDecryption(const QByteArray &key, const QByteArray& iv,
+    OWNCLOUDSYNC_EXPORT bool fileDecryption(const QByteArray &key, const QByteArray &iv,
                                QFile *input, QFile *output);
-}
+
+    //
+    // Simple classes for safe (RAII) handling of OpenSSL
+    // data structures
+    //
+
+class CipherCtx {
+public:
+    CipherCtx() : _ctx(EVP_CIPHER_CTX_new())
+    {
+    }
+
+    ~CipherCtx()
+    {
+        EVP_CIPHER_CTX_free(_ctx);
+    }
+
+    operator EVP_CIPHER_CTX*()
+    {
+        return _ctx;
+    }
+
+private:
+    Q_DISABLE_COPY(CipherCtx)
+    EVP_CIPHER_CTX *_ctx;
+};
+
+class OWNCLOUDSYNC_EXPORT StreamingDecryptor
+{
+public:
+    StreamingDecryptor(const QByteArray &key, const QByteArray &iv, quint64 totalSize);
+    ~StreamingDecryptor() = default;
+
+    qint64 chunkDecryption(const char *input, QIODevice *output, quint64 chunkSize);
+
+    bool isInitialized() const;
+    bool isFinished() const;
+
+private:
+    Q_DISABLE_COPY(StreamingDecryptor)
+
+    CipherCtx _ctx;
+    bool _isInitialized = false;
+    bool _isFinished = false;
+    quint64 _decryptedSoFar = 0;
+    quint64 _totalSize = 0;
+};
+};
 
 class OWNCLOUDSYNC_EXPORT ClientSideEncryption : public QObject {
     Q_OBJECT

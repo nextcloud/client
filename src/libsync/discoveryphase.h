@@ -55,6 +55,7 @@ struct RemoteInfo
     OCC::RemotePermissions remotePerm;
     time_t modtime = 0;
     int64_t size = 0;
+    int64_t sizeOfFolder = 0;
     bool isDirectory = false;
     bool isE2eEncrypted = false;
     QString e2eMangledName;
@@ -153,6 +154,7 @@ private:
     // If this directory is e2ee
     bool _isE2eEncrypted;
     // If set, the discovery will finish with an error
+    int64_t _size = 0;
     QString _error;
     QPointer<LsColJob> _lsColJob;
 
