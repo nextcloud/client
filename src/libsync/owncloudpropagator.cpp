@@ -527,24 +527,25 @@ void OwncloudPropagator::setSyncOptions(const SyncOptions &syncOptions)
 
 bool OwncloudPropagator::localFileNameClash(const QString &relFile)
 {
-    bool re = false;
     const QString file(_localDir + relFile);
+    Q_ASSERT(!file.isEmpty());
 
     if (!file.isEmpty() && Utility::fsCasePreserving()) {
+        qCDebug(lcPropagator) << "CaseClashCheck for " << file;
 #ifdef Q_OS_MAC
-        QFileInfo fileInfo(file);
+        const QFileInfo fileInfo(file);
         if (!fileInfo.exists()) {
-            re = false;
             qCWarning(lcPropagator) << "No valid fileinfo";
+            return false;
         } else {
             // Need to normalize to composited form because of QTBUG-39622/QTBUG-55896
             const QString cName = fileInfo.canonicalFilePath().normalized(QString::NormalizationForm_C);
-            bool equal = (file == cName);
-            re = (!equal && !cName.endsWith(relFile, Qt::CaseSensitive));
+            if (file != cName && !cName.endsWith(relFile, Qt::CaseSensitive)) {
+                qCWarning(lcPropagator) << "Detected case clash between" << file << "and" << cName;
+                return true;
+            }
         }
 #elif defined(Q_OS_WIN)
-        const QString file(_localDir + relFile);
-        qCDebug(lcPropagator) << "CaseClashCheck for " << file;
         WIN32_FIND_DATA FindFileData;
         HANDLE hFind;
 
@@ -552,12 +553,12 @@ bool OwncloudPropagator::localFileNameClash(const QString &relFile)
         if (hFind == INVALID_HANDLE_VALUE) {
             // returns false.
         } else {
-            QString realFileName = QString::fromWCharArray(FindFileData.cFileName);
+            const QString realFileName = QString::fromWCharArray(FindFileData.cFileName);
             FindClose(hFind);
 
             if (!file.endsWith(realFileName, Qt::CaseSensitive)) {
                 qCWarning(lcPropagator) << "Detected case clash between" << file << "and" << realFileName;
-                re = true;
+                return true;
             }
         }
 #else
@@ -565,13 +566,13 @@ bool OwncloudPropagator::localFileNameClash(const QString &relFile)
         // Just check that there is no other file with the same name and different casing.
         QFileInfo fileInfo(file);
         const QString fn = fileInfo.fileName();
-        QStringList list = fileInfo.dir().entryList(QStringList() << fn);
+        const QStringList list = fileInfo.dir().entryList({ fn });
         if (list.count() > 1 || (list.count() == 1 && list[0] != fn)) {
-            re = true;
+            return true;
         }
 #endif
     }
-    return re;
+    return false;
 }
 
 bool OwncloudPropagator::hasCaseClashAccessibilityProblem(const QString &relfile)

@@ -455,6 +455,11 @@ void PropagateDownloadFile::startAfterIsEncryptedIsChecked()
         }
 
         qCDebug(lcPropagateDownload) << "creating virtual file" << _item->_file;
+        // do a klaas' case clash check.
+        if (propagator()->localFileNameClash(_item->_file)) {
+            done(SyncFileItem::NormalError, tr("File %1 can not be downloaded because of a local file name clash!").arg(QDir::toNativeSeparators(_item->_file)));
+            return;
+        }
         auto r = vfs->createPlaceholder(*_item);
         if (!r) {
             done(SyncFileItem::NormalError, r.error());

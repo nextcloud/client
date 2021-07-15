@@ -148,7 +148,7 @@ protected:
      * If that happens, this function will schedule another try and
      * return true.
      */
-    bool keychainUnavailableRetryLater(QKeychain::Job *);
+    bool keychainUnavailableRetryLater(QKeychain::ReadPasswordJob *);
 
     /** Takes client cert pkcs12 and unwraps the key/cert.
      *

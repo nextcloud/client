@@ -396,10 +396,7 @@ bool SyncJournalDb::checkConnect()
             && createQuery.errorId() == SQLITE_IOERR
             && sqlite3_extended_errcode(_db.sqliteDb()) == SQLITE_IOERR_SHMMAP) {
             qCWarning(lcDb) << "IO error SHMMAP on table creation, attempting with DELETE journal mode";
-
             _journalMode = "DELETE";
-            createQuery.finish();
-            pragma1.finish();
             commitTransaction();
             _db.close();
             return checkConnect();
@@ -590,11 +587,14 @@ bool SyncJournalDb::checkConnect()
         forceRemoteDiscoveryNextSyncLocked();
     }
 
-    if (!_deleteDownloadInfoQuery.initOrReset("DELETE FROM downloadinfo WHERE path=?1", _db)) {
+    const PreparedSqlQueryRAII deleteDownloadInfo(&_deleteDownloadInfoQuery, QByteArrayLiteral("DELETE FROM downloadinfo WHERE path=?1"), _db);
+    if (!deleteDownloadInfo) {
         return sqlFail(QStringLiteral("prepare _deleteDownloadInfoQuery"), _deleteDownloadInfoQuery);
     }
 
-    if (!_deleteUploadInfoQuery.initOrReset("DELETE FROM uploadinfo WHERE path=?1", _db)) {
+
+    const PreparedSqlQueryRAII deleteUploadInfoQuery(&_deleteUploadInfoQuery, QByteArrayLiteral("DELETE FROM uploadinfo WHERE path=?1"), _db);
+    if (!deleteUploadInfoQuery) {
         return sqlFail(QStringLiteral("prepare _deleteUploadInfoQuery"), _deleteUploadInfoQuery);
     }
 
@@ -605,8 +605,9 @@ bool SyncJournalDb::checkConnect()
         // case insensitively
         sql += " COLLATE NOCASE";
     }
-    if (!_getErrorBlacklistQuery.initOrReset(sql, _db)) {
-        return sqlFail(QStringLiteral("prepare _getErrorBlacklistQuery"), _getErrorBlacklistQuery);
+    const PreparedSqlQueryRAII getErrorBlacklistQuery(&_getErrorBlacklistQuery, sql, _db);
+    if (!getErrorBlacklistQuery) {
+        return sqlFail(QStringLiteral("prepare _getErrorBlacklistQuery"), *getErrorBlacklistQuery);
     }
 
     // don't start a new transaction now
@@ -936,34 +937,35 @@ Result<void, QString> SyncJournalDb::setFileRecord(const SyncJournalFileRecord &
         parseChecksumHeader(record._checksumHeader, &checksumType, &checksum);
         int contentChecksumTypeId = mapChecksumType(checksumType);
 
-        if (!_setFileRecordQuery.initOrReset(QByteArrayLiteral(
-            "INSERT OR REPLACE INTO metadata "
+        const PreparedSqlQueryRAII query(&_setFileRecordQuery, QByteArrayLiteral("INSERT OR REPLACE INTO metadata "
             "(phash, pathlen, path, inode, uid, gid, mode, modtime, type, md5, fileid, remotePerm, filesize, ignoredChildrenRemote, contentChecksum, contentChecksumTypeId, e2eMangledName, isE2eEncrypted) "
-            "VALUES (?1 , ?2, ?3 , ?4 , ?5 , ?6 , ?7,  ?8 , ?9 , ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18);"), _db)) {
-            return _setFileRecordQuery.error();
+            "VALUES (?1 , ?2, ?3 , ?4 , ?5 , ?6 , ?7,  ?8 , ?9 , ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18);"),
+                                         _db);
+        if (!query) {
+            return query->error();
         }
 
-        _setFileRecordQuery.bindValue(1, phash);
-        _setFileRecordQuery.bindValue(2, plen);
-        _setFileRecordQuery.bindValue(3, record._path);
-        _setFileRecordQuery.bindValue(4, record._inode);
-        _setFileRecordQuery.bindValue(5, 0); // uid Not used
-        _setFileRecordQuery.bindValue(6, 0); // gid Not used
-        _setFileRecordQuery.bindValue(7, 0); // mode Not used
-        _setFileRecordQuery.bindValue(8, record._modtime);
-        _setFileRecordQuery.bindValue(9, record._type);
-        _setFileRecordQuery.bindValue(10, etag);
-        _setFileRecordQuery.bindValue(11, fileId);
-        _setFileRecordQuery.bindValue(12, remotePerm);
-        _setFileRecordQuery.bindValue(13, record._fileSize);
-        _setFileRecordQuery.bindValue(14, record._serverHasIgnoredFiles ? 1 : 0);
-        _setFileRecordQuery.bindValue(15, checksum);
-        _setFileRecordQuery.bindValue(16, contentChecksumTypeId);
-        _setFileRecordQuery.bindValue(17, record._e2eMangledName);
-        _setFileRecordQuery.bindValue(18, record._isE2eEncrypted);
+        query->bindValue(1, phash);
+        query->bindValue(2, plen);
+        query->bindValue(3, record._path);
+        query->bindValue(4, record._inode);
+        query->bindValue(5, 0); // uid Not used
+        query->bindValue(6, 0); // gid Not used
+        query->bindValue(7, 0); // mode Not used
+        query->bindValue(8, record._modtime);
+        query->bindValue(9, record._type);
+        query->bindValue(10, etag);
+        query->bindValue(11, fileId);
+        query->bindValue(12, remotePerm);
+        query->bindValue(13, record._fileSize);
+        query->bindValue(14, record._serverHasIgnoredFiles ? 1 : 0);
+        query->bindValue(15, checksum);
+        query->bindValue(16, contentChecksumTypeId);
+        query->bindValue(17, record._e2eMangledName);
+        query->bindValue(18, record._isE2eEncrypted);
 
-        if (!_setFileRecordQuery.exec()) {
-            return _setFileRecordQuery.error();
+        if (!query->exec()) {
+            return query->error();
         }
 
         // Can't be true anymore.
@@ -983,13 +985,14 @@ void SyncJournalDb::keyValueStoreSet(const QString &key, QVariant value)
         return;
     }
 
-    if (!_setKeyValueStoreQuery.initOrReset(QByteArrayLiteral("INSERT OR REPLACE INTO key_value_store (key, value) VALUES(?1, ?2);"), _db)) {
+    const PreparedSqlQueryRAII query(&_setKeyValueStoreQuery, QByteArrayLiteral("INSERT OR REPLACE INTO key_value_store (key, value) VALUES(?1, ?2);"), _db);
+    if (!query) {
         return;
     }
 
-    _setKeyValueStoreQuery.bindValue(1, key);
-    _setKeyValueStoreQuery.bindValue(2, value);
-    _setKeyValueStoreQuery.exec();
+    query->bindValue(1, key);
+    query->bindValue(2, value);
+    query->exec();
 }
 
 qint64 SyncJournalDb::keyValueStoreGetInt(const QString &key, qint64 defaultValue)
@@ -999,18 +1002,19 @@ qint64 SyncJournalDb::keyValueStoreGetInt(const QString &key, qint64 defaultValu
         return defaultValue;
     }
 
-    if (!_getKeyValueStoreQuery.initOrReset(QByteArrayLiteral("SELECT value FROM key_value_store WHERE key = ?1;"), _db)) {
+    const PreparedSqlQueryRAII query(&_getKeyValueStoreQuery, QByteArrayLiteral("SELECT value FROM key_value_store WHERE key = ?1;"), _db);
+    if (!query) {
         return defaultValue;
     }
 
-    _getKeyValueStoreQuery.bindValue(1, key);
-    _getKeyValueStoreQuery.exec();
+    query->bindValue(1, key);
+    query->exec();
 
-    if (!_getKeyValueStoreQuery.next().hasData) {
+    if (!query->next().hasData) {
         return defaultValue;
     }
 
-    return _getKeyValueStoreQuery.int64Value(0);
+    return query->int64Value(0);
 }
 
 QVariant SyncJournalDb::keyValueStoreGet(const QString &key, QVariant defaultValue)
@@ -1020,28 +1024,30 @@ QVariant SyncJournalDb::keyValueStoreGet(const QString &key, QVariant defaultVal
         return defaultValue;
     }
 
-    if (!_getKeyValueStoreQuery.initOrReset(QByteArrayLiteral("SELECT value FROM key_value_store WHERE key = ?1;"), _db)) {
+    const PreparedSqlQueryRAII query(&_getKeyValueStoreQuery, QByteArrayLiteral("SELECT value FROM key_value_store WHERE key = ?1;"), _db);
+    if (!query) {
         return defaultValue;
     }
 
-    _getKeyValueStoreQuery.bindValue(1, key);
-    _getKeyValueStoreQuery.exec();
+    query->bindValue(1, key);
+    query->exec();
 
-    if (!_getKeyValueStoreQuery.next().hasData) {
+    if (!query->next().hasData) {
         return defaultValue;
     }
 
-    return _getKeyValueStoreQuery.stringValue(0);
+    return query->stringValue(0);
 }
 
 void SyncJournalDb::keyValueStoreDelete(const QString &key)
 {
-    if (!_deleteKeyValueStoreQuery.initOrReset("DELETE FROM key_value_store WHERE key=?1;", _db)) {
+    const PreparedSqlQueryRAII query(&_deleteKeyValueStoreQuery, QByteArrayLiteral("DELETE FROM key_value_store WHERE key=?1;"), _db);
+    if (!query) {
         qCWarning(lcDb) << "Failed to initOrReset _deleteKeyValueStoreQuery";
         Q_ASSERT(false);
     }
-    _deleteKeyValueStoreQuery.bindValue(1, key);
-    if (!_deleteKeyValueStoreQuery.exec()) {
+    query->bindValue(1, key);
+    if (!query->exec()) {
         qCWarning(lcDb) << "Failed to exec _deleteKeyValueStoreQuery for key" << key;
         Q_ASSERT(false);
     }
@@ -1056,20 +1062,26 @@ bool SyncJournalDb::deleteFileRecord(const QString &filename, bool recursively)
         // if (!recursively) {
         // always delete the actual file.
 
-        if (!_deleteFileRecordPhash.initOrReset(QByteArrayLiteral("DELETE FROM metadata WHERE phash=?1"), _db))
-            return false;
+        {
+            const PreparedSqlQueryRAII query(&_deleteFileRecordPhash, QByteArrayLiteral("DELETE FROM metadata WHERE phash=?1"), _db);
+            if (!query) {
+                return false;
+            }
 
-        qlonglong phash = getPHash(filename.toUtf8());
-        _deleteFileRecordPhash.bindValue(1, phash);
+            qlonglong phash = getPHash(filename.toUtf8());
+            query->bindValue(1, phash);
 
-        if (!_deleteFileRecordPhash.exec())
-            return false;
+            if (!query->exec()) {
+                return false;
+            }
+        }
 
         if (recursively) {
-            if (!_deleteFileRecordRecursively.initOrReset(QByteArrayLiteral("DELETE FROM metadata WHERE " IS_PREFIX_PATH_OF("?1", "path")), _db))
+            const PreparedSqlQueryRAII query(&_deleteFileRecordRecursively, QByteArrayLiteral("DELETE FROM metadata WHERE " IS_PREFIX_PATH_OF("?1", "path")), _db);
+            if (!query)
                 return false;
-            _deleteFileRecordRecursively.bindValue(1, filename);
-            if (!_deleteFileRecordRecursively.exec()) {
+            query->bindValue(1, filename);
+            if (!query->exec()) {
                 return false;
             }
         }
@@ -1097,25 +1109,27 @@ bool SyncJournalDb::getFileRecord(const QByteArray &filename, SyncJournalFileRec
         return false;
 
     if (!filename.isEmpty()) {
-        if (!_getFileRecordQuery.initOrReset(QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE phash=?1"), _db))
+        const PreparedSqlQueryRAII query(&_getFileRecordQuery, QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE phash=?1"), _db);
+        if (!query) {
             return false;
+        }
 
-        _getFileRecordQuery.bindValue(1, getPHash(filename));
+        query->bindValue(1, getPHash(filename));
 
-        if (!_getFileRecordQuery.exec()) {
+        if (!query->exec()) {
             close();
             return false;
         }
 
-        auto next = _getFileRecordQuery.next();
+        auto next = query->next();
         if (!next.ok) {
-            QString err = _getFileRecordQuery.error();
+            QString err = query->error();
             qCWarning(lcDb) << "No journal entry found for" << filename << "Error:" << err;
             close();
             return false;
         }
         if (next.hasData) {
-            fillFileRecordFromGetQuery(*rec, _getFileRecordQuery);
+            fillFileRecordFromGetQuery(*rec, *query);
         }
     }
     return true;
@@ -1139,26 +1153,27 @@ bool SyncJournalDb::getFileRecordByE2eMangledName(const QString &mangledName, Sy
     }
 
     if (!mangledName.isEmpty()) {
-        if (!_getFileRecordQueryByMangledName.initOrReset(QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE e2eMangledName=?1"), _db)) {
+        const PreparedSqlQueryRAII query(&_getFileRecordQueryByMangledName, QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE e2eMangledName=?1"), _db);
+        if (!query) {
             return false;
         }
 
-        _getFileRecordQueryByMangledName.bindValue(1, mangledName);
+        query->bindValue(1, mangledName);
 
-        if (!_getFileRecordQueryByMangledName.exec()) {
+        if (!query->exec()) {
             close();
             return false;
         }
 
-        auto next = _getFileRecordQueryByMangledName.next();
+        auto next = query->next();
         if (!next.ok) {
-            QString err = _getFileRecordQueryByMangledName.error();
+            QString err = query->error();
             qCWarning(lcDb) << "No journal entry found for mangled name" << mangledName << "Error: " << err;
             close();
             return false;
         }
         if (next.hasData) {
-            fillFileRecordFromGetQuery(*rec, _getFileRecordQueryByMangledName);
+            fillFileRecordFromGetQuery(*rec, *query);
         }
     }
     return true;
@@ -1178,20 +1193,20 @@ bool SyncJournalDb::getFileRecordByInode(quint64 inode, SyncJournalFileRecord *r
 
     if (!checkConnect())
         return false;
-
-    if (!_getFileRecordQueryByInode.initOrReset(QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE inode=?1"), _db))
+    const PreparedSqlQueryRAII query(&_getFileRecordQueryByInode, QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE inode=?1"), _db);
+    if (!query)
         return false;
 
-    _getFileRecordQueryByInode.bindValue(1, inode);
+    query->bindValue(1, inode);
 
-    if (!_getFileRecordQueryByInode.exec())
+    if (!query->exec())
         return false;
 
-    auto next = _getFileRecordQueryByInode.next();
+    auto next = query->next();
     if (!next.ok)
         return false;
     if (next.hasData)
-        fillFileRecordFromGetQuery(*rec, _getFileRecordQueryByInode);
+        fillFileRecordFromGetQuery(*rec, *query);
 
     return true;
 }
@@ -1206,72 +1221,15 @@ bool SyncJournalDb::getFileRecordsByFileId(const QByteArray &fileId, const std::
     if (!checkConnect())
         return false;
 
-    if (!_getFileRecordQueryByFileId.initOrReset(QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE fileid=?1"), _db))
-        return false;
-
-    _getFileRecordQueryByFileId.bindValue(1, fileId);
-
-    if (!_getFileRecordQueryByFileId.exec())
-        return false;
-
-    forever {
-        auto next = _getFileRecordQueryByFileId.next();
-        if (!next.ok)
-            return false;
-        if (!next.hasData)
-            break;
-
-        SyncJournalFileRecord rec;
-        fillFileRecordFromGetQuery(rec, _getFileRecordQueryByFileId);
-        rowCallback(rec);
-    }
-
-    return true;
-}
-
-bool SyncJournalDb::getFilesBelowPath(const QByteArray &path, const std::function<void(const SyncJournalFileRecord&)> &rowCallback)
-{
-    QMutexLocker locker(&_mutex);
-
-    if (_metadataTableIsEmpty)
-        return true; // no error, yet nothing found
-
-    if (!checkConnect())
-        return false;
-
-    SqlQuery *query = nullptr;
-
-    if(path.isEmpty()) {
-        // Since the path column doesn't store the starting /, the getFilesBelowPathQuery
-        // can't be used for the root path "". It would scan for (path > '/' and path < '0')
-        // and find nothing. So, unfortunately, we have to use a different query for
-        // retrieving the whole tree.
-
-        if (!_getAllFilesQuery.initOrReset(QByteArrayLiteral( GET_FILE_RECORD_QUERY " ORDER BY path||'/' ASC"), _db))
-            return false;
-        query = &_getAllFilesQuery;
-    } else {
-        // This query is used to skip discovery and fill the tree from the
-        // database instead
-        if (!_getFilesBelowPathQuery.initOrReset(QByteArrayLiteral(
-                GET_FILE_RECORD_QUERY
-                " WHERE " IS_PREFIX_PATH_OF("?1", "path")
-                " OR " IS_PREFIX_PATH_OF("?1", "e2eMangledName")
-                // We want to ensure that the contents of a directory are sorted
-                // directly behind the directory itself. Without this ORDER BY
-                // an ordering like foo, foo-2, foo/file would be returned.
-                // With the trailing /, we get foo-2, foo, foo/file. This property
-                // is used in fill_tree_from_db().
-                " ORDER BY path||'/' ASC"), _db)) {
-            return false;
-        }
-        query = &_getFilesBelowPathQuery;
-        query->bindValue(1, path);
-    }
-
-    if (!query->exec()) {
+    const PreparedSqlQueryRAII query(&_getFileRecordQueryByFileId, QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE fileid=?1"), _db);
+    if (!query) {
         return false;
     }
+
+    query->bindValue(1, fileId);
+
+    if (!query->exec())
+        return false;
 
     forever {
         auto next = query->next();
@@ -1288,6 +1246,66 @@ bool SyncJournalDb::getFilesBelowPath(const QByteArray &path, const std::functio
     return true;
 }
 
+bool SyncJournalDb::getFilesBelowPath(const QByteArray &path, const std::function<void(const SyncJournalFileRecord&)> &rowCallback)
+{
+    QMutexLocker locker(&_mutex);
+
+    if (_metadataTableIsEmpty)
+        return true; // no error, yet nothing found
+
+    if (!checkConnect())
+        return false;
+
+    auto _exec = [&rowCallback](SqlQuery &query) {
+        if (!query.exec()) {
+            return false;
+        }
+
+        forever {
+            auto next = query.next();
+            if (!next.ok)
+                return false;
+            if (!next.hasData)
+                break;
+
+            SyncJournalFileRecord rec;
+            fillFileRecordFromGetQuery(rec, query);
+            rowCallback(rec);
+        }
+        return true;
+    };
+
+    if(path.isEmpty()) {
+        // Since the path column doesn't store the starting /, the getFilesBelowPathQuery
+        // can't be used for the root path "". It would scan for (path > '/' and path < '0')
+        // and find nothing. So, unfortunately, we have to use a different query for
+        // retrieving the whole tree.
+
+        const PreparedSqlQueryRAII query(&_getAllFilesQuery, QByteArrayLiteral(GET_FILE_RECORD_QUERY " ORDER BY path||'/' ASC"), _db);
+        if (!query) {
+            return false;
+        }
+        return _exec(*query);
+    } else {
+        // This query is used to skip discovery and fill the tree from the
+        // database instead
+        const PreparedSqlQueryRAII query(&_getFilesBelowPathQuery, QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE " IS_PREFIX_PATH_OF("?1", "path")
+                                                                                     " OR " IS_PREFIX_PATH_OF("?1", "e2eMangledName")
+                                                                                     // We want to ensure that the contents of a directory are sorted
+                                                                                     // directly behind the directory itself. Without this ORDER BY
+                                                                                     // an ordering like foo, foo-2, foo/file would be returned.
+                                                                                     // With the trailing /, we get foo-2, foo, foo/file. This property
+                                                                                     // is used in fill_tree_from_db().
+                                                                                     " ORDER BY path||'/' ASC"),
+                                         _db);
+        if (!query) {
+            return false;
+        }
+        query->bindValue(1, path);
+        return _exec(*query);
+    }
+}
+
 bool SyncJournalDb::listFilesInPath(const QByteArray& path,
                                     const std::function<void (const SyncJournalFileRecord &)>& rowCallback)
 {
@@ -1299,24 +1317,24 @@ bool SyncJournalDb::listFilesInPath(const QByteArray& path,
     if (!checkConnect())
         return false;
 
-    if (!_listFilesInPathQuery.initOrReset(QByteArrayLiteral(
-            GET_FILE_RECORD_QUERY " WHERE parent_hash(path) = ?1 ORDER BY path||'/' ASC"), _db))
+    const PreparedSqlQueryRAII query(&_listFilesInPathQuery, QByteArrayLiteral(GET_FILE_RECORD_QUERY " WHERE parent_hash(path) = ?1 ORDER BY path||'/' ASC"), _db);
+    if (!query) {
         return false;
+    }
+    query->bindValue(1, getPHash(path));
 
-    _listFilesInPathQuery.bindValue(1, getPHash(path));
-
-    if (!_listFilesInPathQuery.exec())
+    if (!query->exec())
         return false;
 
     forever {
-        auto next = _listFilesInPathQuery.next();
+        auto next = query->next();
         if (!next.ok)
             return false;
         if (!next.hasData)
             break;
 
         SyncJournalFileRecord rec;
-        fillFileRecordFromGetQuery(rec, _listFilesInPathQuery);
+        fillFileRecordFromGetQuery(rec, *query);
         if (!rec._path.startsWith(path) || rec._path.indexOf("/", path.size() + 1) > 0) {
             qWarning(lcDb) << "hash collision" << path << rec.path();
             continue;
@@ -1362,16 +1380,17 @@ bool SyncJournalDb::updateFileRecordChecksum(const QString &filename,
 
     int checksumTypeId = mapChecksumType(contentChecksumType);
 
-    if (!_setFileRecordChecksumQuery.initOrReset(QByteArrayLiteral(
-            "UPDATE metadata"
-            " SET contentChecksum = ?2, contentChecksumTypeId = ?3"
-            " WHERE phash == ?1;"), _db)) {
+    const PreparedSqlQueryRAII query(&_setFileRecordChecksumQuery, QByteArrayLiteral("UPDATE metadata"
+                                                                                     " SET contentChecksum = ?2, contentChecksumTypeId = ?3"
+                                                                                     " WHERE phash == ?1;"),
+        _db);
+    if (!query) {
         return false;
     }
-    _setFileRecordChecksumQuery.bindValue(1, phash);
-    _setFileRecordChecksumQuery.bindValue(2, contentChecksum);
-    _setFileRecordChecksumQuery.bindValue(3, checksumTypeId);
-    return _setFileRecordChecksumQuery.exec();
+    query->bindValue(1, phash);
+    query->bindValue(2, contentChecksum);
+    query->bindValue(3, checksumTypeId);
+    return query->exec();
 }
 
 bool SyncJournalDb::updateLocalMetadata(const QString &filename,
@@ -1388,19 +1407,19 @@ bool SyncJournalDb::updateLocalMetadata(const QString &filename,
         return false;
     }
 
-
-    if (!_setFileRecordLocalMetadataQuery.initOrReset(QByteArrayLiteral(
-            "UPDATE metadata"
-            " SET inode=?2, modtime=?3, filesize=?4"
-            " WHERE phash == ?1;"), _db)) {
+    const PreparedSqlQueryRAII query(&_setFileRecordLocalMetadataQuery, QByteArrayLiteral("UPDATE metadata"
+                                                                                          " SET inode=?2, modtime=?3, filesize=?4"
+                                                                                          " WHERE phash == ?1;"),
+        _db);
+    if (!query) {
         return false;
     }
 
-    _setFileRecordLocalMetadataQuery.bindValue(1, phash);
-    _setFileRecordLocalMetadataQuery.bindValue(2, inode);
-    _setFileRecordLocalMetadataQuery.bindValue(3, modtime);
-    _setFileRecordLocalMetadataQuery.bindValue(4, size);
-    return _setFileRecordLocalMetadataQuery.exec();
+    query->bindValue(1, phash);
+    query->bindValue(2, inode);
+    query->bindValue(3, modtime);
+    query->bindValue(4, size);
+    return query->exec();
 }
 
 Optional<SyncJournalDb::HasHydratedDehydrated> SyncJournalDb::hasHydratedOrDehydratedFiles(const QByteArray &filename)
@@ -1409,25 +1428,25 @@ Optional<SyncJournalDb::HasHydratedDehydrated> SyncJournalDb::hasHydratedOrDehyd
     if (!checkConnect())
         return {};
 
-    auto &query = _countDehydratedFilesQuery;
-    if (!query.initOrReset(QByteArrayLiteral(
-            "SELECT DISTINCT type FROM metadata"
-            " WHERE (" IS_PREFIX_PATH_OR_EQUAL("?1", "path") " OR ?1 == '');"), _db)) {
+    const PreparedSqlQueryRAII query(&_countDehydratedFilesQuery, QByteArrayLiteral("SELECT DISTINCT type FROM metadata"
+                                                                                    " WHERE (" IS_PREFIX_PATH_OR_EQUAL("?1", "path") " OR ?1 == '');"),
+        _db);
+    if (!query) {
         return {};
     }
 
-    query.bindValue(1, filename);
-    if (!query.exec())
+    query->bindValue(1, filename);
+    if (!query->exec())
         return {};
 
     HasHydratedDehydrated result;
     forever {
-        auto next = query.next();
+        auto next = query->next();
         if (!next.ok)
             return {};
         if (!next.hasData)
             break;
-        auto type = static_cast<ItemType>(query.intValue(0));
+        auto type = static_cast<ItemType>(query->intValue(0));
         if (type == ItemTypeFile || type == ItemTypeVirtualFileDehydration)
             result.hasHydrated = true;
         if (type == ItemTypeVirtualFile || type == ItemTypeVirtualFileDownload)
@@ -1471,20 +1490,19 @@ SyncJournalDb::DownloadInfo SyncJournalDb::getDownloadInfo(const QString &file)
     DownloadInfo res;
 
     if (checkConnect()) {
-
-        if (!_getDownloadInfoQuery.initOrReset(QByteArrayLiteral(
-                "SELECT tmpfile, etag, errorcount FROM downloadinfo WHERE path=?1"), _db)) {
+        const PreparedSqlQueryRAII query(&_getDownloadInfoQuery, QByteArrayLiteral("SELECT tmpfile, etag, errorcount FROM downloadinfo WHERE path=?1"), _db);
+        if (!query) {
             return res;
         }
 
-        _getDownloadInfoQuery.bindValue(1, file);
+        query->bindValue(1, file);
 
-        if (!_getDownloadInfoQuery.exec()) {
+        if (!query->exec()) {
             return res;
         }
 
-        if (_getDownloadInfoQuery.next().hasData) {
-            toDownloadInfo(_getDownloadInfoQuery, &res);
+        if (query->next().hasData) {
+            toDownloadInfo(*query, &res);
         }
     }
     return res;
@@ -1500,21 +1518,22 @@ void SyncJournalDb::setDownloadInfo(const QString &file, const SyncJournalDb::Do
 
 
     if (i._valid) {
-        if (!_setDownloadInfoQuery.initOrReset(QByteArrayLiteral(
-                "INSERT OR REPLACE INTO downloadinfo "
-                "(path, tmpfile, etag, errorcount) "
-                "VALUES ( ?1 , ?2, ?3, ?4 )"), _db)) {
+        const PreparedSqlQueryRAII query(&_setDownloadInfoQuery, QByteArrayLiteral("INSERT OR REPLACE INTO downloadinfo "
+                                                                                   "(path, tmpfile, etag, errorcount) "
+                                                                                   "VALUES ( ?1 , ?2, ?3, ?4 )"),
+            _db);
+        if (!query) {
             return;
         }
-        _setDownloadInfoQuery.bindValue(1, file);
-        _setDownloadInfoQuery.bindValue(2, i._tmpfile);
-        _setDownloadInfoQuery.bindValue(3, i._etag);
-        _setDownloadInfoQuery.bindValue(4, i._errorCount);
-        _setDownloadInfoQuery.exec();
+        query->bindValue(1, file);
+        query->bindValue(2, i._tmpfile);
+        query->bindValue(3, i._etag);
+        query->bindValue(4, i._errorCount);
+        query->exec();
     } else {
-        _deleteDownloadInfoQuery.reset_and_clear_bindings();
-        _deleteDownloadInfoQuery.bindValue(1, file);
-        _deleteDownloadInfoQuery.exec();
+        const PreparedSqlQueryRAII query(&_deleteDownloadInfoQuery);
+        query->bindValue(1, file);
+        query->exec();
     }
 }
 
@@ -1548,8 +1567,12 @@ QVector<SyncJournalDb::DownloadInfo> SyncJournalDb::getAndDeleteStaleDownloadInf
         }
     }
 
-    if (!deleteBatch(_deleteDownloadInfoQuery, superfluousPaths, QStringLiteral("downloadinfo")))
-        return empty_result;
+    {
+        const PreparedSqlQueryRAII query(&_deleteDownloadInfoQuery);
+        if (!deleteBatch(*query, superfluousPaths, QStringLiteral("downloadinfo"))) {
+            return empty_result;
+        }
+    }
 
     return deleted_entries;
 }
@@ -1579,25 +1602,26 @@ SyncJournalDb::UploadInfo SyncJournalDb::getUploadInfo(const QString &file)
     UploadInfo res;
 
     if (checkConnect()) {
-        if (!_getUploadInfoQuery.initOrReset(QByteArrayLiteral(
-                "SELECT chunk, transferid, errorcount, size, modtime, contentChecksum FROM "
-                "uploadinfo WHERE path=?1"), _db)) {
+        const PreparedSqlQueryRAII query(&_getUploadInfoQuery, QByteArrayLiteral("SELECT chunk, transferid, errorcount, size, modtime, contentChecksum FROM "
+                                                                                 "uploadinfo WHERE path=?1"),
+            _db);
+        if (!query) {
             return res;
         }
-        _getUploadInfoQuery.bindValue(1, file);
+        query->bindValue(1, file);
 
-        if (!_getUploadInfoQuery.exec()) {
+        if (!query->exec()) {
             return res;
         }
 
-        if (_getUploadInfoQuery.next().hasData) {
+        if (query->next().hasData) {
             bool ok = true;
-            res._chunk = _getUploadInfoQuery.intValue(0);
-            res._transferid = _getUploadInfoQuery.int64Value(1);
-            res._errorCount = _getUploadInfoQuery.intValue(2);
-            res._size = _getUploadInfoQuery.int64Value(3);
-            res._modtime = _getUploadInfoQuery.int64Value(4);
-            res._contentChecksum = _getUploadInfoQuery.baValue(5);
+            res._chunk = query->intValue(0);
+            res._transferid = query->int64Value(1);
+            res._errorCount = query->intValue(2);
+            res._size = query->int64Value(3);
+            res._modtime = query->int64Value(4);
+            res._contentChecksum = query->baValue(5);
             res._valid = ok;
         }
     }
@@ -1613,29 +1637,30 @@ void SyncJournalDb::setUploadInfo(const QString &file, const SyncJournalDb::Uplo
     }
 
     if (i._valid) {
-        if (!_setUploadInfoQuery.initOrReset(QByteArrayLiteral(
-            "INSERT OR REPLACE INTO uploadinfo "
-            "(path, chunk, transferid, errorcount, size, modtime, contentChecksum) "
-            "VALUES ( ?1 , ?2, ?3 , ?4 ,  ?5, ?6 , ?7 )"), _db)) {
+        const PreparedSqlQueryRAII query(&_setUploadInfoQuery, QByteArrayLiteral("INSERT OR REPLACE INTO uploadinfo "
+                                                                                 "(path, chunk, transferid, errorcount, size, modtime, contentChecksum) "
+                                                                                 "VALUES ( ?1 , ?2, ?3 , ?4 ,  ?5, ?6 , ?7 )"),
+            _db);
+        if (!query) {
             return;
         }
 
-        _setUploadInfoQuery.bindValue(1, file);
-        _setUploadInfoQuery.bindValue(2, i._chunk);
-        _setUploadInfoQuery.bindValue(3, i._transferid);
-        _setUploadInfoQuery.bindValue(4, i._errorCount);
-        _setUploadInfoQuery.bindValue(5, i._size);
-        _setUploadInfoQuery.bindValue(6, i._modtime);
-        _setUploadInfoQuery.bindValue(7, i._contentChecksum);
+        query->bindValue(1, file);
+        query->bindValue(2, i._chunk);
+        query->bindValue(3, i._transferid);
+        query->bindValue(4, i._errorCount);
+        query->bindValue(5, i._size);
+        query->bindValue(6, i._modtime);
+        query->bindValue(7, i._contentChecksum);
 
-        if (!_setUploadInfoQuery.exec()) {
+        if (!query->exec()) {
             return;
         }
     } else {
-        _deleteUploadInfoQuery.reset_and_clear_bindings();
-        _deleteUploadInfoQuery.bindValue(1, file);
+        const PreparedSqlQueryRAII query(&_deleteUploadInfoQuery);
+        query->bindValue(1, file);
 
-        if (!_deleteUploadInfoQuery.exec()) {
+        if (!query->exec()) {
             return;
         }
     }
@@ -1667,7 +1692,8 @@ QVector<uint> SyncJournalDb::deleteStaleUploadInfos(const QSet<QString> &keep)
         }
     }
 
-    deleteBatch(_deleteUploadInfoQuery, superfluousPaths, QStringLiteral("uploadinfo"));
+    const PreparedSqlQueryRAII deleteUploadInfoQuery(&_deleteUploadInfoQuery);
+    deleteBatch(*deleteUploadInfoQuery, superfluousPaths, QStringLiteral("uploadinfo"));
     return ids;
 }
 
@@ -1680,20 +1706,20 @@ SyncJournalErrorBlacklistRecord SyncJournalDb::errorBlacklistEntry(const QString
         return entry;
 
     if (checkConnect()) {
-        _getErrorBlacklistQuery.reset_and_clear_bindings();
-        _getErrorBlacklistQuery.bindValue(1, file);
-        if (_getErrorBlacklistQuery.exec()) {
-            if (_getErrorBlacklistQuery.next().hasData) {
-                entry._lastTryEtag = _getErrorBlacklistQuery.baValue(0);
-                entry._lastTryModtime = _getErrorBlacklistQuery.int64Value(1);
-                entry._retryCount = _getErrorBlacklistQuery.intValue(2);
-                entry._errorString = _getErrorBlacklistQuery.stringValue(3);
-                entry._lastTryTime = _getErrorBlacklistQuery.int64Value(4);
-                entry._ignoreDuration = _getErrorBlacklistQuery.int64Value(5);
-                entry._renameTarget = _getErrorBlacklistQuery.stringValue(6);
+        const PreparedSqlQueryRAII query(&_getErrorBlacklistQuery);
+        query->bindValue(1, file);
+        if (query->exec()) {
+            if (query->next().hasData) {
+                entry._lastTryEtag = query->baValue(0);
+                entry._lastTryModtime = query->int64Value(1);
+                entry._retryCount = query->intValue(2);
+                entry._errorString = query->stringValue(3);
+                entry._lastTryTime = query->int64Value(4);
+                entry._ignoreDuration = query->int64Value(5);
+                entry._renameTarget = query->stringValue(6);
                 entry._errorCategory = static_cast<SyncJournalErrorBlacklistRecord::Category>(
-                    _getErrorBlacklistQuery.intValue(7));
-                entry._requestId = _getErrorBlacklistQuery.baValue(8);
+                    query->intValue(7));
+                entry._requestId = query->baValue(8);
                 entry._file = file;
             }
         }
@@ -1821,24 +1847,25 @@ void SyncJournalDb::setErrorBlacklistEntry(const SyncJournalErrorBlacklistRecord
         return;
     }
 
-    if (!_setErrorBlacklistQuery.initOrReset(QByteArrayLiteral(
-        "INSERT OR REPLACE INTO blacklist "
-        "(path, lastTryEtag, lastTryModtime, retrycount, errorstring, lastTryTime, ignoreDuration, renameTarget, errorCategory, requestId) "
-        "VALUES ( ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)"), _db)) {
+    const PreparedSqlQueryRAII query(&_setErrorBlacklistQuery, QByteArrayLiteral("INSERT OR REPLACE INTO blacklist "
+                                                                                 "(path, lastTryEtag, lastTryModtime, retrycount, errorstring, lastTryTime, ignoreDuration, renameTarget, errorCategory, requestId) "
+                                                                                 "VALUES ( ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)"),
+        _db);
+    if (!query) {
         return;
     }
 
-    _setErrorBlacklistQuery.bindValue(1, item._file);
-    _setErrorBlacklistQuery.bindValue(2, item._lastTryEtag);
-    _setErrorBlacklistQuery.bindValue(3, item._lastTryModtime);
-    _setErrorBlacklistQuery.bindValue(4, item._retryCount);
-    _setErrorBlacklistQuery.bindValue(5, item._errorString);
-    _setErrorBlacklistQuery.bindValue(6, item._lastTryTime);
-    _setErrorBlacklistQuery.bindValue(7, item._ignoreDuration);
-    _setErrorBlacklistQuery.bindValue(8, item._renameTarget);
-    _setErrorBlacklistQuery.bindValue(9, item._errorCategory);
-    _setErrorBlacklistQuery.bindValue(10, item._requestId);
-    _setErrorBlacklistQuery.exec();
+    query->bindValue(1, item._file);
+    query->bindValue(2, item._lastTryEtag);
+    query->bindValue(3, item._lastTryModtime);
+    query->bindValue(4, item._retryCount);
+    query->bindValue(5, item._errorString);
+    query->bindValue(6, item._lastTryTime);
+    query->bindValue(7, item._ignoreDuration);
+    query->bindValue(8, item._renameTarget);
+    query->bindValue(9, item._errorCategory);
+    query->bindValue(10, item._requestId);
+    query->exec();
 }
 
 QVector<SyncJournalDb::PollInfo> SyncJournalDb::getPollInfos()
@@ -1864,8 +1891,6 @@ QVector<SyncJournalDb::PollInfo> SyncJournalDb::getPollInfos()
         info._url = query.stringValue(3);
         res.append(info);
     }
-
-    query.finish();
     return res;
 }
 
@@ -1902,18 +1927,19 @@ QStringList SyncJournalDb::getSelectiveSyncList(SyncJournalDb::SelectiveSyncList
         return result;
     }
 
-    if (!_getSelectiveSyncListQuery.initOrReset(QByteArrayLiteral("SELECT path FROM selectivesync WHERE type=?1"), _db)) {
+    const PreparedSqlQueryRAII query(&_getSelectiveSyncListQuery, QByteArrayLiteral("SELECT path FROM selectivesync WHERE type=?1"), _db);
+    if (!query) {
         *ok = false;
         return result;
     }
 
-    _getSelectiveSyncListQuery.bindValue(1, int(type));
-    if (!_getSelectiveSyncListQuery.exec()) {
+    query->bindValue(1, int(type));
+    if (!query->exec()) {
         *ok = false;
         return result;
     }
     forever {
-        auto next = _getSelectiveSyncListQuery.next();
+        auto next = query->next();
         if (!next.ok) {
             *ok = false;
             return result;
@@ -1921,7 +1947,7 @@ QStringList SyncJournalDb::getSelectiveSyncList(SyncJournalDb::SelectiveSyncList
         if (!next.hasData)
             break;
 
-        auto entry = _getSelectiveSyncListQuery.stringValue(0);
+        auto entry = query->stringValue(0);
         if (!entry.endsWith(QLatin1Char('/'))) {
             entry.append(QLatin1Char('/'));
         }
@@ -2038,19 +2064,20 @@ QByteArray SyncJournalDb::getChecksumType(int checksumTypeId)
     }
 
     // Retrieve the id
-    auto &query = _getChecksumTypeQuery;
-    if (!query.initOrReset(QByteArrayLiteral("SELECT name FROM checksumtype WHERE id=?1"), _db))
+    const PreparedSqlQueryRAII query(&_getChecksumTypeQuery, QByteArrayLiteral("SELECT name FROM checksumtype WHERE id=?1"), _db);
+    if (!query) {
         return {};
-    query.bindValue(1, checksumTypeId);
-    if (!query.exec()) {
+    }
+    query->bindValue(1, checksumTypeId);
+    if (!query->exec()) {
         return QByteArray();
     }
 
-    if (!query.next().hasData) {
+    if (!query->next().hasData) {
         qCWarning(lcDb) << "No checksum type mapping found for" << checksumTypeId;
         return QByteArray();
     }
-    return query.baValue(0);
+    return query->baValue(0);
 }
 
 int SyncJournalDb::mapChecksumType(const QByteArray &checksumType)
@@ -2064,28 +2091,36 @@ int SyncJournalDb::mapChecksumType(const QByteArray &checksumType)
         return *it;
 
     // Ensure the checksum type is in the db
-    if (!_insertChecksumTypeQuery.initOrReset(QByteArrayLiteral("INSERT OR IGNORE INTO checksumtype (name) VALUES (?1)"), _db))
-        return 0;
-    _insertChecksumTypeQuery.bindValue(1, checksumType);
-    if (!_insertChecksumTypeQuery.exec()) {
-        return 0;
+    {
+        const PreparedSqlQueryRAII query(&_insertChecksumTypeQuery, QByteArrayLiteral("INSERT OR IGNORE INTO checksumtype (name) VALUES (?1)"), _db);
+        if (!query) {
+            return 0;
+        }
+        query->bindValue(1, checksumType);
+        if (!query->exec()) {
+            return 0;
+        }
     }
 
     // Retrieve the id
-    if (!_getChecksumTypeIdQuery.initOrReset(QByteArrayLiteral("SELECT id FROM checksumtype WHERE name=?1"), _db))
-        return 0;
-    _getChecksumTypeIdQuery.bindValue(1, checksumType);
-    if (!_getChecksumTypeIdQuery.exec()) {
-        return 0;
-    }
+    {
+        const PreparedSqlQueryRAII query(&_getChecksumTypeIdQuery, QByteArrayLiteral("SELECT id FROM checksumtype WHERE name=?1"), _db);
+        if (!query) {
+            return 0;
+        }
+        query->bindValue(1, checksumType);
+        if (!query->exec()) {
+            return 0;
+        }
 
-    if (!_getChecksumTypeIdQuery.next().hasData) {
-        qCWarning(lcDb) << "No checksum type mapping found for" << checksumType;
-        return 0;
+        if (!query->next().hasData) {
+            qCWarning(lcDb) << "No checksum type mapping found for" << checksumType;
+            return 0;
+        }
+        auto value = query->intValue(0);
+        _checksymTypeCache[checksumType] = value;
+        return value;
     }
-    auto value = _getChecksumTypeIdQuery.intValue(0);
-    _checksymTypeCache[checksumType] = value;
-    return value;
 }
 
 QByteArray SyncJournalDb::dataFingerprint()
@@ -2095,17 +2130,19 @@ QByteArray SyncJournalDb::dataFingerprint()
         return QByteArray();
     }
 
-    if (!_getDataFingerprintQuery.initOrReset(QByteArrayLiteral("SELECT fingerprint FROM datafingerprint"), _db))
-        return QByteArray();
-
-    if (!_getDataFingerprintQuery.exec()) {
+    const PreparedSqlQueryRAII query(&_getDataFingerprintQuery, QByteArrayLiteral("SELECT fingerprint FROM datafingerprint"), _db);
+    if (!query) {
         return QByteArray();
     }
 
-    if (!_getDataFingerprintQuery.next().hasData) {
+    if (!query->exec()) {
         return QByteArray();
     }
-    return _getDataFingerprintQuery.baValue(0);
+
+    if (!query->next().hasData) {
+        return QByteArray();
+    }
+    return query->baValue(0);
 }
 
 void SyncJournalDb::setDataFingerprint(const QByteArray &dataFingerprint)
@@ -2115,8 +2152,9 @@ void SyncJournalDb::setDataFingerprint(const QByteArray &dataFingerprint)
         return;
     }
 
-    if (!_setDataFingerprintQuery1.initOrReset(QByteArrayLiteral("DELETE FROM datafingerprint;"), _db)
-        || !_setDataFingerprintQuery2.initOrReset(QByteArrayLiteral("INSERT INTO datafingerprint (fingerprint) VALUES (?1);"), _db)) {
+    const PreparedSqlQueryRAII setDataFingerprintQuery1(&_setDataFingerprintQuery1, QByteArrayLiteral("DELETE FROM datafingerprint;"), _db);
+    const PreparedSqlQueryRAII setDataFingerprintQuery2(&_setDataFingerprintQuery2, QByteArrayLiteral("INSERT INTO datafingerprint (fingerprint) VALUES (?1);"), _db);
+    if (!setDataFingerprintQuery1 || !setDataFingerprintQuery2) {
         return;
     }
 
@@ -2132,18 +2170,17 @@ void SyncJournalDb::setConflictRecord(const ConflictRecord &record)
     if (!checkConnect())
         return;
 
-    auto &query = _setConflictRecordQuery;
-    ASSERT(query.initOrReset(QByteArrayLiteral(
-                          "INSERT OR REPLACE INTO conflicts "
+    const PreparedSqlQueryRAII query(&_setConflictRecordQuery, QByteArrayLiteral("INSERT OR REPLACE INTO conflicts "
                           "(path, baseFileId, baseModtime, baseEtag, basePath) "
                           "VALUES (?1, ?2, ?3, ?4, ?5);"),
-        _db));
-    query.bindValue(1, record.path);
-    query.bindValue(2, record.baseFileId);
-    query.bindValue(3, record.baseModtime);
-    query.bindValue(4, record.baseEtag);
-    query.bindValue(5, record.initialBasePath);
-    ASSERT(query.exec());
+                                     _db);
+    ASSERT(query)
+    query->bindValue(1, record.path);
+    query->bindValue(2, record.baseFileId);
+    query->bindValue(3, record.baseModtime);
+    query->bindValue(4, record.baseEtag);
+    query->bindValue(5, record.initialBasePath);
+    ASSERT(query->exec())
 }
 
 ConflictRecord SyncJournalDb::conflictRecord(const QByteArray &path)
@@ -2151,20 +2188,21 @@ ConflictRecord SyncJournalDb::conflictRecord(const QByteArray &path)
     ConflictRecord entry;
 
     QMutexLocker locker(&_mutex);
-    if (!checkConnect())
+    if (!checkConnect()) {
         return entry;
-    auto &query = _getConflictRecordQuery;
-    ASSERT(query.initOrReset(QByteArrayLiteral("SELECT baseFileId, baseModtime, baseEtag, basePath FROM conflicts WHERE path=?1;"), _db));
-    query.bindValue(1, path);
-    ASSERT(query.exec());
-    if (!query.next().hasData)
+    }
+    const PreparedSqlQueryRAII query(&_getConflictRecordQuery, QByteArrayLiteral("SELECT baseFileId, baseModtime, baseEtag, basePath FROM conflicts WHERE path=?1;"), _db);
+    ASSERT(query)
+    query->bindValue(1, path);
+    ASSERT(query->exec())
+    if (!query->next().hasData)
         return entry;
 
     entry.path = path;
-    entry.baseFileId = query.baValue(0);
-    entry.baseModtime = query.int64Value(1);
-    entry.baseEtag = query.baValue(2);
-    entry.initialBasePath = query.baValue(3);
+    entry.baseFileId = query->baValue(0);
+    entry.baseModtime = query->int64Value(1);
+    entry.baseEtag = query->baValue(2);
+    entry.initialBasePath = query->baValue(3);
     return entry;
 }
 
@@ -2174,9 +2212,10 @@ void SyncJournalDb::deleteConflictRecord(const QByteArray &path)
     if (!checkConnect())
         return;
 
-    ASSERT(_deleteConflictRecordQuery.initOrReset("DELETE FROM conflicts WHERE path=?1;", _db));
-    _deleteConflictRecordQuery.bindValue(1, path);
-    ASSERT(_deleteConflictRecordQuery.exec());
+    const PreparedSqlQueryRAII query(&_deleteConflictRecordQuery, QByteArrayLiteral("DELETE FROM conflicts WHERE path=?1;"), _db);
+    ASSERT(query)
+    query->bindValue(1, path);
+    ASSERT(query->exec())
 }
 
 QByteArrayList SyncJournalDb::conflictRecordPaths()
@@ -2249,21 +2288,19 @@ Optional<PinState> SyncJournalDb::PinStateInterface::rawForPath(const QByteArray
     if (!_db->checkConnect())
         return {};
 
-    auto &query = _db->_getRawPinStateQuery;
-    ASSERT(query.initOrReset(QByteArrayLiteral(
-            "SELECT pinState FROM flags WHERE path == ?1;"),
-        _db->_db));
-    query.bindValue(1, path);
-    query.exec();
+    const PreparedSqlQueryRAII query(&_db->_getRawPinStateQuery, QByteArrayLiteral("SELECT pinState FROM flags WHERE path == ?1;"), _db->_db);
+    ASSERT(query)
+    query->bindValue(1, path);
+    query->exec();
 
-    auto next = query.next();
+    auto next = query->next();
     if (!next.ok)
         return {};
     // no-entry means Inherited
     if (!next.hasData)
         return PinState::Inherited;
 
-    return static_cast<PinState>(query.intValue(0));
+    return static_cast<PinState>(query->intValue(0));
 }
 
 Optional<PinState> SyncJournalDb::PinStateInterface::effectiveForPath(const QByteArray &path)
@@ -2272,26 +2309,26 @@ Optional<PinState> SyncJournalDb::PinStateInterface::effectiveForPath(const QByt
     if (!_db->checkConnect())
         return {};
 
-    auto &query = _db->_getEffectivePinStateQuery;
-    ASSERT(query.initOrReset(QByteArrayLiteral(
-            "SELECT pinState FROM flags WHERE"
-            // explicitly allow "" to represent the root path
-            // (it'd be great if paths started with a / and "/" could be the root)
-            " (" IS_PREFIX_PATH_OR_EQUAL("path", "?1") " OR path == '')"
-            " AND pinState is not null AND pinState != 0"
-            " ORDER BY length(path) DESC LIMIT 1;"),
-        _db->_db));
-    query.bindValue(1, path);
-    query.exec();
+    const PreparedSqlQueryRAII query(&_db->_getEffectivePinStateQuery, QByteArrayLiteral(
+                                         "SELECT pinState FROM flags WHERE"
+                                         // explicitly allow "" to represent the root path
+                                         // (it'd be great if paths started with a / and "/" could be the root)
+                                         " (" IS_PREFIX_PATH_OR_EQUAL("path", "?1") " OR path == '')"
+                                         " AND pinState is not null AND pinState != 0"
+                                         " ORDER BY length(path) DESC LIMIT 1;"),
+                                     _db->_db);
+    ASSERT(query)
+    query->bindValue(1, path);
+    query->exec();
 
-    auto next = query.next();
+    auto next = query->next();
     if (!next.ok)
         return {};
     // If the root path has no setting, assume AlwaysLocal
     if (!next.hasData)
         return PinState::AlwaysLocal;
 
-    return static_cast<PinState>(query.intValue(0));
+    return static_cast<PinState>(query->intValue(0));
 }
 
 Optional<PinState> SyncJournalDb::PinStateInterface::effectiveForPathRecursive(const QByteArray &path)
@@ -2307,23 +2344,22 @@ Optional<PinState> SyncJournalDb::PinStateInterface::effectiveForPathRecursive(c
         return {};
 
     // Find all the non-inherited pin states below the item
-    auto &query = _db->_getSubPinsQuery;
-    ASSERT(query.initOrReset(QByteArrayLiteral(
-            "SELECT DISTINCT pinState FROM flags WHERE"
+    const PreparedSqlQueryRAII query(&_db->_getSubPinsQuery, QByteArrayLiteral("SELECT DISTINCT pinState FROM flags WHERE"
             " (" IS_PREFIX_PATH_OF("?1", "path") " OR ?1 == '')"
             " AND pinState is not null and pinState != 0;"),
-        _db->_db));
-    query.bindValue(1, path);
-    query.exec();
+                                     _db->_db);
+    ASSERT(query)
+    query->bindValue(1, path);
+    query->exec();
 
     // Check if they are all identical
     forever {
-        auto next = query.next();
+        auto next = query->next();
         if (!next.ok)
             return {};
         if (!next.hasData)
             break;
-        const auto subPin = static_cast<PinState>(query.intValue(0));
+        const auto subPin = static_cast<PinState>(query->intValue(0));
         if (subPin != *basePin)
             return PinState::Inherited;
     }
@@ -2337,18 +2373,18 @@ void SyncJournalDb::PinStateInterface::setForPath(const QByteArray &path, PinSta
     if (!_db->checkConnect())
         return;
 
-    auto &query = _db->_setPinStateQuery;
-    ASSERT(query.initOrReset(QByteArrayLiteral(
-            // If we had sqlite >=3.24.0 everywhere this could be an upsert,
-            // making further flags columns easy
-            //"INSERT INTO flags(path, pinState) VALUES(?1, ?2)"
-            //" ON CONFLICT(path) DO UPDATE SET pinState=?2;"),
-            // Simple version that doesn't work nicely with multiple columns:
-            "INSERT OR REPLACE INTO flags(path, pinState) VALUES(?1, ?2);"),
-        _db->_db));
-    query.bindValue(1, path);
-    query.bindValue(2, state);
-    query.exec();
+    const PreparedSqlQueryRAII query(&_db->_setPinStateQuery, QByteArrayLiteral(
+                                         // If we had sqlite >=3.24.0 everywhere this could be an upsert,
+                                         // making further flags columns easy
+                                         //"INSERT INTO flags(path, pinState) VALUES(?1, ?2)"
+                                         //" ON CONFLICT(path) DO UPDATE SET pinState=?2;"),
+                                         // Simple version that doesn't work nicely with multiple columns:
+                                         "INSERT OR REPLACE INTO flags(path, pinState) VALUES(?1, ?2);"),
+        _db->_db);
+    ASSERT(query)
+    query->bindValue(1, path);
+    query->bindValue(2, state);
+    query->exec();
 }
 
 void SyncJournalDb::PinStateInterface::wipeForPathAndBelow(const QByteArray &path)
@@ -2357,14 +2393,13 @@ void SyncJournalDb::PinStateInterface::wipeForPathAndBelow(const QByteArray &pat
     if (!_db->checkConnect())
         return;
 
-    auto &query = _db->_wipePinStateQuery;
-    ASSERT(query.initOrReset(QByteArrayLiteral(
-            "DELETE FROM flags WHERE "
-            // Allow "" to delete everything
-            " (" IS_PREFIX_PATH_OR_EQUAL("?1", "path") " OR ?1 == '');"),
-        _db->_db));
-    query.bindValue(1, path);
-    query.exec();
+    const PreparedSqlQueryRAII query(&_db->_wipePinStateQuery, QByteArrayLiteral("DELETE FROM flags WHERE "
+                                                                                 // Allow "" to delete everything
+                                                                                 " (" IS_PREFIX_PATH_OR_EQUAL("?1", "path") " OR ?1 == '');"),
+                                     _db->_db);
+    ASSERT(query)
+    query->bindValue(1, path);
+    query->exec();
 }
 
 Optional<QVector<QPair<QByteArray, PinState>>>

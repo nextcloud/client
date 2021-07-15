@@ -33,8 +33,6 @@
 #include "creds/httpcredentials.h"
 #include <QAuthenticator>
 
-using namespace QKeychain;
-
 namespace OCC {
 
 Q_LOGGING_CATEGORY(lcHttpCredentials, "nextcloud.sync.credentials.http", QtInfoMsg)
@@ -201,11 +199,11 @@ void HttpCredentials::fetchFromKeychainHelper()
     if (!_clientCertBundle.isEmpty()) {
         // New case (>=2.6): We have a bundle in the settings and read the password from
         // the keychain
-        auto job = new ReadPasswordJob(Theme::instance()->appName());
+        auto job = new QKeychain::ReadPasswordJob(Theme::instance()->appName());
         addSettingsToJob(_account, job);
         job->setInsecureFallback(false);
         job->setKey(keychainKey(_account->url().toString(), _user + clientCertPasswordC, _account->id()));
-        connect(job, &Job::finished, this, &HttpCredentials::slotReadClientCertPasswordJobDone);
+        connect(job, &QKeychain::Job::finished, this, &HttpCredentials::slotReadClientCertPasswordJobDone);
         job->start();
         return;
     }
@@ -216,18 +214,18 @@ void HttpCredentials::fetchFromKeychainHelper()
         _user + clientCertificatePEMC,
         _keychainMigration ? QString() : _account->id());
 
-    auto *job = new ReadPasswordJob(Theme::instance()->appName());
+    auto *job = new QKeychain::ReadPasswordJob(Theme::instance()->appName());
     addSettingsToJob(_account, job);
     job->setInsecureFallback(false);
     job->setKey(kck);
-    connect(job, &Job::finished, this, &HttpCredentials::slotReadClientCertPEMJobDone);
+    connect(job, &QKeychain::Job::finished, this, &HttpCredentials::slotReadClientCertPEMJobDone);
     job->start();
 }
 
 void HttpCredentials::deleteOldKeychainEntries()
 {
     auto startDeleteJob = [this](QString user) {
-        auto *job = new DeletePasswordJob(Theme::instance()->appName());
+        auto *job = new QKeychain::DeletePasswordJob(Theme::instance()->appName());
         addSettingsToJob(_account, job);
         job->setInsecureFallback(true);
         job->setKey(keychainKey(_account->url().toString(), user, QString()));
@@ -239,7 +237,7 @@ void HttpCredentials::deleteOldKeychainEntries()
     startDeleteJob(_user + clientCertificatePEMC);
 }
 
-bool HttpCredentials::keychainUnavailableRetryLater(QKeychain::Job *incoming)
+bool HttpCredentials::keychainUnavailableRetryLater(QKeychain::ReadPasswordJob *incoming)
 {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     Q_ASSERT(!incoming->insecureFallback()); // If insecureFallback is set, the next test would be pointless
@@ -253,6 +251,8 @@ bool HttpCredentials::keychainUnavailableRetryLater(QKeychain::Job *incoming)
         _retryOnKeyChainError = false;
         return true;
     }
+#else
+    Q_UNUSED(incoming);
 #endif
     _retryOnKeyChainError = false;
     return false;
@@ -260,14 +260,14 @@ bool HttpCredentials::keychainUnavailableRetryLater(QKeychain::Job *incoming)
 
 void HttpCredentials::slotReadClientCertPasswordJobDone(QKeychain::Job *job)
 {
-    if (keychainUnavailableRetryLater(job))
+    auto readJob = qobject_cast<QKeychain::ReadPasswordJob*>(job);
+    if (keychainUnavailableRetryLater(readJob))
         return;
 
-    auto readJob = static_cast<ReadPasswordJob *>(job);
-    if (readJob->error() == NoError) {
+    if (readJob->error() == QKeychain::NoError) {
         _clientCertPassword = readJob->binaryData();
     } else {
-        qCWarning(lcHttpCredentials) << "Could not retrieve client cert password from keychain" << job->errorString();
+        qCWarning(lcHttpCredentials) << "Could not retrieve client cert password from keychain" << readJob->errorString();
     }
 
     if (!unpackClientCertBundle()) {
@@ -281,12 +281,12 @@ void HttpCredentials::slotReadClientCertPasswordJobDone(QKeychain::Job *job)
 
 void HttpCredentials::slotReadClientCertPEMJobDone(QKeychain::Job *incoming)
 {
-    if (keychainUnavailableRetryLater(incoming))
+    auto readJob = qobject_cast<QKeychain::ReadPasswordJob*>(incoming);
+    if (keychainUnavailableRetryLater(readJob))
         return;
 
     // Store PEM in memory
-    auto *readJob = static_cast<ReadPasswordJob *>(incoming);
-    if (readJob->error() == NoError && readJob->binaryData().length() > 0) {
+    if (readJob->error() == QKeychain::NoError && readJob->binaryData().length() > 0) {
         QList<QSslCertificate> sslCertificateList = QSslCertificate::fromData(readJob->binaryData(), QSsl::Pem);
         if (sslCertificateList.length() >= 1) {
             _clientSslCertificate = sslCertificateList.at(0);
@@ -299,20 +299,20 @@ void HttpCredentials::slotReadClientCertPEMJobDone(QKeychain::Job *incoming)
         _user + clientKeyPEMC,
         _keychainMigration ? QString() : _account->id());
 
-    auto *job = new ReadPasswordJob(Theme::instance()->appName());
+    auto *job = new QKeychain::ReadPasswordJob(Theme::instance()->appName());
     addSettingsToJob(_account, job);
     job->setInsecureFallback(false);
     job->setKey(kck);
-    connect(job, &Job::finished, this, &HttpCredentials::slotReadClientKeyPEMJobDone);
+    connect(job, &QKeychain::ReadPasswordJob::finished, this, &HttpCredentials::slotReadClientKeyPEMJobDone);
     job->start();
 }
 
 void HttpCredentials::slotReadClientKeyPEMJobDone(QKeychain::Job *incoming)
 {
+    auto readJob = qobject_cast<QKeychain::ReadPasswordJob*>(incoming);
     // Store key in memory
-    auto *readJob = static_cast<ReadPasswordJob *>(incoming);
 
-    if (readJob->error() == NoError && readJob->binaryData().length() > 0) {
+    if (readJob->error() == QKeychain::NoError && readJob->binaryData().length() > 0) {
         QByteArray clientKeyPEM = readJob->binaryData();
         // FIXME Unfortunately Qt has a bug and we can't just use QSsl::Opaque to let it
         // load whatever we have. So we try until it works.
@@ -338,11 +338,11 @@ void HttpCredentials::slotReadPasswordFromKeychain()
         _user,
         _keychainMigration ? QString() : _account->id());
 
-    auto *job = new ReadPasswordJob(Theme::instance()->appName());
+    auto *job = new QKeychain::ReadPasswordJob(Theme::instance()->appName());
     addSettingsToJob(_account, job);
     job->setInsecureFallback(false);
     job->setKey(kck);
-    connect(job, &Job::finished, this, &HttpCredentials::slotReadJobDone);
+    connect(job, &QKeychain::ReadPasswordJob::finished, this, &HttpCredentials::slotReadJobDone);
     job->start();
 }
 
@@ -355,9 +355,9 @@ bool HttpCredentials::stillValid(QNetworkReply *reply)
                || !reply->property(authenticationFailedC).toBool()));
 }
 
-void HttpCredentials::slotReadJobDone(QKeychain::Job *incomingJob)
+void HttpCredentials::slotReadJobDone(QKeychain::Job *incoming)
 {
-    auto *job = static_cast<ReadPasswordJob *>(incomingJob);
+    auto *job = static_cast<QKeychain::ReadPasswordJob *>(incoming);
     QKeychain::Error error = job->error();
 
     // If we can't find the credentials at the keys that include the account id,
@@ -381,9 +381,9 @@ void HttpCredentials::slotReadJobDone(QKeychain::Job *incomingJob)
         qCWarning(lcHttpCredentials) << "Strange: User is empty!";
     }
 
-    if (!_refreshToken.isEmpty() && error == NoError) {
+    if (!_refreshToken.isEmpty() && error == QKeychain::NoError) {
         refreshAccessToken();
-    } else if (!_password.isEmpty() && error == NoError) {
+    } else if (!_password.isEmpty() && error == QKeychain::NoError) {
         // All cool, the keychain did not come back with error.
         // Still, the password can be empty which indicates a problem and
         // the password dialog has to be opened.
@@ -393,7 +393,7 @@ void HttpCredentials::slotReadJobDone(QKeychain::Job *incomingJob)
         // we come here if the password is empty or any other keychain
         // error happend.
 
-        _fetchErrorString = job->error() != EntryNotFound ? job->errorString() : QString();
+        _fetchErrorString = job->error() != QKeychain::EntryNotFound ? job->errorString() : QString();
 
         _password = QString();
         _ready = false;
@@ -486,7 +486,7 @@ void HttpCredentials::invalidateToken()
         return;
     }
 
-    auto *job = new DeletePasswordJob(Theme::instance()->appName());
+    auto *job = new QKeychain::DeletePasswordJob(Theme::instance()->appName());
     addSettingsToJob(_account, job);
     job->setInsecureFallback(true);
     job->setKey(kck);
@@ -531,10 +531,10 @@ void HttpCredentials::persist()
         // and we'll just store the bundle password in the keychain. That's prefered
         // since the keychain on older Windows platforms can only store a limited number
         // of bytes per entry and key/cert may exceed that.
-        auto *job = new WritePasswordJob(Theme::instance()->appName());
+        auto *job = new QKeychain::WritePasswordJob(Theme::instance()->appName());
         addSettingsToJob(_account, job);
         job->setInsecureFallback(false);
-        connect(job, &Job::finished, this, &HttpCredentials::slotWriteClientCertPasswordJobDone);
+        connect(job, &QKeychain::Job::finished, this, &HttpCredentials::slotWriteClientCertPasswordJobDone);
         job->setKey(keychainKey(_account->url().toString(), _user + clientCertPasswordC, _account->id()));
         job->setBinaryData(_clientCertPassword);
         job->start();
@@ -544,10 +544,10 @@ void HttpCredentials::persist()
         // Option 2, pre 2.6 configs: We used to store the raw cert/key in the keychain and
         // still do so if no bundle is available. We can't currently migrate to Option 1
         // because we have no functions for creating an encrypted pkcs12 bundle.
-        auto *job = new WritePasswordJob(Theme::instance()->appName());
+        auto *job = new QKeychain::WritePasswordJob(Theme::instance()->appName());
         addSettingsToJob(_account, job);
         job->setInsecureFallback(false);
-        connect(job, &Job::finished, this, &HttpCredentials::slotWriteClientCertPEMJobDone);
+        connect(job, &QKeychain::Job::finished, this, &HttpCredentials::slotWriteClientCertPEMJobDone);
         job->setKey(keychainKey(_account->url().toString(), _user + clientCertificatePEMC, _account->id()));
         job->setBinaryData(_clientSslCertificate.toPem());
         job->start();
@@ -557,7 +557,7 @@ void HttpCredentials::persist()
     }
 }
 
-void HttpCredentials::slotWriteClientCertPasswordJobDone(Job *finishedJob)
+void HttpCredentials::slotWriteClientCertPasswordJobDone(QKeychain::Job *finishedJob)
 {
     if (finishedJob && finishedJob->error() != QKeychain::NoError) {
         qCWarning(lcHttpCredentials) << "Could not write client cert password to credentials"
@@ -567,7 +567,7 @@ void HttpCredentials::slotWriteClientCertPasswordJobDone(Job *finishedJob)
     slotWritePasswordToKeychain();
 }
 
-void HttpCredentials::slotWriteClientCertPEMJobDone(Job *finishedJob)
+void HttpCredentials::slotWriteClientCertPEMJobDone(QKeychain::Job *finishedJob)
 {
     if (finishedJob && finishedJob->error() != QKeychain::NoError) {
         qCWarning(lcHttpCredentials) << "Could not write client cert to credentials"
@@ -576,10 +576,10 @@ void HttpCredentials::slotWriteClientCertPEMJobDone(Job *finishedJob)
 
     // write ssl key if there is one
     if (!_clientSslKey.isNull()) {
-        auto *job = new WritePasswordJob(Theme::instance()->appName());
+        auto *job = new QKeychain::WritePasswordJob(Theme::instance()->appName());
         addSettingsToJob(_account, job);
         job->setInsecureFallback(false);
-        connect(job, &Job::finished, this, &HttpCredentials::slotWriteClientKeyPEMJobDone);
+        connect(job, &QKeychain::Job::finished, this, &HttpCredentials::slotWriteClientKeyPEMJobDone);
         job->setKey(keychainKey(_account->url().toString(), _user + clientKeyPEMC, _account->id()));
         job->setBinaryData(_clientSslKey.toPem());
         job->start();
@@ -588,7 +588,7 @@ void HttpCredentials::slotWriteClientCertPEMJobDone(Job *finishedJob)
     }
 }
 
-void HttpCredentials::slotWriteClientKeyPEMJobDone(Job *finishedJob)
+void HttpCredentials::slotWriteClientKeyPEMJobDone(QKeychain::Job *finishedJob)
 {
     if (finishedJob && finishedJob->error() != QKeychain::NoError) {
         qCWarning(lcHttpCredentials) << "Could not write client key to credentials"
@@ -600,10 +600,10 @@ void HttpCredentials::slotWriteClientKeyPEMJobDone(Job *finishedJob)
 
 void HttpCredentials::slotWritePasswordToKeychain()
 {
-    auto *job = new WritePasswordJob(Theme::instance()->appName());
+    auto *job = new QKeychain::WritePasswordJob(Theme::instance()->appName());
     addSettingsToJob(_account, job);
     job->setInsecureFallback(false);
-    connect(job, &Job::finished, this, &HttpCredentials::slotWriteJobDone);
+    connect(job, &QKeychain::Job::finished, this, &HttpCredentials::slotWriteJobDone);
     job->setKey(keychainKey(_account->url().toString(), _user, _account->id()));
     job->setTextData(isUsingOAuth() ? _refreshToken : _password);
     job->start();

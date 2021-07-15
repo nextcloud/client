@@ -41,9 +41,12 @@ private slots:
         auto &modifier = remote ? fakeFolder.remoteModifier() : fakeFolder.localModifier();
 
         int counter = 0;
+        const QByteArray testFileName = QByteArrayLiteral("A/new");
         QByteArray reqId;
         fakeFolder.setServerOverride([&](QNetworkAccessManager::Operation op, const QNetworkRequest &req, QIODevice *) -> QNetworkReply * {
-            reqId = req.rawHeader("X-Request-ID");
+            if (req.url().path().endsWith(testFileName)) {
+                reqId = req.rawHeader("X-Request-ID");
+            }
             if (!remote && op == QNetworkAccessManager::PutOperation)
                 ++counter;
             if (remote && op == QNetworkAccessManager::GetOperation)
@@ -59,16 +62,16 @@ private slots:
         QVERIFY(!initialEtag.isEmpty());
 
         // The first sync and the download will fail - the item will be blacklisted
-        modifier.insert("A/new");
-        fakeFolder.serverErrorPaths().append("A/new", 500); // will be blacklisted
+        modifier.insert(testFileName);
+        fakeFolder.serverErrorPaths().append(testFileName, 500); // will be blacklisted
         QVERIFY(!fakeFolder.syncOnce());
         {
-            auto it = completeSpy.findItem("A/new");
+            auto it = completeSpy.findItem(testFileName);
             QVERIFY(it);
             QCOMPARE(it->_status, SyncFileItem::NormalError); // initial error visible
             QCOMPARE(it->_instruction, CSYNC_INSTRUCTION_NEW);
 
-            auto entry = fakeFolder.syncJournal().errorBlacklistEntry("A/new");
+            auto entry = fakeFolder.syncJournal().errorBlacklistEntry(testFileName);
             QVERIFY(entry.isValid());
             QCOMPARE(entry._errorCategory, SyncJournalErrorBlacklistRecord::Normal);
             QCOMPARE(entry._retryCount, 1);
@@ -84,12 +87,12 @@ private slots:
         // Ignored during the second run - but soft errors are also errors
         QVERIFY(!fakeFolder.syncOnce());
         {
-            auto it = completeSpy.findItem("A/new");
+            auto it = completeSpy.findItem(testFileName);
             QVERIFY(it);
             QCOMPARE(it->_status, SyncFileItem::BlacklistedError);
             QCOMPARE(it->_instruction, CSYNC_INSTRUCTION_IGNORE); // no retry happened!
 
-            auto entry = fakeFolder.syncJournal().errorBlacklistEntry("A/new");
+            auto entry = fakeFolder.syncJournal().errorBlacklistEntry(testFileName);
             QVERIFY(entry.isValid());
             QCOMPARE(entry._errorCategory, SyncJournalErrorBlacklistRecord::Normal);
             QCOMPARE(entry._retryCount, 1);
@@ -104,19 +107,19 @@ private slots:
 
         // Let's expire the blacklist entry to verify it gets retried
         {
-            auto entry = fakeFolder.syncJournal().errorBlacklistEntry("A/new");
+            auto entry = fakeFolder.syncJournal().errorBlacklistEntry(testFileName);
             entry._ignoreDuration = 1;
             entry._lastTryTime -= 1;
             fakeFolder.syncJournal().setErrorBlacklistEntry(entry);
         }
         QVERIFY(!fakeFolder.syncOnce());
         {
-            auto it = completeSpy.findItem("A/new");
+            auto it = completeSpy.findItem(testFileName);
             QVERIFY(it);
             QCOMPARE(it->_status, SyncFileItem::BlacklistedError); // blacklisted as it's just a retry
             QCOMPARE(it->_instruction, CSYNC_INSTRUCTION_NEW); // retry!
 
-            auto entry = fakeFolder.syncJournal().errorBlacklistEntry("A/new");
+            auto entry = fakeFolder.syncJournal().errorBlacklistEntry(testFileName);
             QVERIFY(entry.isValid());
             QCOMPARE(entry._errorCategory, SyncJournalErrorBlacklistRecord::Normal);
             QCOMPARE(entry._retryCount, 2);
@@ -130,15 +133,15 @@ private slots:
         cleanup();
 
         // When the file changes a retry happens immediately
-        modifier.appendByte("A/new");
+        modifier.appendByte(testFileName);
         QVERIFY(!fakeFolder.syncOnce());
         {
-            auto it = completeSpy.findItem("A/new");
+            auto it = completeSpy.findItem(testFileName);
             QVERIFY(it);
             QCOMPARE(it->_status, SyncFileItem::BlacklistedError);
             QCOMPARE(it->_instruction, CSYNC_INSTRUCTION_NEW); // retry!
 
-            auto entry = fakeFolder.syncJournal().errorBlacklistEntry("A/new");
+            auto entry = fakeFolder.syncJournal().errorBlacklistEntry(testFileName);
             QVERIFY(entry.isValid());
             QCOMPARE(entry._errorCategory, SyncJournalErrorBlacklistRecord::Normal);
             QCOMPARE(entry._retryCount, 3);
@@ -154,19 +157,19 @@ private slots:
         // When the error goes away and the item is retried, the sync succeeds
         fakeFolder.serverErrorPaths().clear();
         {
-            auto entry = fakeFolder.syncJournal().errorBlacklistEntry("A/new");
+            auto entry = fakeFolder.syncJournal().errorBlacklistEntry(testFileName);
             entry._ignoreDuration = 1;
             entry._lastTryTime -= 1;
             fakeFolder.syncJournal().setErrorBlacklistEntry(entry);
         }
         QVERIFY(fakeFolder.syncOnce());
         {
-            auto it = completeSpy.findItem("A/new");
+            auto it = completeSpy.findItem(testFileName);
             QVERIFY(it);
             QCOMPARE(it->_status, SyncFileItem::Success);
             QCOMPARE(it->_instruction, CSYNC_INSTRUCTION_NEW);
 
-            auto entry = fakeFolder.syncJournal().errorBlacklistEntry("A/new");
+            auto entry = fakeFolder.syncJournal().errorBlacklistEntry(testFileName);
             QVERIFY(!entry.isValid());
             QCOMPARE(counter, 4);
 

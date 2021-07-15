@@ -142,20 +142,21 @@ QByteArray makeChecksumHeader(const QByteArray &checksumType, const QByteArray &
     return header;
 }
 
-QByteArray findBestChecksum(const QByteArray &checksums)
+QByteArray findBestChecksum(const QByteArray &_checksums)
 {
+    const auto checksums = QString::fromUtf8(_checksums);
     int i = 0;
     // The order of the searches here defines the preference ordering.
-    if (-1 != (i = checksums.indexOf("SHA3-256:"))
-        || -1 != (i = checksums.indexOf("SHA256:"))
-        || -1 != (i = checksums.indexOf("SHA1:"))
-        || -1 != (i = checksums.indexOf("MD5:"))
-        || -1 != (i = checksums.indexOf("Adler32:"))) {
+    if (-1 != (i = checksums.indexOf(QLatin1String("SHA3-256:"), 0, Qt::CaseInsensitive))
+        || -1 != (i = checksums.indexOf(QLatin1String("SHA256:"), 0, Qt::CaseInsensitive))
+        || -1 != (i = checksums.indexOf(QLatin1String("SHA1:"), 0, Qt::CaseInsensitive))
+        || -1 != (i = checksums.indexOf(QLatin1String("MD5:"), 0, Qt::CaseInsensitive))
+        || -1 != (i = checksums.indexOf(QLatin1String("ADLER32:"), 0, Qt::CaseInsensitive))) {
         // Now i is the start of the best checksum
         // Grab it until the next space or end of string.
-        auto checksum = checksums.mid(i);
-        return checksum.mid(0, checksum.indexOf(" "));
+        return _checksums.mid(i, _checksums.indexOf(' ', i) - i);
     }
+    qCWarning(lcChecksums) << "Failed to parse" << _checksums;
     return QByteArray();
 }
 

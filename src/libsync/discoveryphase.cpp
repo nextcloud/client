@@ -472,12 +472,6 @@ void DiscoverySingleDirectoryJob::directoryListingIteratedSlot(const QString &fi
             result.remotePerm.unsetPermission(RemotePermissions::IsMounted);
             result.remotePerm.setPermission(RemotePermissions::IsMountedSub);
         }
-
-        QStringRef fileRef(&file);
-        int slashPos = file.lastIndexOf(QLatin1Char('/'));
-        if (slashPos > -1) {
-            fileRef = file.midRef(slashPos + 1);
-        }
         _results.push_back(std::move(result));
     }
 

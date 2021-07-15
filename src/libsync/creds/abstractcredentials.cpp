@@ -50,6 +50,7 @@ QString AbstractCredentials::keychainKey(const QString &url, const QString &user
     QString key = user + QLatin1Char(':') + u;
     if (!accountId.isEmpty()) {
         key += QLatin1Char(':') + accountId;
+    }
 #ifdef Q_OS_WIN
         // On Windows the credential keys aren't namespaced properly
         // by qtkeychain. To work around that we manually add namespacing
@@ -59,7 +60,6 @@ QString AbstractCredentials::keychainKey(const QString &url, const QString &user
         // migrated to new namespaced keys on windows for 2.4.
         key.prepend(QCoreApplication::applicationName() + "_");
 #endif
-    }
     return key;
 }
 } // namespace OCC
