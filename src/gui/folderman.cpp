@@ -850,9 +850,6 @@ void FolderMan::slotEtagPollTimerTimeout()
     // Some folders need not to be checked because they use the push notifications
     std::copy_if(folderMapValues.begin(), folderMapValues.end(), std::back_inserter(foldersToRun), [this](Folder *folder) -> bool {
         const auto account = folder->accountState()->account();
-        const auto capabilities = account->capabilities();
-        const auto pushNotifications = account->pushNotifications();
-
         return !pushNotificationsFilesReady(account.data());
     });
 
