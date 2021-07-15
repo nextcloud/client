@@ -17,8 +17,7 @@ MenuItem {
     RowLayout {
         id: userLineLayout
         spacing: 0
-        width: Style.currentAccountButtonWidth
-        height: parent.height
+        anchors.fill: parent
 
         Button {
             id: accountButton
@@ -59,8 +58,7 @@ MenuItem {
 
             RowLayout {
                 id: accountControlRowLayout
-                height: accountButton.height
-                width: accountButton.width
+                anchors.fill: parent
                 spacing: Style.userStatusSpacing
                 Image {
                     id: accountAvatar
@@ -100,19 +98,21 @@ MenuItem {
                 Column {
                     id: accountLabels
                     Layout.leftMargin: Style.accountLabelsSpacing
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: parent.width - Style.accountLabelsSpacing
                     Label {
                         id: accountUser
-                        width: 128
                         text: name
                         elide: Text.ElideRight
                         color: "black"
                         font.pixelSize: Style.topLinePixelSize
                         font.bold: true
+                        width: parent.width
                     }
                     Row {
                         visible: model.isConnected &&
                                  model.serverHasUserStatus
-                        width: Style.currentAccountLabelWidth + Style.userStatusEmojiSize
+                        width: parent.width
                         Label {
                             id: emoji
                             height: Style.topLinePixelSize
@@ -123,6 +123,7 @@ MenuItem {
                         Label {
                             id: message
                             height: Style.topLinePixelSize
+                            width: parent.width - parent.spacing - emoji.width
                             visible: model.statusMessage !== ""
                             text: statusMessage
                             elide: Text.ElideRight
