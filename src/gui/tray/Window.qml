@@ -362,6 +362,9 @@ Window {
                             spacing: 0
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                             Layout.leftMargin: Style.userStatusSpacing
+                            Layout.fillWidth: true
+                            Layout.maximumWidth: parent.width
+
                             Label {
                                 id: currentAccountUser
                                 Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
@@ -372,11 +375,14 @@ Window {
                                 font.pixelSize: Style.topLinePixelSize
                                 font.bold: true
                             }
+
                             RowLayout {
                                 id: currentUserStatus
                                 visible: UserModel.currentUser.isConnected &&
                                          UserModel.currentUser.serverHasUserStatus
                                 spacing: Style.accountLabelsSpacing
+                                width: parent.width
+
                                 Label {
                                     id: emoji
                                     visible: UserModel.currentUser.statusEmoji !== ""
@@ -386,6 +392,7 @@ Window {
                                 Label {
                                     id: message
                                     Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
+                                    Layout.fillWidth: true
                                     visible: UserModel.currentUser.statusMessage !== ""
                                     width: Style.currentAccountLabelWidth
                                     text: UserModel.currentUser.statusMessage !== ""
