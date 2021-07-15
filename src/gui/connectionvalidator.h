@@ -60,8 +60,7 @@ namespace OCC {
   +---------------------------+
   |
   +-> checkServerCapabilities --------------v (in parallel)
-        JsonApiJob (cloud/capabilities)     JsonApiJob (ocs/v1.php/config)
-        |                                   +-> ocsConfigReceived
+        JsonApiJob (cloud/capabilities)
         +-> slotCapabilitiesRecieved -+
                                       |
     +---------------------------------+
@@ -131,7 +130,6 @@ private:
     void reportResult(Status status);
     void checkServerCapabilities();
     void fetchUser();
-    static void ocsConfigReceived(const QJsonDocument &json, AccountPtr account);
 
     /** Sets the account's server version
      *
